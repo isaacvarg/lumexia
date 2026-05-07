@@ -8,5 +8,8 @@ model BprStatus {
     createdAt   DateTime @default(now()) @map("created_at")
     updatedAt   DateTime @updatedAt @map("updated_at")
 
+    fromTransitions BprStatusTransition[] @relation("BprStatusTransitionFrom")
+    toTransitions   BprStatusTransition[] @relation("BprStatusTransitionTo")
+
     @@map("bpr_statuses")
 }

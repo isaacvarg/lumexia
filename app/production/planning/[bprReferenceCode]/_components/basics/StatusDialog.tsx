@@ -1,10 +1,10 @@
 "use client"
 import Dialog from "@/components/Dialog"
 import useDialog from "@/hooks/useDialog"
-import { productionActions } from "@/actions/production"
 import { useBprDetailsSelection } from "@/store/bprDetailsSlice"
 import { useRouter } from "next/navigation"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
+import { overrideBprStatus } from "@/lib/bpr/overrideBprStatus"
 
 
 const StatusDialog = () => {
@@ -17,7 +17,7 @@ const StatusDialog = () => {
   const handleClick = async (statusId: string) => {
 
     if (!bpr) return;
-    await productionActions.bprs.update2(bpr.id, { bprStatusId: statusId })
+    await overrideBprStatus(bpr.id, statusId)
     const selectedStatus = statuses.get(statusId)
     resetDialogContext()
     await createActivityLog('Modify Statuts', 'bpr', bpr.id, { context: `Status changed to ${selectedStatus}` })

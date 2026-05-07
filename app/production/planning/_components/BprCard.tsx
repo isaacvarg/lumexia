@@ -1,7 +1,7 @@
-import { productionActions } from '@/actions/production'
 import { BprStatus } from '@/actions/production/getBprStatuses'
 import { PlanningBpr } from '@/actions/production/getPlanningBprs'
 import Dropdown from '@/components/Dropdown'
+import { overrideBprStatus } from '@/lib/bpr/overrideBprStatus'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -21,9 +21,7 @@ const BprCard = ({ bpr, statuses }: { bpr: PlanningBpr, statuses: BprStatus[] })
   }
 
   const handleStatusDropdown = async (value: string) => {
-    await productionActions.bprs.update(bpr.id, {
-      bprStatusId: value
-    });
+    await overrideBprStatus(bpr.id, value);
     location.reload()
   }
 

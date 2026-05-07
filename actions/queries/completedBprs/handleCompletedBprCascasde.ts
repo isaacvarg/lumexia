@@ -2,9 +2,9 @@
 
 import prisma from "@/lib/prisma"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
-import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
 import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
+import { advanceBpr } from "@/lib/bpr/transitions";
 import { transactionTypes } from "@/configs/staticRecords/transactionTypes";
 import { uom } from "@/configs/staticRecords/unitsOfMeasurement";
 import { Prisma } from "@prisma/client";
@@ -76,10 +76,7 @@ export const handleCompletedBprCascade = async (bprId: string) => {
           }
         }
 
-        await tx.batchProductionRecord.update({
-          where: { id: bprId },
-          data: { bprStatusId: bprStatuses.awaitingQc },
-        });
+        await advanceBpr(bprId, 'completionCascadeSucceeded', { tx });
       });
     } catch (error) {
       if (error instanceof BprConsumptionError) {
@@ -102,10 +99,7 @@ export const handleCompletedBprCascade = async (bprId: string) => {
 
     // Set BPR status to failed (outside rolled-back transaction)
     try {
-      await prisma.batchProductionRecord.update({
-        where: { id: bprId },
-        data: { bprStatusId: bprStatuses.consumptionError },
-      });
+      await advanceBpr(bprId, 'completionCascadeFailed');
     } catch (statusError) {
       console.error(`Failed to set BPR ${bprId} status to failed:`, statusError);
     }

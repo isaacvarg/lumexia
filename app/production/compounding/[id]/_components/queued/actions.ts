@@ -1,13 +1,12 @@
 "use server"
 
 import { revalidatePage } from "@/actions/app/revalidatePage";
-import bprActions from "@/actions/production/bprActions";
-import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
+import { advanceBpr } from "@/lib/bpr/transitions";
 import { BatchProductionRecord } from "@/types/batchProductionRecord";
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 
 export const handleBeginStaging = async (bpr: BatchProductionRecord) => {
-  await bprActions.update({ id: bpr.id }, { bprStatusId: bprStatuses.stagingMaterials })
+  await advanceBpr(bpr.id, 'stagingStarted')
   await createActivityLog("upateBprStatus", "bpr", bpr.id, { context: `BPR #${bpr.releasedAt} was set to staging from the queued panel` })
   revalidatePage("/production/compounding/[id]/")
 }

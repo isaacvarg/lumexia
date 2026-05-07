@@ -1,9 +1,8 @@
 "use server"
 
-import bprActions from "@/actions/production/bprActions";
 import bprBomActions from "@/actions/production/bprBom";
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
-import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
+import { advanceBpr } from "@/lib/bpr/transitions";
 import prisma from "@/lib/prisma";
 import { BprBom } from "@/types/bprBom"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
@@ -55,7 +54,7 @@ const isBprStaged = async (bprId: string) => {
 
 const handleAllStaged = async (bprId: string) => {
 
-  await bprActions.update({ id: bprId }, { bprStatusId: bprStatuses.compounding });
+  await advanceBpr(bprId, 'stagingCompleted');
 
   await createActivityLog('updateBpr', 'bpr', bprId, { context: `BPR staging of materials completed` });
-} 
+}

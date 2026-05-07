@@ -3,7 +3,7 @@ import Dialog from "@/components/Dialog"
 import { BprStatus } from "@/types/bprStatus"
 import { revalidatePage } from "@/actions/app/revalidatePage"
 import useDialog from "@/hooks/useDialog"
-import { productionActions } from "@/actions/production"
+import { overrideBprStatus } from "@/lib/bpr/overrideBprStatus"
 import { usePlanningDashboardActions, usePlanningDashboardSelection } from "@/store/planningDashboardSlice"
 
 
@@ -16,7 +16,7 @@ const ChangeStatusDialog = () => {
   const handleClick = async (statusId: string) => {
 
     if (!bpr) return;
-    await productionActions.bprs.update2(bpr.id, { bprStatusId: statusId })
+    await overrideBprStatus(bpr.id, statusId)
     getBpr(bpr.id)
     resetDialogContext()
   }
