@@ -5,22 +5,30 @@ import { BprStagingItem } from "../getBprStagings"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
+import { getUserId } from "@/actions/users/getUserId";
 
 export const handleSingleStagingDeny = async (qualityMode: 'primary' | 'secondary', note: string, staging: BprStagingItem, bprId: string, itemName: string) => {
 
-  // update staging: change status and set verified booleans to false
+  const userId = await getUserId();
+
   const response = await prisma.bprStaging.update({
     where: {
       id: staging.id,
     },
     data: {
       bprStagingStatusId: bprStagingStatuses.denied,
-      isPrimaryVerified: false,
-      isSecondaryVerified: false // not necessary
     }
   });
 
-  // update bomitem
+  await prisma.bprStagingDenial.create({
+    data: {
+      userId,
+      bprStagingId: staging.id,
+      type: qualityMode,
+      reason: note,
+    }
+  });
+
   await prisma.bprBillOfMaterials.update({
     where: {
       id: staging.bprBomId,
@@ -29,7 +37,7 @@ export const handleSingleStagingDeny = async (qualityMode: 'primary' | 'secondar
       statusId: bprBomLineStatuses.pending,
     }
   });
-  // make note
+
   await createActivityLog('stagingDenied', 'bpr', bprId, { context: `${staging.quantity} of ${itemName} was denied during ${qualityMode} verification.` })
 
   return response;

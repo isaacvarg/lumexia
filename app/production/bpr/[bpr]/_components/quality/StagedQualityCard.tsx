@@ -16,7 +16,7 @@ const StagedQualityCard = ({ staged }: { staged: BprStagingItem }) => {
   const [denyNote, setDenyNote] = useState<string>('');
   const { bpr, selectedBomItem, qualityMode } = useProductionSelection()
   const { fetchStagings } = useProductionActions()
-  const isApproved = (qualityMode === 'primary' && staged.isPrimaryVerified) || (qualityMode === 'secondary' && staged.isSecondaryVerified)
+  const isApproved = (qualityMode === 'primary' && staged.status.sequence >= 2) || (qualityMode === 'secondary' && staged.status.sequence >= 3)
 
   const handleApprove = async () => {
 

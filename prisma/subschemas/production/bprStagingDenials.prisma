@@ -1,0 +1,14 @@
+model BprStagingDenial {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  bprStagingId String   @map("bpr_staging_id")
+  type         String   @default("primary")
+  reason       String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id])
+  bprStaging BprStaging @relation(fields: [bprStagingId], references: [id])
+
+  @@map("bpr_staging_denials")
+}

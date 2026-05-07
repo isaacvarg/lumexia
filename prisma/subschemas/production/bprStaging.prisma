@@ -6,8 +6,6 @@ model BprStaging {
     quantity Float
     uomId String @map("uom_id")
     bprStagingStatusId String @map("bpr_staging_status_id")
-    isPrimaryVerified Boolean @default(false) @map("is_primary_verified")
-    isSecondaryVerified Boolean @default(false) @map("is_secondary_verified")
     createdAt       DateTime @default(now()) @map("created_at")
     updatedAt       DateTime @updatedAt @map("updated_at")
 

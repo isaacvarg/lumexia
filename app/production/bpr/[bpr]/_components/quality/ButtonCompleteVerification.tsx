@@ -7,8 +7,8 @@ const ButtonCompleteVerification = () => {
   const { selectedBomItem, stagings, qualityMode, bpr } = useProductionSelection()
   const { setQualityMode, setQualityDetailsViewMode } = useProductionActions();
   const router = useRouter();
-  const isCompletable = (qualityMode === 'primary' && stagings.every(s => s.isPrimaryVerified)) ||
-    (qualityMode === 'secondary' && stagings.every(s => s.isSecondaryVerified));
+  const isCompletable = (qualityMode === 'primary' && stagings.every(s => s.status.sequence >= 2)) ||
+    (qualityMode === 'secondary' && stagings.every(s => s.status.sequence >= 3));
 
   const handleComplete = async () => {
     if (!bpr || !selectedBomItem) return;

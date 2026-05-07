@@ -19,7 +19,6 @@ export const handleSingleStagingApproval = async (qualityMode: 'primary' | 'seco
     },
     data: {
       bprStagingStatusId: statusId,
-      ...(qualityMode === 'primary' ? { isPrimaryVerified: true } : { isSecondaryVerified: true })
     }
   });
 
