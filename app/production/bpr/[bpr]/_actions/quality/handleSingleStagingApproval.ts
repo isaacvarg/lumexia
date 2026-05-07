@@ -5,12 +5,12 @@ import { getUserId } from "@/actions/users/getUserId";
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
 
-const { verified, secondaryVerification } = bprStagingStatuses;
+const { primaryVerified, secondaryVerified } = bprStagingStatuses;
 
 
 export const handleSingleStagingApproval = async (qualityMode: 'primary' | 'secondary', staging: BprStagingItem, bprId: string, itemName: string) => {
 
-  const statusId = qualityMode === 'primary' ? verified : secondaryVerification;
+  const statusId = qualityMode === 'primary' ? primaryVerified : secondaryVerified;
   const userId = await getUserId()
 
   const response = await prisma.bprStaging.update({

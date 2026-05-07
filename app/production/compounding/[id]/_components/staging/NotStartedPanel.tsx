@@ -3,11 +3,11 @@ import { ExBprBom } from '@/types/bprBom'
 import React from 'react'
 import ItemCard from './ItemCard'
 import Confetti from '@/components/Confetti/Confetti'
-import { bprStagingStatuses } from '@/configs/staticRecords/bprStagingStatuses'
+import { bprBomLineStatuses } from '@/configs/staticRecords/bprBomLineStatuses'
 
 const NotStartedPanel = ({ bom }: { bom: ExBprBom[] }) => {
 
-  const notStartedBomItems = bom.filter((bomItem) => bomItem.statusId === bprStagingStatuses.notStarted);
+  const notStartedBomItems = bom.filter((bomItem) => bomItem.statusId === bprBomLineStatuses.pending);
 
   return (
     <Card.Root>

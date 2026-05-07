@@ -4,14 +4,14 @@ import { useProductionSelection } from "@/store/productionSlice"
 import { translations } from "../../_configs/translations"
 import MaterialButton from "../shared/MaterialButton"
 import Card from "@/components/Card"
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses"
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses"
 
 const MaterialList = () => {
 
   const { bom } = useProductionSelection()
   const sorted = bom.sort((a, b) => parseInt(a.bom.identifier) - parseInt(b.bom.identifier));
-  const filtered = bom.filter(item => item.statusId === bprStagingStatuses.notStarted)
-  const stagedFiltered = sorted.filter(item => item.statusId !== bprStagingStatuses.notStarted);
+  const filtered = bom.filter(item => item.statusId === bprBomLineStatuses.pending)
+  const stagedFiltered = sorted.filter(item => item.statusId !== bprBomLineStatuses.pending);
   const { t } = useTranslation()
 
   return (

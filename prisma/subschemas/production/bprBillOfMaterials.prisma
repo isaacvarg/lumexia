@@ -11,7 +11,7 @@ model BprBillOfMaterials {
   bpr    BatchProductionRecord @relation(fields: [bprId], references: [id])
   bom    BillOfMaterial        @relation(fields: [bomId], references: [id])
   uom    UnitOfMeasurement     @relation(fields: [uomId], references: [id])
-  status BprStagingStatus      @relation(fields: [statusId], references: [id])
+  status BprBomLineStatus      @relation(fields: [statusId], references: [id])
 
   @@map("bpr_bills_of_materials")
 }

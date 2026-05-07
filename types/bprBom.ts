@@ -1,6 +1,6 @@
 import { Omit } from "@prisma/client/runtime/library"
 import { BillOfMaterials, ExBillOfMaterials } from "./billOfMaterials"
-import { BprStagingStatus } from "./bprStagingStatus"
+import { BprBomLineStatus } from "./bprBomLineStatus"
 import { Uom } from "./uom"
 import { BatchProductionRecord } from "./batchProductionRecord"
 
@@ -23,6 +23,6 @@ export interface BprBom {
 
 
 export interface ExBprBom extends Omit<BprBom, 'bom' > {
-  status: BprStagingStatus;
+  status: BprBomLineStatus;
   bom: ExBillOfMaterials; 
 }

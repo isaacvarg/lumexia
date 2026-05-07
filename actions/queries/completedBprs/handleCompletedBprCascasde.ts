@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
 import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 import { transactionTypes } from "@/configs/staticRecords/transactionTypes";
 import { uom } from "@/configs/staticRecords/unitsOfMeasurement";
 import { Prisma } from "@prisma/client";
@@ -185,7 +186,7 @@ const processStaging = async (staging: BprStaging, userId: string, tx: Prisma.Tr
   try {
     await tx.bprBillOfMaterials.update({
       where: { id: staging.bprBomId },
-      data: { statusId: bprStagingStatuses.consumed }
+      data: { statusId: bprBomLineStatuses.consumed }
     })
   } catch (error) {
     throw new StagingOperationError('updateBom', error);
@@ -224,8 +225,8 @@ async function cleanupPreviousConsumption(bprId: string, tx: Prisma.TransactionC
   })
 
   await tx.bprBillOfMaterials.updateMany({
-    where: { id: { in: bomIds }, statusId: bprStagingStatuses.consumed },
-    data: { statusId: bprStagingStatuses.staged }
+    where: { id: { in: bomIds }, statusId: bprBomLineStatuses.consumed },
+    data: { statusId: bprBomLineStatuses.staged }
   })
 }
 

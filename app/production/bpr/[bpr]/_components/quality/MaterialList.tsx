@@ -2,19 +2,19 @@ import SectionTitle from "@/components/Text/SectionTitle"
 import { useProductionSelection } from "@/store/productionSlice"
 import MaterialButton from "../shared/MaterialButton"
 import Card from "@/components/Card"
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses"
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses"
 
 const MaterialList = () => {
 
   const { bom, qualityMode } = useProductionSelection()
   const sorted = bom.sort((a, b) => parseInt(a.bom.identifier) - parseInt(b.bom.identifier));
   const staged = qualityMode === 'primary' ?
-    bom.filter(item => item.statusId === bprStagingStatuses.staged) :
-    bom.filter(item => item.statusId === bprStagingStatuses.verified);
+    bom.filter(item => item.statusId === bprBomLineStatuses.staged) :
+    bom.filter(item => item.statusId === bprBomLineStatuses.primaryVerified);
 
   const verified = qualityMode === 'primary' ?
-    sorted.filter(item => item.statusId === bprStagingStatuses.verified) :
-    sorted.filter(item => item.statusId === bprStagingStatuses.secondaryVerification);
+    sorted.filter(item => item.statusId === bprBomLineStatuses.primaryVerified) :
+    sorted.filter(item => item.statusId === bprBomLineStatuses.secondaryVerified);
 
   return (
     <div className="flex flex-col gap-6 col-span-2">

@@ -6,7 +6,7 @@ import { ExBprBom } from '@/types/bprBom'
 import { updateBomItem } from '../_functions/updateBomItem'
 import { useRouter } from 'next/navigation'
 import { productionConfigs } from '@/configs/data/productionConfigs'
-import { bprStagingStatuses } from '@/configs/staticRecords/bprStagingStatuses'
+import { bprBomLineStatuses } from '@/configs/staticRecords/bprBomLineStatuses'
 
 
 const ScanHistory = ({ setIsViewMode, stagings, bomItem }: { setIsViewMode: (isViewMode: boolean) => void, stagings: any, bomItem: ExBprBom }) => {
@@ -30,7 +30,7 @@ const ScanHistory = ({ setIsViewMode, stagings, bomItem }: { setIsViewMode: (isV
   const handleComplete = () => {
 
     const payload = {
-      statusId: bprStagingStatuses.staged,
+      statusId: bprBomLineStatuses.staged,
     }
 
     updateBomItem(payload, bomItem.id)
@@ -39,7 +39,7 @@ const ScanHistory = ({ setIsViewMode, stagings, bomItem }: { setIsViewMode: (isV
   return (
     <div className='flex flex-col gap-y-4'>
 
-      {bomItem.statusId === bprStagingStatuses.notStarted && <div className='grid grid-cols-2 gap-4'>
+      {bomItem.statusId === bprBomLineStatuses.pending && <div className='grid grid-cols-2 gap-4'>
         <ActionPanel onClick={() => handleAdd()}>
           Add New
         </ActionPanel>

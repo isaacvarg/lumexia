@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useProductionActions, useProductionSelection } from "@/store/productionSlice"
 import { handleStagingComplete } from "../../_actions/stagings/handleCompleteStaging";
 import { useRouter } from "next/navigation";
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 
 const ALLOWANCE_TRESHOLD = 0.005;
 
@@ -34,7 +34,7 @@ const CompleteStagingButton = () => {
   }, [stagings, setIsCompletable, selectedBomItem])
 
 
-  if (!isCompletable || selectedBomItem?.statusId !== bprStagingStatuses.notStarted) return false
+  if (!isCompletable || selectedBomItem?.statusId !== bprBomLineStatuses.pending) return false
 
   return (
     <button

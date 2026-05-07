@@ -2,7 +2,7 @@
 
 import bprActions from "@/actions/production/bprActions";
 import bprBomActions from "@/actions/production/bprBom";
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
 import prisma from "@/lib/prisma";
 import { BprBom } from "@/types/bprBom"
@@ -16,9 +16,9 @@ export const verifyBomItem = async (bomItem: BprBom, isSecondary: boolean) => {
 
   console.log("oogie,goo", bomItem)
 
-  const { verified, secondaryVerification } = bprStagingStatuses;
+  const { primaryVerified, secondaryVerified } = bprBomLineStatuses;
 
-  const statusId = isSecondary ? secondaryVerification : verified
+  const statusId = isSecondary ? secondaryVerified : primaryVerified
 
   const payload = {
     statusId,
@@ -44,7 +44,7 @@ const isBprStaged = async (bprId: string) => {
     }
   });
 
-  const isAllStaged = boms.every((item) => item.statusId === bprStagingStatuses.secondaryVerification)
+  const isAllStaged = boms.every((item) => item.statusId === bprBomLineStatuses.secondaryVerified)
 
   if (!isAllStaged) {
     return;

@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { BprBomItem } from "../getBprBom";
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 
 export const handleStagingComplete = async (bprBomItem: BprBomItem) => {
 
@@ -12,7 +12,7 @@ export const handleStagingComplete = async (bprBomItem: BprBomItem) => {
       id: bprBomItem.id,
     },
     data: {
-      statusId: bprStagingStatuses.staged
+      statusId: bprBomLineStatuses.staged
     }
   });
 
