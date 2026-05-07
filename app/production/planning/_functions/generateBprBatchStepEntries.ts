@@ -57,7 +57,7 @@ const createBprStepActionable = async (bprBatchStepId: string, batchStepActionab
     isCompounded: false,
     isVerified: false,
     isSecondarilyVerified: false,
-    statusId: bprStepActionableStatuses.compounding,
+    statusId: bprStepActionableStatuses.inProgress,
   };
 
 

@@ -4,8 +4,8 @@ export const data = {
   staticRecordKeyName: null,
   seed: [
     {
-      "name": "Compounding",
-      "description": "Compounding"
+      "name": "In Progress",
+      "description": "In progress"
     },
     {
       "name": "Not Started",
