@@ -9,19 +9,19 @@ import { bprStagingStatuses } from '@/configs/staticRecords/bprStagingStatuses';
 
 const StagedCard = ({ staging }: { staging: ExBprStaging }) => {
 
-  const { staged, verified, secondaryVerification } = bprStagingStatuses;
+  const { primaryVerified, secondaryVerified } = bprStagingStatuses;
   const { isSecondaryVerificationMode } = useProduction()
 
-  const completedStatus = isSecondaryVerificationMode ? secondaryVerification : verified;
+  const completedStatus = isSecondaryVerificationMode ? secondaryVerified : primaryVerified;
 
 
 
   let bg;
   switch (staging.bprStagingStatusId) {
-    case verified:
+    case primaryVerified:
       bg = "bg-blue-200"
       break;
-    case secondaryVerification:
+    case secondaryVerified:
       bg = "bg-emerald-200"
       break;
     default:

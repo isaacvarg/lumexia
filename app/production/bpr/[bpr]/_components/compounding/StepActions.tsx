@@ -8,6 +8,7 @@ import { handleCompleteActionable } from "../../_actions/compounding/handleCompl
 import { useRouter } from "next/navigation"
 import { TbPlus } from "react-icons/tb"
 import { stepActionableTypes } from "@/configs/staticRecords/stepActionableTypes"
+import { bprStepActionableStatuses } from "@/configs/staticRecords/bprStepActionableStatuses"
 
 const { completeStep } = stepActionableTypes
 
@@ -32,6 +33,18 @@ const StepActions = () => {
       .filter(s => s.batchStep.sequence < selectedStep.batchStep.sequence)
       .every(s => s.isComplete)
     : false;
+
+  const allBomLinesAdded = selectedStep
+    ? selectedStep.bprBomLines.every(line => line.addedAt !== null)
+    : false;
+
+  const allActionablesComplete = selectedStep
+    ? selectedStep.bprStepActionables
+      .filter(a => a.id !== completeActionable?.id)
+      .every(a => a.statusId === bprStepActionableStatuses.completed)
+    : false;
+
+  const isStepCompletable = priorStepsComplete && allBomLinesAdded && allActionablesComplete;
 
   // step non complete step actionables (e.g., submit ph) 
   // make fields for those actionable types
@@ -66,10 +79,17 @@ const StepActions = () => {
         </div>
       )}
 
-      {(completeActionable && !selectedStep?.isComplete && priorStepsComplete) && (
+      {(completeActionable && !selectedStep?.isComplete && isStepCompletable) && (
         <button onClick={handleCompleteStep} className="btn btn-success btn-lg min-h-20">
           Complete
         </button>
+      )}
+
+      {(completeActionable && !selectedStep?.isComplete && priorStepsComplete && !isStepCompletable) && (
+        <div className="text-warning-content/70 text-sm font-medium">
+          {!allBomLinesAdded && <div>Check off every material before completing this step.</div>}
+          {!allActionablesComplete && <div>Complete every step actionable before completing this step.</div>}
+        </div>
       )}
 
     </Card.Root>

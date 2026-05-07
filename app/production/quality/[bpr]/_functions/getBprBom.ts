@@ -1,6 +1,6 @@
 "use server"
 
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses";
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 import prisma from "@/lib/prisma";
 
 export const getBprBom = async (bprId: string, isSecondary: boolean) => {
@@ -8,9 +8,9 @@ export const getBprBom = async (bprId: string, isSecondary: boolean) => {
   // by isSecondary i mean it needs secondary verification, not sure if i was consisten with the nomenclature
   // todo clean up variable names
 
-  const { staged, verified } = bprStagingStatuses;
+  const { staged, primaryVerified } = bprBomLineStatuses;
 
-  const statusId = isSecondary ? verified : staged
+  const statusId = isSecondary ? primaryVerified : staged
 
   const bom = await prisma.bprBillOfMaterials.findMany({
     where: {

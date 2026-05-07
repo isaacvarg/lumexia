@@ -13,8 +13,8 @@ const ActionsArea = ({ stagings, bomItem }: { stagings: ExBprStaging[], bomItem:
   const router = useRouter();
   const { isSecondaryVerificationMode } = useProduction()
 
-  const { verified, secondaryVerification } = bprStagingStatuses;
-  const allVerifiedComparison = isSecondaryVerificationMode ? secondaryVerification : verified;
+  const { primaryVerified, secondaryVerified } = bprStagingStatuses;
+  const allVerifiedComparison = isSecondaryVerificationMode ? secondaryVerified : primaryVerified;
 
   const allVerified = stagings.every((staging) => staging.bprStagingStatusId === allVerifiedComparison)
   // todo make check to see if required and staged amount are equal

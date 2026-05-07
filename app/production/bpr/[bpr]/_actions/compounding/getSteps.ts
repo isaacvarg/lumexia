@@ -42,7 +42,26 @@ export const getSteps = async (bprId: string) => {
     }
   });
 
-  return steps;
+  const bprBomLines = await prisma.bprBillOfMaterials.findMany({
+    where: { bprId },
+    include: {
+      bom: { include: { item: true } },
+      addedByUser: true,
+      status: true,
+    },
+  });
+
+  const bomLinesByStepId = bprBomLines.reduce<Record<string, typeof bprBomLines>>((acc, line) => {
+    const stepId = line.bom.stepId;
+    if (!acc[stepId]) acc[stepId] = [];
+    acc[stepId].push(line);
+    return acc;
+  }, {});
+
+  return steps.map(step => ({
+    ...step,
+    bprBomLines: bomLinesByStepId[step.batchStep.id] ?? [],
+  }));
 }
 
 export type ProductionStep = Awaited<ReturnType<typeof getSteps>>[number];

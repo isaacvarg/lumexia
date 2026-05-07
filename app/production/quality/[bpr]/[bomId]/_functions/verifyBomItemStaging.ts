@@ -11,9 +11,9 @@ import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 export const verifyBomItemStaging = async (staging: ExBprStaging, isSecondary: boolean) => {
 
   const userId = await getUserId();
-  const { verified, secondaryVerification } = bprStagingStatuses;
+  const { primaryVerified, secondaryVerified } = bprStagingStatuses;
 
-  const statusId = isSecondary ? secondaryVerification : verified
+  const statusId = isSecondary ? secondaryVerified : primaryVerified
 
 
   // make the verification entry

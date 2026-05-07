@@ -5,7 +5,7 @@ import { ProductionStep } from "@/app/production/bpr/[bpr]/_actions/compounding/
 import { BprBomItem } from "@/app/production/bpr/[bpr]/_actions/getBprBom"
 import { getBprStagings, BprStagingItem } from "@/app/production/bpr/[bpr]/_actions/getBprStagings"
 import { ProductionBpr } from "@/app/production/bpr/[bpr]/_actions/getProductionBpr"
-import { bprStagingStatuses } from "@/configs/staticRecords/bprStagingStatuses"
+import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses"
 import { create } from "zustand"
 
 
@@ -101,13 +101,13 @@ export const useProductionSelection = create<State & Actions>((set, get) => ({
 
     setViewStatuses: () => {
       const { bpr, bom } = get()
-      const { notStarted, staged, verified, secondaryVerification } = bprStagingStatuses;
+      const { pending, staged, primaryVerified } = bprBomLineStatuses;
 
       if (!bpr || bom.length === 0) return;
 
-      const isUnstaged = bom.some(item => item.statusId === notStarted);
+      const isUnstaged = bom.some(item => item.statusId === pending);
       const isSomePrimaryVerification = bom.some(item => item.statusId === staged);
-      const isSomeSecondaryVerification = bom.some(item => item.statusId === verified);
+      const isSomeSecondaryVerification = bom.some(item => item.statusId === primaryVerified);
       const isCompounding = !isUnstaged && !isSomePrimaryVerification && !isSomeSecondaryVerification
 
       set((state) => ({

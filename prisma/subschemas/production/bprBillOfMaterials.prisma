@@ -1,17 +1,20 @@
 model BprBillOfMaterials {
-  id        String   @id @default(uuid())
-  bprId     String   @map("bpr_id")
-  bomId     String   @map("bom_id")
-  quantity  Float
-  uomId     String
-  statusId  String   @map("status_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  bprId         String    @map("bpr_id")
+  bomId         String    @map("bom_id")
+  quantity      Float
+  uomId         String
+  statusId      String    @map("status_id")
+  addedAt       DateTime? @map("added_at")
+  addedByUserId String?   @map("added_by_user_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  bpr    BatchProductionRecord @relation(fields: [bprId], references: [id])
-  bom    BillOfMaterial        @relation(fields: [bomId], references: [id])
-  uom    UnitOfMeasurement     @relation(fields: [uomId], references: [id])
-  status BprBomLineStatus      @relation(fields: [statusId], references: [id])
+  bpr         BatchProductionRecord @relation(fields: [bprId], references: [id])
+  bom         BillOfMaterial        @relation(fields: [bomId], references: [id])
+  uom         UnitOfMeasurement     @relation(fields: [uomId], references: [id])
+  status      BprBomLineStatus      @relation(fields: [statusId], references: [id])
+  addedByUser User?                 @relation(fields: [addedByUserId], references: [id])
 
   @@map("bpr_bills_of_materials")
 }

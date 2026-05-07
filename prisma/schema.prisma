@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Wed Apr 15 2026 12:55:02 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Thu May 07 2026 15:12:02 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -1354,15 +1354,16 @@ model BatchProductionRecord {
   status    BprStatus                   @relation(fields: [bprStatusId], references: [id])
   batchSize BatchSize                   @relation(fields: [batchSizeId], references: [id])
 
-  bprBatchSteps      BprBatchStep[]
-  lotOrigin          LotOrigin?
-  qcRecords          QcRecord[]
-  timerEntries       BprTimerEntry[]
-  NotionBpr          NotionBpr[]
-  BprBillOfMaterials BprBillOfMaterials[]
-  BprNote            BprNote[]
-  RequestBpr         RequestBpr[]
-  MicroSubmission    MicroSubmission[]
+  bprBatchSteps       BprBatchStep[]
+  lotOrigin           LotOrigin?
+  qcRecords           QcRecord[]
+  timerEntries        BprTimerEntry[]
+  NotionBpr           NotionBpr[]
+  BprBillOfMaterials  BprBillOfMaterials[]
+  BprNote             BprNote[]
+  BprStatusTransition BprStatusTransition[]
+  RequestBpr          RequestBpr[]
+  MicroSubmission     MicroSubmission[]
 
   @@map("batch_production_records")
 }
@@ -1473,22 +1474,37 @@ model BprBatchStepStatus {
 }
 
 model BprBillOfMaterials {
-  id        String   @id @default(uuid())
-  bprId     String   @map("bpr_id")
-  bomId     String   @map("bom_id")
-  quantity  Float
-  uomId     String
-  statusId  String   @map("status_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  bprId         String    @map("bpr_id")
+  bomId         String    @map("bom_id")
+  quantity      Float
+  uomId         String
+  statusId      String    @map("status_id")
+  addedAt       DateTime? @map("added_at")
+  addedByUserId String?   @map("added_by_user_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  bpr        BatchProductionRecord @relation(fields: [bprId], references: [id])
-  bom        BillOfMaterial        @relation(fields: [bomId], references: [id])
-  uom        UnitOfMeasurement     @relation(fields: [uomId], references: [id])
-  status     BprStagingStatus      @relation(fields: [statusId], references: [id])
-  BprStaging BprStaging[]
+  bpr         BatchProductionRecord @relation(fields: [bprId], references: [id])
+  bom         BillOfMaterial        @relation(fields: [bomId], references: [id])
+  uom         UnitOfMeasurement     @relation(fields: [uomId], references: [id])
+  status      BprBomLineStatus      @relation(fields: [statusId], references: [id])
+  addedByUser User?                 @relation(fields: [addedByUserId], references: [id])
+  BprStaging  BprStaging[]
 
   @@map("bpr_bills_of_materials")
+}
+
+model BprBomLineStatus {
+  id                 String               @id @default(uuid())
+  name               String
+  sequence           Int                  @default(0)
+  description        String
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  BprBillOfMaterials BprBillOfMaterials[]
+
+  @@map("bpr_bom_line_statuses")
 }
 
 model BprNoteFile {
@@ -1533,17 +1549,15 @@ model BprNote {
 }
 
 model BprStaging {
-  id                  String   @id @default(uuid())
-  bprBomId            String   @map("bpr_bom_id")
-  lotId               String   @map("lot_id")
-  pulledByUserId      String   @map("pulled_by_user_id")
-  quantity            Float
-  uomId               String   @map("uom_id")
-  bprStagingStatusId  String   @map("bpr_staging_status_id")
-  isPrimaryVerified   Boolean  @default(false) @map("is_primary_verified")
-  isSecondaryVerified Boolean  @default(false) @map("is_secondary_verified")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  bprBomId           String   @map("bpr_bom_id")
+  lotId              String   @map("lot_id")
+  pulledByUserId     String   @map("pulled_by_user_id")
+  quantity           Float
+  uomId              String   @map("uom_id")
+  bprStagingStatusId String   @map("bpr_staging_status_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   bprBom                 BprBillOfMaterials       @relation(fields: [bprBomId], references: [id])
   lot                    Lot                      @relation(fields: [lotId], references: [id])
@@ -1552,6 +1566,7 @@ model BprStaging {
   status                 BprStagingStatus         @relation(fields: [bprStagingStatusId], references: [id])
   consumption            BprStagingConsumption?
   files                  BprStagingFile[]
+  BprStagingDenial       BprStagingDenial[]
   BprStagingVerification BprStagingVerification[]
 
   @@map("bpr_stagings")
@@ -1569,6 +1584,21 @@ model BprStagingConsumption {
   @@map("bpr_staging_consumptions")
 }
 
+model BprStagingDenial {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  bprStagingId String   @map("bpr_staging_id")
+  type         String   @default("primary")
+  reason       String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id])
+  bprStaging BprStaging @relation(fields: [bprStagingId], references: [id])
+
+  @@map("bpr_staging_denials")
+}
+
 model BprStagingFile {
   id           String     @id @default(uuid())
   fileId       String     @map("file_id")
@@ -1582,14 +1612,13 @@ model BprStagingFile {
 }
 
 model BprStagingStatus {
-  id                 String               @id @default(uuid())
-  name               String
-  sequence           Int                  @default(0)
-  description        String
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
-  BprBillOfMaterials BprBillOfMaterials[]
-  BprStaging         BprStaging[]
+  id          String       @id @default(uuid())
+  name        String
+  sequence    Int          @default(0)
+  description String
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  BprStaging  BprStaging[]
 
   @@map("bpr_staging_statuses")
 }
@@ -1608,15 +1637,38 @@ model BprStagingVerification {
   @@map("bpr_staging_verifications")
 }
 
+model BprStatusTransition {
+  id           String   @id @default(uuid())
+  bprId        String   @map("bpr_id")
+  fromStatusId String   @map("from_status_id")
+  toStatusId   String   @map("to_status_id")
+  kind         String
+  event        String?
+  userId       String?  @map("user_id")
+  reason       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  bpr        BatchProductionRecord @relation(fields: [bprId], references: [id])
+  fromStatus BprStatus             @relation("BprStatusTransitionFrom", fields: [fromStatusId], references: [id])
+  toStatus   BprStatus             @relation("BprStatusTransitionTo", fields: [toStatusId], references: [id])
+  user       User?                 @relation(fields: [userId], references: [id])
+
+  @@map("bpr_status_transitions")
+}
+
 model BprStatus {
-  id                    String                  @id @default(uuid())
-  name                  String
-  description           String
-  textColor             String                  @default("#000000") @map("text_color")
-  bgColor               String                  @default("#077202") @map("bg_color")
-  sequence              Int                     @unique
-  createdAt             DateTime                @default(now()) @map("created_at")
-  updatedAt             DateTime                @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  textColor   String   @default("#000000") @map("text_color")
+  bgColor     String   @default("#077202") @map("bg_color")
+  sequence    Int      @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  fromTransitions       BprStatusTransition[]   @relation("BprStatusTransitionFrom")
+  toTransitions         BprStatusTransition[]   @relation("BprStatusTransitionTo")
   BatchProductionRecord BatchProductionRecord[]
 
   @@map("bpr_statuses")
@@ -2863,9 +2915,12 @@ model User {
   InventoryAudit                InventoryAudit[]
   LotNote                       LotNote[]
   ItemNote                      ItemNote[]
+  BprBillOfMaterials            BprBillOfMaterials[]
   BprNote                       BprNote[]
   BprStaging                    BprStaging[]
+  BprStagingDenial              BprStagingDenial[]
   BprStagingVerification        BprStagingVerification[]
+  BprStatusTransition           BprStatusTransition[]
   BprStepActionableCompletion   BprStepActionableCompletion[]
   BprStepActionableVerification BprStepActionableVerification[]
   MbprNote                      MbprNote[]
