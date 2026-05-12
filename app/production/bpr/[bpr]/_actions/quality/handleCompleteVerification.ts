@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses"
+import { maybeCompleteStaging } from "@/lib/bpr/maybeCompleteStaging"
 
 const { primaryVerified, secondaryVerified } = bprBomLineStatuses
 
@@ -19,8 +20,12 @@ export const handleCompleteVerification = async (qualityMode: 'primary' | 'secon
     }
   });
 
-  // make note 
+  // make note
   await createActivityLog('bomItemPrimaryVerification', 'bpr', bprId, { context: `${bprBomItemName} completed ${qualityMode} verification.` })
+
+  if (qualityMode === 'secondary') {
+    await maybeCompleteStaging(bprId);
+  }
 
   return response;
 }

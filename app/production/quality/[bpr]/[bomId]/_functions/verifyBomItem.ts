@@ -2,8 +2,7 @@
 
 import bprBomActions from "@/actions/production/bprBom";
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
-import { advanceBpr } from "@/lib/bpr/transitions";
-import prisma from "@/lib/prisma";
+import { maybeCompleteStaging } from "@/lib/bpr/maybeCompleteStaging";
 import { BprBom } from "@/types/bprBom"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 
@@ -27,34 +26,6 @@ export const verifyBomItem = async (bomItem: BprBom, isSecondary: boolean) => {
 
   await createActivityLog('updateBprBom', 'bprBom', bomItem.id, { context: `BOM item status changed to ${bomResponse.statusId}` })
 
-  await isBprStaged(bomItem.bprId);
+  await maybeCompleteStaging(bomItem.bprId);
 
-}
-
-
-const isBprStaged = async (bprId: string) => {
-
-  const boms = await prisma.bprBillOfMaterials.findMany({
-    where: {
-      bprId,
-    },
-    include: {
-      status: true,
-    }
-  });
-
-  const isAllStaged = boms.every((item) => item.statusId === bprBomLineStatuses.secondaryVerified)
-
-  if (!isAllStaged) {
-    return;
-  }
-
-  handleAllStaged(bprId)
-}
-
-const handleAllStaged = async (bprId: string) => {
-
-  await advanceBpr(bprId, 'stagingCompleted');
-
-  await createActivityLog('updateBpr', 'bpr', bprId, { context: `BPR staging of materials completed` });
 }

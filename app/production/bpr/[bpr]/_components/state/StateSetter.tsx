@@ -20,8 +20,8 @@ const StateSetter = ({
   notes,
 }: Props) => {
 
-  const { setBpr, setBom, setBprNotes, setViewStatuses, setSteps, getBprNoteType } = useProductionActions()
-  const { bpr, bom, bprNoteTypes, } = useProductionSelection()
+  const { setBpr, setBom, setBprNotes, setViewStatuses, setSteps, setSelectedStep, getBprNoteType } = useProductionActions()
+  const { bpr, bom, bprNoteTypes, selectedStep } = useProductionSelection()
 
   useEffect(() => {
     setBpr(serverBpr);
@@ -33,10 +33,15 @@ const StateSetter = ({
     setSteps(steps);
     setBprNotes(notes);
 
+    if (selectedStep) {
+      const fresh = steps.find(s => s.id === selectedStep.id) ?? null
+      setSelectedStep(fresh)
+    }
+
     if (bprNoteTypes.length === 0) {
       getBprNoteType();
     }
-  }, [bpr, steps, serverBom, notes, setBprNotes, setBom, getBprNoteType, setSteps,])
+  }, [bpr, steps, serverBom, notes, setBprNotes, setBom, getBprNoteType, setSteps, setSelectedStep, selectedStep])
 
   useEffect(() => {
     setViewStatuses()
