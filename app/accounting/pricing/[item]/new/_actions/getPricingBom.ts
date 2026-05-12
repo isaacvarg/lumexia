@@ -1,11 +1,15 @@
 'use server'
 
 import prisma from "@/lib/prisma";
+import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 
 export const getPricingBom = async (mbprId: string) => {
     const bom = await prisma.billOfMaterial.findMany({
         where: {
             mbprId,
+            recordStatusId: {
+                not: recordStatuses.archived,
+            },
         },
         include: {
             item: {
