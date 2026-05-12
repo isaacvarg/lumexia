@@ -1,0 +1,12 @@
+model BprStepActionableCompletionFile {
+    id           String                      @id @default(uuid())
+    fileId       String                      @map("file_id")
+    completionId String                      @map("completion_id")
+    createdAt    DateTime                    @default(now()) @map("created_at")
+    updatedAt    DateTime                    @updatedAt @map("updated_at")
+
+    file         File                        @relation(fields: [fileId], references: [id])
+    completion   BprStepActionableCompletion @relation(fields: [completionId], references: [id])
+
+    @@map("bpr_step_actionable_completion_files")
+}

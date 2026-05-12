@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Thu May 07 2026 15:12:02 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Tue May 12 2026 09:47:42 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -591,41 +591,42 @@ model Config {
 }
 
 model File {
-  id                            String                         @id @default(uuid())
-  name                          String
-  objectName                    String                         @unique @map("object_name")
-  bucketName                    String                         @map("bucket_name")
-  thumbnailObjectName           String?                        @unique @map("thumbnail_object_name")
-  thumbnailBucketName           String?                        @map("thumbnail_bucket_name")
-  etag                          String
-  versionId                     String?                        @map("version_id")
-  size                          Int
-  mimeType                      String                         @map("mime_type")
-  public                        Boolean                        @default(false)
-  uploadedById                  String                         @map("uploaded_by_id")
-  createdAt                     DateTime                       @default(now()) @map("created_at")
-  updatedAt                     DateTime                       @updatedAt @map("updated_at")
-  uploadedBy                    User                           @relation(fields: [uploadedById], references: [id])
-  poAccountingFiles             PoAccountingFile[]
-  generalRequestFiles           GeneralRequestFile[]
-  itemFiles                     ItemFile[]
-  bprStagingFiles               BprStagingFile[]
-  qcRecordFiles                 QcRecordFile[]
-  requestNoteFiles              RequestNoteFile[]
-  generalRequestNoteFiles       GeneralRequestNoteFile[]
-  purchaseOrderNoteFiles        PurchaseOrderNoteFile[]
-  poPublicNoteFiles             PoPublicNoteFile[]
-  poSupplierNoteFiles           PoSupplierNoteFile[]
-  poAccountingNoteFiles         PoAccountingNoteFile[]
-  pricingExaminationNoteFiles   PricingExaminationNoteFile[]
-  auditRequestNoteFiles         AuditRequestNoteFile[]
-  discrepancyAuditItemNoteFiles DiscrepancyAuditItemNoteFile[]
-  lotNoteFiles                  LotNoteFile[]
-  itemNoteFiles                 ItemNoteFile[]
-  bprNoteFiles                  BprNoteFile[]
-  qcRecordNoteFiles             QcRecordNoteFile[]
-  mbprNoteFiles                 MbprNoteFile[]
-  fileTags                      FileTag[]
+  id                               String                            @id @default(uuid())
+  name                             String
+  objectName                       String                            @unique @map("object_name")
+  bucketName                       String                            @map("bucket_name")
+  thumbnailObjectName              String?                           @unique @map("thumbnail_object_name")
+  thumbnailBucketName              String?                           @map("thumbnail_bucket_name")
+  etag                             String
+  versionId                        String?                           @map("version_id")
+  size                             Int
+  mimeType                         String                            @map("mime_type")
+  public                           Boolean                           @default(false)
+  uploadedById                     String                            @map("uploaded_by_id")
+  createdAt                        DateTime                          @default(now()) @map("created_at")
+  updatedAt                        DateTime                          @updatedAt @map("updated_at")
+  uploadedBy                       User                              @relation(fields: [uploadedById], references: [id])
+  poAccountingFiles                PoAccountingFile[]
+  generalRequestFiles              GeneralRequestFile[]
+  itemFiles                        ItemFile[]
+  bprStagingFiles                  BprStagingFile[]
+  bprStepActionableCompletionFiles BprStepActionableCompletionFile[]
+  qcRecordFiles                    QcRecordFile[]
+  requestNoteFiles                 RequestNoteFile[]
+  generalRequestNoteFiles          GeneralRequestNoteFile[]
+  purchaseOrderNoteFiles           PurchaseOrderNoteFile[]
+  poPublicNoteFiles                PoPublicNoteFile[]
+  poSupplierNoteFiles              PoSupplierNoteFile[]
+  poAccountingNoteFiles            PoAccountingNoteFile[]
+  pricingExaminationNoteFiles      PricingExaminationNoteFile[]
+  auditRequestNoteFiles            AuditRequestNoteFile[]
+  discrepancyAuditItemNoteFiles    DiscrepancyAuditItemNoteFile[]
+  lotNoteFiles                     LotNoteFile[]
+  itemNoteFiles                    ItemNoteFile[]
+  bprNoteFiles                     BprNoteFile[]
+  qcRecordNoteFiles                QcRecordNoteFile[]
+  mbprNoteFiles                    MbprNoteFile[]
+  fileTags                         FileTag[]
 
   @@map("files")
 }
@@ -1702,10 +1703,24 @@ model BprStepActionableCompletion {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
-  completedByUser   User              @relation(fields: [completedByUserId], references: [id])
-  bprStepActionable BprStepActionable @relation(fields: [bprStepActionableId], references: [id])
+  completedByUser   User                              @relation(fields: [completedByUserId], references: [id])
+  bprStepActionable BprStepActionable                 @relation(fields: [bprStepActionableId], references: [id])
+  files             BprStepActionableCompletionFile[]
 
   @@map("bpr_step_action_completions")
+}
+
+model BprStepActionableCompletionFile {
+  id           String   @id @default(uuid())
+  fileId       String   @map("file_id")
+  completionId String   @map("completion_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  file       File                        @relation(fields: [fileId], references: [id])
+  completion BprStepActionableCompletion @relation(fields: [completionId], references: [id])
+
+  @@map("bpr_step_actionable_completion_files")
 }
 
 model BprStepActionableStatus {
@@ -1865,6 +1880,7 @@ model StepActionableType {
   textColor   String   @default("#ffffff") @map("text_color")
   description String?
   dataType    String   @map("data_type")
+  config      Json?    @map("config")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

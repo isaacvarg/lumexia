@@ -9,6 +9,7 @@ model BprStepActionableCompletion {
 
   completedByUser User @relation(fields: [completedByUserId], references: [id])
   bprStepActionable BprStepActionable @relation(fields: [bprStepActionableId], references: [id])
+  files BprStepActionableCompletionFile[]
 
 @@map("bpr_step_action_completions")
 }

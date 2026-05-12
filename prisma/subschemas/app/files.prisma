@@ -18,6 +18,7 @@ model File {
     generalRequestFiles    GeneralRequestFile[]
     itemFiles              ItemFile[]
     bprStagingFiles        BprStagingFile[]
+    bprStepActionableCompletionFiles BprStepActionableCompletionFile[]
     qcRecordFiles                  QcRecordFile[]
     requestNoteFiles               RequestNoteFile[]
     generalRequestNoteFiles        GeneralRequestNoteFile[]

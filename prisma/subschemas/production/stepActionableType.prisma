@@ -6,6 +6,7 @@ model StepActionableType {
     textColor   String   @default("#ffffff") @map("text_color")
     description String?
     dataType    String   @map("data_type")
+    config      Json?    @map("config")
     createdAt   DateTime @default(now()) @map("created_at")
     updatedAt   DateTime @updatedAt @map("updated_at")
 
