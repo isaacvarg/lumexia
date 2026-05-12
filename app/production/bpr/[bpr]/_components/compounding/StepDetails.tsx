@@ -10,6 +10,7 @@ import Notes from "../shared/Notes"
 import ActionButton from "@/components/ActionButton"
 import { IoMdArrowRoundBack } from "react-icons/io"
 import StepMaterials from "./StepMaterials"
+import StepActionables from "./StepActionables"
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses"
 
 const StepDetails = () => {
@@ -27,6 +28,7 @@ const StepDetails = () => {
         {compoundingDetailsMode === 'main' && (
           <Fragment>
             <Instructions />
+            <StepActionables />
             <StepMaterials />
             {selectedStep.batchStep.StepAddendum.filter(a => a.recordStatusId !== recordStatuses.archived).length !== 0 && <Addendums />}
           </Fragment>

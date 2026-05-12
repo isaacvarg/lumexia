@@ -6,6 +6,7 @@ import { DateTime } from "luxon"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
 import { bprStepActionableStatuses } from "@/configs/staticRecords/bprStepActionableStatuses"
 import { bprBatchStepStatuses } from "@/configs/staticRecords/bprBatchStepStatuses"
+import { maybeCompleteCompounding } from "@/lib/bpr/maybeCompleteCompounding"
 
 export const handleCompleteActionable = async (batchStep: ProductionStep, completeActionable: ProductionStep['bprStepActionables'][number]) => {
 
@@ -35,7 +36,7 @@ export const handleCompleteActionable = async (batchStep: ProductionStep, comple
 
   const timestamp = DateTime.now().toJSDate()
 
-  const response = prisma.bprBatchStep.update({
+  const response = await prisma.bprBatchStep.update({
     where: {
       id: batchStep.id,
     },
@@ -57,6 +58,8 @@ export const handleCompleteActionable = async (batchStep: ProductionStep, comple
   })
 
   await createActivityLog('completeBatchStep', 'bpr', batchStep.bprId, { context: `${batchStep.batchStep.phase} ${batchStep.batchStep.label} completed` })
+
+  await maybeCompleteCompounding(batchStep.bprId)
 
   return response;
 }

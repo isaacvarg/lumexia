@@ -20,6 +20,16 @@ export const getSteps = async (bprId: string) => {
             include: {
               actionableType: true
             }
+          },
+          completion: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              completedByUser: true,
+              files: {
+                include: { file: true }
+              }
+            }
           }
         }
       },

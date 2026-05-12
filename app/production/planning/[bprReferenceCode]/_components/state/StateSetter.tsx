@@ -8,6 +8,7 @@ import { BprNote } from "@/actions/production/bprs/notes/getAllByBpr"
 import { QcExamination } from "@/actions/quality/qc/records/getAll"
 import { useBprDetailsActions, useBprDetailsSelection } from "@/store/bprDetailsSlice"
 import { useEffect } from "react"
+import { BprPlanningStep } from "../../_functions/getStepsWithCompletions"
 
 type Props = {
   activity: BprActivity[]
@@ -16,6 +17,7 @@ type Props = {
   bomInventory: BprBomItemInventory[]
   notes: BprNote[]
   qcRecords: QcExamination[]
+  steps: BprPlanningStep[]
 }
 
 const StateSetter = ({
@@ -25,6 +27,7 @@ const StateSetter = ({
   bomInventory,
   notes,
   qcRecords,
+  steps,
 }: Props) => {
 
   const {
@@ -34,6 +37,7 @@ const StateSetter = ({
     setBomInventory,
     setNotes,
     setQcRecords,
+    setSteps,
     getOptions,
   } = useBprDetailsActions()
 
@@ -48,7 +52,8 @@ const StateSetter = ({
     setActivity(activity);
     setNotes(notes);
     setQcRecords(qcRecords);
-  }, [bom, bpr, notes, qcRecords, setBom, setActivity, setNotes, setQcRecords]);
+    setSteps(steps);
+  }, [bom, bpr, notes, qcRecords, steps, setBom, setActivity, setNotes, setQcRecords, setSteps]);
 
   useEffect(() => {
     setBomInventory(bomInventory);

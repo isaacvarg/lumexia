@@ -6,6 +6,7 @@ import { BatchProductionRecord } from "@/actions/production/bprs/getOne"
 import { BprNote } from "@/actions/production/bprs/notes/getAllByBpr"
 import { BprNoteType } from "@/actions/production/bprs/notes/notesTypes/getAll"
 import { BprStatus } from "@/actions/production/bprs/statuses/getAll"
+import { BprPlanningStep } from "@/app/production/planning/[bprReferenceCode]/_functions/getStepsWithCompletions"
 import { purchasingActions } from "@/actions/purchasing"
 import { PurchasingRequestForPlanning } from "@/actions/purchasing/requests/getByItem"
 import { QcExamination } from "@/actions/quality/qc/records/getAll"
@@ -29,6 +30,7 @@ type State = {
   selectedBomItemPurchasingRequests: PurchasingRequestForPlanning[]
   notes: BprNote[]
   qcRecords: QcExamination[]
+  steps: BprPlanningStep[]
   options: Options
 }
 
@@ -42,6 +44,7 @@ type Actions = {
     setSelectedBomItem: (item: BprBomItemInventory) => void;
     setNotes: (notes: BprNote[]) => void;
     setQcRecords: (qcRecords: QcExamination[]) => void;
+    setSteps: (steps: BprPlanningStep[]) => void;
     getSelectedBomItemPurchasingRequests: () => void;
     getOptions: () => void;
   }
@@ -58,6 +61,7 @@ export const useBprDetailsSelection = create<State & Actions>((set, get) => ({
   selectedBomItemPurchasingRequests: [],
   notes: [],
   qcRecords: [],
+  steps: [],
   options: {
     noteTypes: [],
     bprStatuses: [],
@@ -72,6 +76,7 @@ export const useBprDetailsSelection = create<State & Actions>((set, get) => ({
     setSelectedBomItem: (item) => set(() => ({ selectedBomItem: item })),
     setNotes: (notes) => set(() => ({ notes })),
     setQcRecords: (qcRecords) => set(() => ({ qcRecords })),
+    setSteps: (steps) => set(() => ({ steps })),
     getSelectedBomItemPurchasingRequests: async () => {
       const selectedBomItem = get().selectedBomItem;
       if (!selectedBomItem) return;

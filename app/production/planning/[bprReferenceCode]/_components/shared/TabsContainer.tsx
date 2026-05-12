@@ -7,6 +7,7 @@ import ActivityTab from "../activity/ActivityTab";
 import NotesTab from "../notes/NotesTab";
 import BasicsTab from "../basics/BasicsTab";
 import QualityTab from "../quality/QualityTab";
+import StepsTab from "../steps/StepsTab";
 
 
 const TabsContainer = () => {
@@ -24,6 +25,7 @@ const TabsContainer = () => {
       >
       </motion.div>
       {currentTab === 'basics' && <BomTab />}
+      {currentTab === 'steps' && <StepsTab />}
       {currentTab === 'quality' && <QualityTab />}
       {currentTab === 'notes' && <NotesTab />}
       {currentTab === 'activity' && <ActivityTab />}
