@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Tue May 12 2026 09:47:42 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Tue May 12 2026 16:18:59 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -1042,6 +1042,21 @@ model Lot {
   @@map("lots")
 }
 
+model ReorderingRule {
+  id                      String   @id @default(uuid())
+  itemId                  String   @unique @map("item_id")
+  thresholdQuantity       Float    @map("threshold_quantity")
+  bufferPercent           Float    @default(5) @map("buffer_percent")
+  createAuditRequest      Boolean  @default(false) @map("create_audit_request")
+  createPurchasingRequest Boolean  @default(false) @map("create_purchasing_request")
+  enabled                 Boolean  @default(true)
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  item                    Item     @relation(fields: [itemId], references: [id])
+
+  @@map("reordering_rules")
+}
+
 model TransactionType {
   id           String        @id @default(uuid())
   name         String
@@ -1276,6 +1291,7 @@ model Item {
   qcItemParameters                     QcItemParameter[]
   discrepancyAuditItems                DiscrepancyAuditItem[]
   discreteUnitOfMeasurementConversions DiscreteUnitOfMeasurementConversion[]
+  reorderingRule                       ReorderingRule?
   BomPricingDataArchive                BomPricingDataArchive[]
   FinishedProductArchive               FinishedProductArchive[]
   FinishedProductAuxiliary             FinishedProductAuxiliary[]

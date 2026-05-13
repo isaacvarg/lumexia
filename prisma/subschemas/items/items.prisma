@@ -28,6 +28,7 @@ model Item {
     qcItemParameters             QcItemParameter[]
     discrepancyAuditItems        DiscrepancyAuditItem[]
     discreteUnitOfMeasurementConversions                 DiscreteUnitOfMeasurementConversion[]
+    reorderingRule               ReorderingRule?
 
     @@map("items")
 }

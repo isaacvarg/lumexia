@@ -21,6 +21,7 @@ import { QcParameter } from "@/actions/quality/qc/parameters/getAll";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItem";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
 import { QcTemplate } from "@/actions/quality/qc/templates/getAll";
+import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { ItemActivity } from "@/app/inventory/items/[name]/_actions/basics/getActivity";
 import { ItemFile } from "@/app/inventory/items/[name]/_actions/files/getAllItemFiles";
 import { ItemFileType, getItemFileTypes } from "@/app/inventory/items/[name]/_actions/files/getItemFilesTypes";
@@ -81,6 +82,7 @@ type State = {
   qcItemParameters: QcItemParameter[];
   qcRecords: QcRecordExpanded[];
   discreteConversions: DiscreteConversion[],
+  reorderingRule: ReorderingRule;
 }
 
 type Actions = {
@@ -111,6 +113,7 @@ type Actions = {
     setQcItemParameters: (qcItemParameters: QcItemParameter[]) => void;
     setQcRecords: (qcRecords: QcRecordExpanded[]) => void;
     setDiscreteConversions: (conversions: DiscreteConversion[]) => void;
+    setReorderingRule: (rule: ReorderingRule) => void;
   }
 }
 
@@ -154,6 +157,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
   qcItemParameters: [],
   qcRecords: [],
   discreteConversions: [],
+  reorderingRule: null,
 
   actions: {
 
@@ -298,6 +302,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
     setQcItemParameters: (qcItemParameters) => set(() => ({ qcItemParameters, })),
     setQcRecords: (qcRecords) => set(() => ({ qcRecords, })),
     setDiscreteConversions: (conversions) => set(() => ({ discreteConversions: conversions })),
+    setReorderingRule: (rule) => set(() => ({ reorderingRule: rule })),
 
   },
 

@@ -1,7 +1,6 @@
 import Card from "@/components/Card"
 import { useItemSelection } from "@/store/itemSlice"
 import { toFracitonalDigits } from "@/utils/data/toFractionalDigits";
-import { Fragment } from "react"
 
 const InventoryAmounts = () => {
 
@@ -10,7 +9,7 @@ const InventoryAmounts = () => {
   if (!inventory) return false
 
   return (
-    <Fragment>
+    <div className="col-span-3 grid grid-cols-2 gap-6">
       <Card.Root>
         <Card.Title>On Hand</Card.Title>
         <AmountData amount={inventory.totalQuantityOnHand} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
@@ -22,12 +21,17 @@ const InventoryAmounts = () => {
       </Card.Root>
 
       <Card.Root>
+        <Card.Title>On Order</Card.Title>
+        <AmountData amount={inventory.totalQuantityOnOrder} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
+      </Card.Root>
+
+      <Card.Root>
         <Card.Title>Available</Card.Title>
         <AmountData amount={inventory.totalQuantityAvailable} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
       </Card.Root>
 
 
-    </Fragment>
+    </div>
   )
 }
 

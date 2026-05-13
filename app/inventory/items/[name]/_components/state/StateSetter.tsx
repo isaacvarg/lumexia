@@ -18,6 +18,7 @@ import { ItemFile } from "../../_actions/files/getAllItemFiles";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItem";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
 import { DiscreteConversion } from "@/actions/inventory/items/discreteConversions/getAll";
+import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
 
 type StateSetterProps = {
   activity: ItemActivity[],
@@ -36,6 +37,7 @@ type StateSetterProps = {
   qcItemParameters: QcItemParameter[]
   qcRecords: QcRecordExpanded[]
   discreteConversions: DiscreteConversion[]
+  reorderingRule: ReorderingRule
 }
 
 
@@ -56,6 +58,7 @@ const StateSetter = ({
   qcItemParameters,
   qcRecords,
   discreteConversions,
+  reorderingRule,
 }: StateSetterProps) => {
 
   // state actions
@@ -84,6 +87,7 @@ const StateSetter = ({
     setQualityTemplateViewMode,
     setSelectedLot,
     setDiscreteConversions,
+    setReorderingRule,
   } = useItemActions();
 
   // current state
@@ -132,8 +136,9 @@ const StateSetter = ({
     setQcItemParameters(qcItemParameters)
     setQcRecords(qcRecords)
     setDiscreteConversions(discreteConversions)
+    setReorderingRule(reorderingRule)
 
-  }, [item, options, getOptions, setActivity, activity, setAliases, aliases, setAudits, audits, setExaminations, examinations, setInventory, inventory, setNotes, notes, setPricingData, pricingData, setPurchaseOrders, purchaseOrders, setUsage, usage, setBprs, bprs, setActiveMbpr, activeMbpr, setFiles, files, qcItemParameters, setQcItemParameters, qcRecords, setQcRecords, discreteConversions, setDiscreteConversions,]);
+  }, [item, options, getOptions, setActivity, activity, setAliases, aliases, setAudits, audits, setExaminations, examinations, setInventory, inventory, setNotes, notes, setPricingData, pricingData, setPurchaseOrders, purchaseOrders, setUsage, usage, setBprs, bprs, setActiveMbpr, activeMbpr, setFiles, files, qcItemParameters, setQcItemParameters, qcRecords, setQcRecords, discreteConversions, setDiscreteConversions, reorderingRule, setReorderingRule,]);
 
   useEffect(() => {
     getFilteredPurchaseOrders();

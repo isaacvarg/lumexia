@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { getLotsByItem } from "../auxiliary/getLotsByItem"
 import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
+import { getOnOrderQuantity } from "./getOnOrderQuantity";
 
 
 export const getInventory = async (itemId: string) => {
@@ -81,6 +82,8 @@ export const getInventory = async (itemId: string) => {
 
   const totalQuantityAvailable = totalOnHand - totalQuantityAllocated;
 
+  const totalQuantityOnOrder = await getOnOrderQuantity(itemId);
+
 
   return {
     item,
@@ -90,6 +93,7 @@ export const getInventory = async (itemId: string) => {
     allocated,
     totalQuantityAllocated,
     totalQuantityAvailable,
+    totalQuantityOnOrder,
   }
 
 }

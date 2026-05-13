@@ -2,6 +2,7 @@ import Audits from "./Audits"
 import DiscreteConversions from "./DiscreteConversions"
 import InventoryAmounts from "./InventoryAmounts"
 import Lots from "./Lots"
+import ReorderingRule from "./ReorderingRule"
 
 const Inventory = () => {
 
@@ -19,8 +20,9 @@ const Inventory = () => {
 
       </div>
 
-
-
+      <div className="col-span-3">
+        <ReorderingRule />
+      </div>
 
     </div>
   )

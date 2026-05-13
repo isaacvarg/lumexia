@@ -6,9 +6,9 @@ import { revalidatePath } from "next/cache"
 import { auditRequestStatuses } from "@/configs/staticRecords/auditRequestStatuses"
 import { InterimAuditRequestNote } from "@/app/production/planning/[bprReferenceCode]/_components/bom/AuditRequest"
 
-export const createAuditRequest = async (notes: InterimAuditRequestNote[], itemId: string) => {
+export const createAuditRequest = async (notes: InterimAuditRequestNote[], itemId: string, requestById?: string) => {
 
-  const userId = await getUserId()
+  const userId = requestById ?? await getUserId()
   // create the request
   const auditRequest = await prisma.auditRequest.create({
     data: {
@@ -39,7 +39,7 @@ export const createAuditRequest = async (notes: InterimAuditRequestNote[], itemI
 
   // log the creation
 
-  await createActivityLog('addAuditRequest', 'auditRequest', auditRequest.id, { context: `Audit Request added for ${auditRequest.item.name}` })
+  await createActivityLog('addAuditRequest', 'auditRequest', auditRequest.id, { context: `Audit Request added for ${auditRequest.item.name}` }, !!requestById)
   revalidatePath('/')
 
   return auditRequest;
