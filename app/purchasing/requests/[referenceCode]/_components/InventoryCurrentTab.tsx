@@ -46,10 +46,11 @@ const InventoryCurrentTab = ({ inventory, otherRequests, lastAuditRequests }: { 
             <Text.SectionTitle size="small">General</Text.SectionTitle>
             <Text.LabelDataPair label="Has Pending Audit" data={hasPendingAuditRequest ? 'Yes' : 'No'} />
             <Text.LabelDataPair label="Last Completed Audit" data={lastInventoryAuditDate} />
-            <Text.LabelDataPair label="On Hand" data={`${toFracitonalDigits.weight(inventory.totalQuantityOnHand)} lbs`} />
-            <Text.LabelDataPair label="Allocated" data={`${toFracitonalDigits.weight(inventory.totalQuantityAllocated)} lbs`} />
-            <Text.LabelDataPair label="Available" data={`${toFracitonalDigits.weight(inventory.totalQuantityAvailable)} lbs`} />
-            <Text.LabelDataPair label='Needed For All Pending Bprs' data={`${toFracitonalDigits.weight(inventory.totalQuantityNeeded)} lbs`} />
+            <Text.LabelDataPair label="On Hand" tooltip="Physical quantity currently in stock across all lots of this item." data={`${toFracitonalDigits.weight(inventory.totalQuantityOnHand)} lbs`} />
+            <Text.LabelDataPair label="Allocated" tooltip="Quantity committed to confirmed BPRs (queued, staging, compounding, awaiting materials, or completed) that have not yet consumed their materials." data={`${toFracitonalDigits.weight(inventory.totalQuantityAllocated)} lbs`} />
+            <Text.LabelDataPair label="Soft Allocated" tooltip="Quantity committed to draft BPRs that have not yet been confirmed. These will become Allocated once the BPR is confirmed." data={`${toFracitonalDigits.weight(inventory.totalQuantitySoftAllocated)} lbs`} />
+            <Text.LabelDataPair label="Available" tooltip="On Hand minus Allocated. The quantity free to be allocated right now." data={`${toFracitonalDigits.weight(inventory.totalQuantityAvailable)} lbs`} />
+            <Text.LabelDataPair label="Soft Availability" tooltip="Available minus Soft Allocated. The quantity that would remain free if every current draft BPR were confirmed." data={`${toFracitonalDigits.weight(inventory.totalQuantitySoftAvailability)} lbs`} />
           </div>
 
         </div>

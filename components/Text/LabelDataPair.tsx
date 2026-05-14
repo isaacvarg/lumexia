@@ -47,7 +47,7 @@ const LabelDataPair = ({
 
   return (
     <div className={containerClasses} onClick={onClick}>
-      <div className="tooltip" data-tip={tooltip || label}>
+      <div className="tooltip tooltip-right" data-tip={tooltip || label}>
         <label className={`font- font-medium text-lg text-base-content ${onClick ? 'hover:cursor-pointer' : ''}`}>
           {label || children}
         </label>

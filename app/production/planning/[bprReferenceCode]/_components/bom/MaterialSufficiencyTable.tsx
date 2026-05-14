@@ -25,7 +25,12 @@ const MaterialSufficiencyTable = () => {
               <th>Material Name</th>
               {isDraft ? <th>Required</th> : <th>Needed for Another Batch</th>}
               {isDraft ? <th>Available </th> : (user?.roles.isPurchasing ? <th>Available for Another Batch</th> : null)}
+              {isDraft && <th>Soft Allocated</th>}
+              {isDraft && <th>Soft Availability</th>}
               {isDraft && <th></th>}
+              {!isDraft && user?.roles.isPurchasing && <th>Soft Allocated</th>}
+              {!isDraft && user?.roles.isPurchasing && <th>Soft Availability</th>}
+              {!isDraft && <th></th>}
               {!isDraft && <th>Staged</th>}
               {!isDraft && <th>1° Verification</th>}
               {!isDraft && <th>2° Verification</th>}

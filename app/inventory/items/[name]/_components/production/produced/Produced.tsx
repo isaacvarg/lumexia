@@ -4,6 +4,8 @@ import ActiveMbpr from "./ActiveMbpr"
 import BatchesTable from "./BatchesTable"
 import BatchesChart from "./BatchesChart"
 import BatchesStats from "./BatchesStats"
+import CheckMaterialsButton from "./CheckMaterialsButton"
+import MaterialsAvailabilityDialog from "./MaterialsAvailabilityDialog"
 
 const Produced = () => {
 
@@ -12,9 +14,14 @@ const Produced = () => {
   return (
     <div className="flex flex-col gap-6">
 
+      <MaterialsAvailabilityDialog />
+
       <div className="flex flex-col gap-6">
 
-        <SectionTitle>Active MBPR</SectionTitle>
+        <div className="flex items-center justify-between">
+          <SectionTitle>Active MBPR</SectionTitle>
+          <CheckMaterialsButton />
+        </div>
 
         <div className="grid grid-cols-4 gap-6">
 

@@ -11,7 +11,7 @@ import { bprStatuses } from "@/configs/staticRecords/bprStatuses"
 export const getAllInventoryByBom = async (bom: BprBomItem[]) => {
   const data = await Promise.all(bom.map(async (material: BprBomItem) => {
     const lots = await getLotsByItem(material.bom.itemId)
-    const { queued, stagingMaterials, compounding, completed, awaitingMaterials } = bprStatuses;
+    const { queued, stagingMaterials, compounding, completed, awaitingMaterials, draft } = bprStatuses;
 
     const allocated = await prisma.bprBillOfMaterials.findMany({
       where: {
@@ -44,6 +44,15 @@ export const getAllInventoryByBom = async (bom: BprBomItem[]) => {
       }
     })
 
+    const softAllocated = await prisma.bprBillOfMaterials.findMany({
+      where: {
+        bom: {
+          itemId: material.bom.item.id,
+        },
+        bpr: { bprStatusId: draft },
+      }
+    })
+
 
     const purchases = await prisma.purchaseOrderItem.findMany({
       where: {
@@ -73,14 +82,20 @@ export const getAllInventoryByBom = async (bom: BprBomItem[]) => {
 
     const totalQuantityAllocated = allocated.reduce((accumulator: number, current: any) => accumulator + current.quantity, 0)
 
+    const totalQuantitySoftAllocated = softAllocated.reduce((accumulator: number, current: any) => accumulator + current.quantity, 0)
+
     const totalQuantityAvailable = totalOnHand - totalQuantityAllocated;
+
+    const totalQuantitySoftAvailability = totalOnHand - totalQuantityAllocated - totalQuantitySoftAllocated;
 
     return {
       ...material,
       totalQuantityOnHand: totalOnHand,
       allocated,
       totalQuantityAllocated,
+      totalQuantitySoftAllocated,
       totalQuantityAvailable,
+      totalQuantitySoftAvailability,
       purchases,
     }
   }))

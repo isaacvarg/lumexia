@@ -15,6 +15,7 @@ import { getItemLots } from "./getItemLots";
 import { getOneAuditRequest } from "./getOneAuditRequest";
 import { getPurchasedItems } from "./getPurchasedItems";
 import { getAllInventoryByBom } from "./inventory/getAllByBom";
+import { getAllInventoryByMbprBom } from "./inventory/getAllByMbprBom";
 import { createDiscreteConversion } from "./items/discreteConversions/create";
 import { deleteDiscreteConversion } from "./items/discreteConversions/delete";
 import { getAllDiscreteConversions } from "./items/discreteConversions/getAll";
@@ -70,6 +71,7 @@ export const inventoryActions = {
     getByItem: getInventory,
     getByLot: getInventoryOfLot,
     getAllByBprBom: getAllInventoryByBom,
+    getAllByMbprBom: getAllInventoryByMbprBom,
   },
   uom: {
     getAll: getAllUom,

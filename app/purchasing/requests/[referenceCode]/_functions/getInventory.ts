@@ -86,6 +86,15 @@ export const getInventory = async (itemId: string) => {
     }
   })
 
+  const softAllocated = await prisma.bprBillOfMaterials.findMany({
+    where: {
+      bom: {
+        itemId,
+      },
+      bpr: { bprStatusId: draft },
+    }
+  })
+
 
   const purchases = await prisma.purchaseOrderItem.findMany({
     where: {
@@ -132,7 +141,11 @@ export const getInventory = async (itemId: string) => {
 
   const totalQuantityAllocated = allocated.reduce((accumulator: number, current: any) => accumulator + current.quantity, 0)
 
+  const totalQuantitySoftAllocated = softAllocated.reduce((accumulator: number, current: any) => accumulator + current.quantity, 0)
+
   const totalQuantityAvailable = totalOnHand - totalQuantityAllocated;
+
+  const totalQuantitySoftAvailability = totalOnHand - totalQuantityAllocated - totalQuantitySoftAllocated;
 
   const totalQuantityNeeded = needed.reduce((accumulator: number, current: typeof needed[number]) => accumulator + current.quantity, 0)
 
@@ -143,7 +156,9 @@ export const getInventory = async (itemId: string) => {
     needed,
     auditRequests,
     totalQuantityAllocated,
+    totalQuantitySoftAllocated,
     totalQuantityAvailable,
+    totalQuantitySoftAvailability,
     purchases,
     totalQuantityNeeded,
   }

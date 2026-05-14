@@ -28,6 +28,7 @@ import { ItemFileType, getItemFileTypes } from "@/app/inventory/items/[name]/_ac
 import { ItemInventoryAudits } from "@/app/inventory/items/[name]/_actions/inventory/getAudits";
 import { LotTransaction, getTransactionsByLot } from "@/app/inventory/items/[name]/_actions/inventory/getTransactionsByLot";
 import { ItemActiveMbpr } from "@/app/inventory/items/[name]/_actions/production/getActiveMbpr";
+import { MbprBomItemInventory } from "@/actions/inventory/inventory/getAllByMbprBom";
 import { ItemBpr } from "@/app/inventory/items/[name]/_actions/production/getBprs";
 import { ItemUsage } from "@/app/inventory/items/[name]/_actions/production/getUsage";
 import { FilteredPurchaseOrder, PurchasingFilterMode, getFilteredPurchases } from "@/app/inventory/items/[name]/_actions/purchasing/getFilteredPurchases";
@@ -68,6 +69,7 @@ type State = {
   inventory: Inventory | null;
   lotsViewMode: LotsViewMode;
   activeMbpr: ItemActiveMbpr | null;
+  mbprBomInventory: MbprBomItemInventory[];
   notes: ItemNote[],
   options: ItemOptions;
   pricingData: ItemPricingData | null;
@@ -92,6 +94,7 @@ type Actions = {
     getSelectedLotNotes: () => void;
     getSelectedLotTransactions: () => void;
     setActiveMbpr: (mbpr: ItemActiveMbpr | null) => void;
+    setMbprBomInventory: (inventory: MbprBomItemInventory[]) => void;
     setActivity: (activity: ItemActivity[]) => void;
     setAliases: (aliases: ItemAlias[]) => void;
     setAudits: (audits: ItemInventoryAudits | null) => void;
@@ -130,6 +133,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
   item: null,
   inventory: null,
   lotsViewMode: 'table' as LotsViewMode,
+  mbprBomInventory: [],
   notes: [],
   options: {
     itemTypes: [],
@@ -230,6 +234,10 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
 
     setActiveMbpr: (mbpr) => {
       set(() => ({ activeMbpr: mbpr }));
+    },
+
+    setMbprBomInventory: (mbprBomInventory) => {
+      set(() => ({ mbprBomInventory }));
     },
 
     setActivity: (activity) => {
