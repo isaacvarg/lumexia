@@ -19,6 +19,7 @@ export const getLinkedPos = async (requestId: string, itemId: string) => {
                         include: {
                             item: true,
                             details: true,
+                            uom: true,
                         },
                     },
                     status: true,
