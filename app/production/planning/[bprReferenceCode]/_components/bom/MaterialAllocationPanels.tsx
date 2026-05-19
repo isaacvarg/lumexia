@@ -53,8 +53,8 @@ const MaterialAllocationPanels = ({
         <div className="flex flex-col gap-y-4">
           <Text.SectionTitle size="small">General</Text.SectionTitle>
           <Text.LabelDataPair label="On Hand" tooltip="Physical quantity currently in stock across all lots of this item." data={`${toFracitonalDigits.weight(material.totalQuantityOnHand)} lbs`} />
-          <Text.LabelDataPair label="Allocated" tooltip="Quantity committed to confirmed BPRs (queued, staging, compounding, awaiting materials, or completed) that have not yet consumed their materials." data={`${toFracitonalDigits.weight(material.totalQuantityAllocated)} lbs`} />
-          <Text.LabelDataPair label="Soft Allocated" tooltip="Quantity committed to draft BPRs that have not yet been confirmed. These will become Allocated once the BPR is confirmed." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAllocated)} lbs`} />
+          <Text.LabelDataPair label="Allocated" tooltip="Quantity committed to other confirmed BPRs (queued, staging, compounding, awaiting materials, or completed) that have not yet consumed their materials. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantityAllocated)} lbs`} />
+          <Text.LabelDataPair label="Soft Allocated" tooltip="Quantity committed to other draft BPRs that have not yet been confirmed. These will become Allocated once the BPR is confirmed. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAllocated)} lbs`} />
           <Text.LabelDataPair label="Available" tooltip="On Hand minus Allocated. The quantity free to be allocated right now." data={`${toFracitonalDigits.weight(material.totalQuantityAvailable)} lbs`} />
           <Text.LabelDataPair label="Soft Availability" tooltip="Available minus Soft Allocated. The quantity that would remain free if every current draft BPR were confirmed." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAvailability)} lbs`} />
           <Text.LabelDataPair label="Required for this Batch" tooltip="Amount of this material required to complete this BPR's batch." data={`${toFracitonalDigits.weight(material.quantity)} lbs`} />

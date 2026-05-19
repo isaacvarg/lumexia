@@ -18,6 +18,7 @@ export const getAllInventoryByBom = async (bom: BprBomItem[]) => {
         bom: {
           itemId: material.bom.item.id,
         },
+        bprId: { not: material.bprId },
         bpr: {
           OR: [
             { bprStatusId: queued },
@@ -49,6 +50,7 @@ export const getAllInventoryByBom = async (bom: BprBomItem[]) => {
         bom: {
           itemId: material.bom.item.id,
         },
+        bprId: { not: material.bprId },
         bpr: { bprStatusId: draft },
       }
     })
