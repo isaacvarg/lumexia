@@ -16,6 +16,7 @@ export const getPurchasingRequestsForPlanning = async (itemId: string) => {
       }
     },
     include: {
+      status: true,
       pos: {
         include: {
           po: {
@@ -23,6 +24,7 @@ export const getPurchasingRequestsForPlanning = async (itemId: string) => {
               purchaseOrderItems: {
                 include: {
                   details: true,
+                  uom: true,
                 }
               }
             }

@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, } from 'react'
 import Text from '@/components/Text'
+import Tag from '@/components/Text/Tag'
 import Dialog from '@/components/Dialog'
 import { getSlug } from '@/utils/general/getSlug'
 import { useRouter } from 'next/navigation'
@@ -8,7 +9,6 @@ import { TbPlus } from 'react-icons/tb'
 import { DateTime } from 'luxon'
 import { BprBomItemInventory } from '@/actions/inventory/inventory/getAllByBom'
 import { PurchasingRequestForPlanning } from '@/actions/purchasing/requests/getByItem'
-import { getDisplayDate } from '@/utils/dateTime/getDisplayDate'
 
 const MaterialAllocationPanels = ({
   material,
@@ -75,13 +75,30 @@ const MaterialAllocationPanels = ({
             </div>
             {requests.map((request) => {
 
-              const { expectedDateStart, expectedDateEnd } = request;
-              const expectedDateLabel = getDisplayDate((expectedDateStart && expectedDateEnd) ? { to: expectedDateStart, from: expectedDateEnd } : undefined)
+              const quantityOnOrderByUom = request.pos.reduce((totals, { po }) => {
+                po.purchaseOrderItems
+                  .filter((poItem) => poItem.itemId === request.itemId)
+                  .forEach((poItem) => {
+                    const uom = poItem.uom.abbreviation
+                    totals[uom] = (totals[uom] ?? 0) + poItem.quantity
+                  })
+                return totals
+              }, {} as Record<string, number>)
+
+              const onOrderLabel = Object.entries(quantityOnOrderByUom)
+                .map(([uom, quantity]) => `${toFracitonalDigits.weight(quantity)} ${uom}`)
+                .join(', ')
+
               return (
                 <div key={request.id} className="bg-base-300/70 hover:cursor-pointer p-4 rounded-xl hover:bg-base-300/50 " onClick={() => handleRequestClick(request)}>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 items-start">
                     <div className='font-poppins text-lg font-semibold'>{request.title}</div>
-                    <div className='font-inter text-base font-medium'>{expectedDateStart ? `Expected on ${expectedDateLabel}` : 'No Expected Dates'}</div>
+                    <Tag
+                      label={request.status.name}
+                      bgColor={request.status.bgColor}
+                      textColor={request.status.textColor}
+                    />
+                    <div className='font-inter text-base font-medium'>{onOrderLabel ? `${onOrderLabel} on order` : 'Nothing on order'}</div>
                   </div>
                 </div>
               )
