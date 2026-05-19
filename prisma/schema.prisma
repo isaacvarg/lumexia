@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Tue May 12 2026 16:18:59 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Tue May 19 2026 09:20:46 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -642,6 +642,7 @@ model RecordStatus {
   itemConsumerContainers      ItemConsumerContainer[]
   purchaseOrders              PurchaseOrder[]
   items                       Item[]
+  suppliers                   Supplier[]
   finishedProductAuxiliaries  FinishedProductAuxiliary[]
   batchSteps                  BatchStep[]
   stepInstructions            StepInstruction[]
@@ -2484,6 +2485,8 @@ model Supplier {
   addressState                         String                                @map("address_state")
   addressZip                           String                                @map("address_zip")
   phone                                String
+  recordStatusId                       String                                @map("record_status_id")
+  recordStatus                         RecordStatus                          @relation(fields: [recordStatusId], references: [id])
   purchaseOrders                       PurchaseOrder[]
   supplierAlias                        SupplierAlias[]
   supplierNotes                        SupplierNote[]

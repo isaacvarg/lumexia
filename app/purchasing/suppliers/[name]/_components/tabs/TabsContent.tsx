@@ -6,6 +6,7 @@ import ItemsTab from "../items/ItemsTab";
 import ContactsPanel from "../contacts/ContactsPanel";
 import NotesTable from "../notes/NotesTable";
 import AliasesTab from "../aliases/AliasesTab";
+import SettingsTab from "../settings/SettingsTab";
 import { useSupplierDetailSelection } from "@/store/supplierDetailSlice";
 
 const TabsContent = () => {
@@ -21,6 +22,7 @@ const TabsContent = () => {
         <Tabs.Trigger size="large" value="notes">Notes</Tabs.Trigger>
         <Tabs.Trigger size="large" value="items">Items</Tabs.Trigger>
         <Tabs.Trigger size="large" value="aliases">Aliases</Tabs.Trigger>
+        <Tabs.Trigger size="large" value="settings">Settings</Tabs.Trigger>
       </Tabs.List>
 
       <Tabs.ContentContainer>
@@ -42,6 +44,10 @@ const TabsContent = () => {
 
         <Tabs.Content value="aliases">
           <AliasesTab />
+        </Tabs.Content>
+
+        <Tabs.Content value="settings">
+          <SettingsTab />
         </Tabs.Content>
       </Tabs.ContentContainer>
     </Tabs.Root>

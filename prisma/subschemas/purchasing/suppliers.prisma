@@ -12,6 +12,8 @@ model Supplier {
     addressState                 String                        @map("address_state")
     addressZip                   String                        @map("address_zip")
     phone                        String
+    recordStatusId               String                        @map("record_status_id")
+    recordStatus                 RecordStatus                  @relation(fields: [recordStatusId], references: [id])
     purchaseOrders               PurchaseOrder[]
     supplierAlias                SupplierAlias[]
     supplierNotes                SupplierNote[]

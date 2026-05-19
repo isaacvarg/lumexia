@@ -9,6 +9,7 @@ model RecordStatus {
     itemConsumerContainers ItemConsumerContainer[]
     purchaseOrders          PurchaseOrder[]
     items Item[]
+    suppliers Supplier[]
     finishedProductAuxiliaries FinishedProductAuxiliary[]
     batchSteps             BatchStep[]
     stepInstructions       StepInstruction[]
