@@ -18,9 +18,15 @@ const NewTab = () => {
         <SectionTitle>In System</SectionTitle>
 
         <Card.Root>
-          <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
-            {newRequests.map((request) => <RequestCard key={request.id} request={request} />)}
-          </div>
+          {newRequests.length === 0 ? (
+            <div className='flex items-center justify-center py-10 text-base-content/60 text-sm'>
+              No new in-system requests
+            </div>
+          ) : (
+            <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
+              {newRequests.map((request) => <RequestCard key={request.id} request={request} />)}
+            </div>
+          )}
         </Card.Root>
 
 
@@ -31,9 +37,15 @@ const NewTab = () => {
         <SectionTitle>General</SectionTitle>
 
         <Card.Root>
-          <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
-            {generalRequests.map((request) => <GeneralRequestCard key={request.id} request={request} />)}
-          </div>
+          {generalRequests.length === 0 ? (
+            <div className='flex items-center justify-center py-10 text-base-content/60 text-sm'>
+              No general requests
+            </div>
+          ) : (
+            <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
+              {generalRequests.map((request) => <GeneralRequestCard key={request.id} request={request} />)}
+            </div>
+          )}
         </Card.Root>
 
 

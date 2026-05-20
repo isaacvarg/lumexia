@@ -6,7 +6,7 @@ export type RequestTab = 'new' | 'status' | 'supplier' | 'calendar'
 
 const TabSelector = () => {
 
-  const tabs: RequestTab[] = ['new', 'status', 'supplier'];
+  const tabs: RequestTab[] = ['new', 'status', 'supplier', 'calendar'];
 
   return (
     <div className="flex items-center justify-start gap-6">

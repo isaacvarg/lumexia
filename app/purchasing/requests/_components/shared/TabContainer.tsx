@@ -4,6 +4,7 @@ import { useTabSelection } from "@/store/tabSlice"
 import NewTab from "../new/NewTab"
 import StatusTab from "../status/StatusTab"
 import SupplierTab from "../supplier/SupplierTab"
+import CalendarTab from "../calendar/CalendarTab"
 
 const TabsContainer = () => {
 
@@ -24,6 +25,7 @@ const TabsContainer = () => {
       {currentTab === 'new' && <NewTab />}
       {currentTab === 'status' && <StatusTab />}
       {currentTab === 'supplier' && <SupplierTab />}
+      {currentTab === 'calendar' && <CalendarTab />}
 
     </AnimatePresence>
   )
