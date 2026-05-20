@@ -1,14 +1,18 @@
 'use server'
 
 import prisma from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { ProducedPricingSummations } from "../getBomWithPricing"
 import { getPricingMbpr } from "../getPricingMbpr"
 import { uom } from "@/configs/staticRecords/unitsOfMeasurement"
 
+type Client = Prisma.TransactionClient | typeof prisma
+
 export const archiveProducedPricingData = async (
   examinationId: string,
   mbprId: string,
-  pricingData: ProducedPricingSummations
+  pricingData: ProducedPricingSummations,
+  client: Client = prisma,
 ) => {
   if (!pricingData || 'errorOnFunction' in pricingData) return;
 
@@ -21,7 +25,7 @@ export const archiveProducedPricingData = async (
   const batchSize = mbpr.BatchSize[0];
   const vessel = batchSize.batchSizeCompoundingVessels[0];
 
-  const producedArchive = await prisma.producedPricingDataArchive.create({
+  const producedArchive = await client.producedPricingDataArchive.create({
     data: {
       examinationId,
       mbprId: mbpr.id,
@@ -39,14 +43,12 @@ export const archiveProducedPricingData = async (
     }
   });
 
-  // archive BOM items
-  await Promise.all(pricingData.bomWithCost.map(async (i) => {
-    
-    const priceUomId = i.isUpcomingPriceActive 
-        ? i.item.itemPricingData[0]?.upcomingPriceUomId 
+  for (const i of pricingData.bomWithCost) {
+    const priceUomId = i.isUpcomingPriceActive
+        ? i.item.itemPricingData[0]?.upcomingPriceUomId
         : i.item.purchaseOrderItem[0]?.uomId || uom.pounds;
 
-    await prisma.bomPricingDataArchive.create({
+    await client.bomPricingDataArchive.create({
       data: {
         examinationId,
         producedPricingDataArchiveId: producedArchive.id,
@@ -64,5 +66,5 @@ export const archiveProducedPricingData = async (
         overallItemCostPerBatch: i.itemCostInBatch,
       }
     })
-  }))
+  }
 }

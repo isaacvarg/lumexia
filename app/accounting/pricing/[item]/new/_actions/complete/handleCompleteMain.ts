@@ -1,5 +1,6 @@
 'use server'
 
+import prisma from "@/lib/prisma"
 import { ProducedPricingSummations } from "../getBomWithPricing"
 import { ItemPricingData } from "@/actions/accounting/pricing/getItemPricingData"
 import { ProcessedFinishedProduct } from "@/store/pricingSharedSlice"
@@ -21,40 +22,39 @@ export type CompleteMainProps = {
 }
 
 export const handleCompleteMain = async (props: CompleteMainProps) => {
-    const { 
-        examinationId, 
-        isProduced, 
-        mbprId, 
-        producedPricingData, 
-        purchasedPricingData, 
-        finishedProducts, 
-        processedFinishedProducts, 
-        interimData, 
-        totalCostPerLb 
+    const {
+        examinationId,
+        isProduced,
+        mbprId,
+        producedPricingData,
+        purchasedPricingData,
+        finishedProducts,
+        processedFinishedProducts,
+        interimData,
+        totalCostPerLb,
     } = props;
 
     try {
-        // 1. Archive Item Pricing Data (for purchased items)
-        if (!isProduced && purchasedPricingData) {
-            await archiveItemPricingData(examinationId, purchasedPricingData);
-        }
+        await prisma.$transaction(async (tx) => {
+            if (!isProduced && purchasedPricingData) {
+                await archiveItemPricingData(examinationId, purchasedPricingData, tx);
+            }
 
-        // 2. Archive Produced Pricing Data (for produced items)
-        if (isProduced && mbprId && producedPricingData) {
-            await archiveProducedPricingData(examinationId, mbprId, producedPricingData);
-        }
+            if (isProduced && mbprId && producedPricingData) {
+                await archiveProducedPricingData(examinationId, mbprId, producedPricingData, tx);
+            }
 
-        // 3. Archive Finished Products
-        await archiveFinishedProducts(
-            examinationId, 
-            finishedProducts, 
-            processedFinishedProducts, 
-            interimData, 
-            totalCostPerLb
-        );
+            await archiveFinishedProducts(
+                examinationId,
+                finishedProducts,
+                processedFinishedProducts,
+                interimData,
+                totalCostPerLb,
+                tx,
+            );
 
-        // 4. Update status
-        await updateExaminationStatus(examinationId);
+            await updateExaminationStatus(examinationId, tx);
+        });
 
         return { success: true }
     } catch (error) {

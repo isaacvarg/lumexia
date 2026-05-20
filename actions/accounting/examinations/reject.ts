@@ -8,45 +8,50 @@ import { getUserId } from "@/actions/users/getUserId"
 export const rejectPricingExamination = async (examinationId: string) => {
     const userId = await getUserId()
 
-    // Get the current examination with its notes
-    const currentExam = await prisma.pricingExamination.findUniqueOrThrow({
-        where: { id: examinationId },
-        include: {
-            PricingExaminationNote: true,
-        }
-    })
-
-    // Update the current examination status to rejected
-    await prisma.pricingExamination.update({
-        where: { id: examinationId },
-        data: {
-            statusId: pricingExaminationStatuses.rejected,
-        }
-    })
-
-    // Create a new examination for the same item with queued status
-    const newExam = await prisma.pricingExamination.create({
-        data: {
-            examinedItemId: currentExam.examinedItemId,
-            userId,
-            statusId: pricingExaminationStatuses.queued,
-        }
-    })
-
-    // Copy notes from rejected examination to the new one
-    if (currentExam.PricingExaminationNote.length > 0) {
-        await prisma.pricingExaminationNote.createMany({
-            data: currentExam.PricingExaminationNote.map(note => ({
-                pricingExaminationId: newExam.id,
-                noteTypeId: note.noteTypeId,
-                userId: note.userId,
-                content: note.content,
-            }))
+    const result = await prisma.$transaction(async (tx) => {
+        const currentExam = await tx.pricingExamination.findUniqueOrThrow({
+            where: { id: examinationId },
+            include: { PricingExaminationNote: true },
         })
-    }
+
+        if (currentExam.statusId !== pricingExaminationStatuses.pendingReview) {
+            throw new Error("Only pricing examinations that are pending review can be rejected.")
+        }
+
+        const rejectedExam = await tx.pricingExamination.update({
+            where: { id: examinationId },
+            data: {
+                statusId: pricingExaminationStatuses.rejected,
+                rejectedById: userId,
+                rejectedAt: new Date(),
+            },
+        })
+
+        const newExam = await tx.pricingExamination.create({
+            data: {
+                examinedItemId: currentExam.examinedItemId,
+                userId,
+                statusId: pricingExaminationStatuses.queued,
+                rejectedFromId: examinationId,
+            },
+        })
+
+        if (currentExam.PricingExaminationNote.length > 0) {
+            await tx.pricingExaminationNote.createMany({
+                data: currentExam.PricingExaminationNote.map((note) => ({
+                    pricingExaminationId: newExam.id,
+                    noteTypeId: note.noteTypeId,
+                    userId: note.userId,
+                    content: note.content,
+                })),
+            })
+        }
+
+        return { rejectedExam, newExam }
+    })
 
     revalidatePath('/accounting/pricing/details')
     revalidatePath('/accounting/pricing')
 
-    return { rejectedExam: currentExam, newExam }
+    return result
 }

@@ -7,21 +7,24 @@ import { FaRegThumbsUp } from 'react-icons/fa'
 
 type Props = {
   examId: string
+  isSelf?: boolean
 }
 
-const ApproveButton = ({ examId }: Props) => {
+const ApproveButton = ({ examId, isSelf = false }: Props) => {
   const [isPending, setIsPending] = useState(false)
   const router = useRouter()
+
+  if (isSelf) return null
 
   const handleApprove = async () => {
     if (isPending) return
     setIsPending(true)
-    router.back();
     try {
       await accountingActions.examinations.approve(examId)
+      router.back()
     } catch (error) {
       console.error('Error approving examination:', error)
-      alert('Failed to approve examination')
+      alert(error instanceof Error ? error.message : 'Failed to approve examination')
     } finally {
       setIsPending(false)
     }

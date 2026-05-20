@@ -2,11 +2,18 @@
 
 import { ItemPricingData } from "@/actions/accounting/pricing/getItemPricingData"
 import prisma from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 
-export const archiveItemPricingData = async (examinationId: string, pricingData: ItemPricingData) => {
+type Client = Prisma.TransactionClient | typeof prisma
+
+export const archiveItemPricingData = async (
+  examinationId: string,
+  pricingData: ItemPricingData,
+  client: Client = prisma,
+) => {
   if (!pricingData) return;
 
-  await prisma.itemPricingDataArchive.create({
+  await client.itemPricingDataArchive.create({
     data: {
       examinationId,
       currentItemPricingDataId: pricingData.id,

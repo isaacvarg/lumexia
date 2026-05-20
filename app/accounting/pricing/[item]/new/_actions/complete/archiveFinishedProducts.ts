@@ -1,19 +1,23 @@
 'use server'
 
 import prisma from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { InterimFinishedProductDetails, InterimAuxiliaryDetails, ProcessedFinishedProduct } from "@/store/pricingSharedSlice"
+
+type Client = Prisma.TransactionClient | typeof prisma
 
 export const archiveFinishedProducts = async (
   examinationId: string,
   finishedProducts: any[],
   processedData: Record<string, ProcessedFinishedProduct>,
   interimData: Record<string, any>,
-  totalCostPerLb: number
+  totalCostPerLb: number,
+  client: Client = prisma,
 ) => {
   for (const fp of finishedProducts) {
     const processed = processedData[fp.id];
     const interim = interimData[fp.id] as InterimFinishedProductDetails | undefined;
-    
+
     const name = interim?.name || fp.name;
     const fillQuantity = interim?.fillQuantity || fp.fillQuantity;
     const declaredQuantity = interim?.declaredQuantity || fp.declaredQuantity;
@@ -21,25 +25,23 @@ export const archiveFinishedProducts = async (
     const difficultyAdjustmentCost = interim?.difficultyAdjustmentCost || fp.difficultyAdjustmentCost;
 
     const productFillCost = fillQuantity * totalCostPerLb;
-    
+
     let auxiliariesTotalCost = 0;
     const auxiliaryArchivesData = [];
 
-    // Process auxiliaries
     const auxiliariesBreakdown = fp.auxiliaries?.breakdown || [];
     for (const aux of auxiliariesBreakdown) {
       const interimAux = interimData[aux.auxiliaryId] as InterimAuxiliaryDetails | undefined;
       const quantity = interimAux?.quantity || aux.quantity;
       const auxDiffCost = interimAux?.difficultyAdjustmentCost || aux.difficultyAdjustmentCost;
 
-      const ipd = await prisma.itemPricingData.findFirst({
+      const ipd = await client.itemPricingData.findFirst({
         where: { itemId: aux.auxiliaryItemId }
       });
 
       const auxCost = (ipd?.overallItemCost || 0) * quantity + auxDiffCost;
       auxiliariesTotalCost += auxCost;
 
-      // Prepare archive data
       auxiliaryArchivesData.push({
         apartOfFinishedProductId: fp.id,
         auxiliaryItemId: aux.auxiliaryItemId,
@@ -50,12 +52,11 @@ export const archiveFinishedProducts = async (
         ipdAuxiliaryUsageCost: ipd?.auxiliaryUsageCost || 0,
         ipdUnforeseenDifficultiesCost: ipd?.unforeseenDifficultiesCost || 0,
         ipdUpcomingPrice: ipd?.upcomingPrice || 0,
-        ipdUpcomingPriceUomId: ipd?.upcomingPriceUomId || (await prisma.item.findUnique({ where: { id: aux.auxiliaryItemId }}))?.inventoryUomId || '', 
+        ipdUpcomingPriceUomId: ipd?.upcomingPriceUomId || (await client.item.findUnique({ where: { id: aux.auxiliaryItemId } }))?.inventoryUomId || '',
         ipdIsUpcomingPriceActive: ipd?.isUpcomingPriceActive || false,
       });
 
-      // Update the actual auxiliary record
-      await prisma.finishedProductAuxiliary.update({
+      await client.finishedProductAuxiliary.update({
         where: { id: aux.auxiliaryId },
         data: {
           quantity,
@@ -66,8 +67,7 @@ export const archiveFinishedProducts = async (
 
     const finishedProductTotalCost = productFillCost + auxiliariesTotalCost + difficultyAdjustmentCost + freeShippingCost;
 
-    // Create the FinishedProductArchive
-    const fpArchive = await prisma.finishedProductArchive.create({
+    const fpArchive = await client.finishedProductArchive.create({
       data: {
         pricingExaminationId: examinationId,
         currentFinishedProductId: fp.id,
@@ -88,36 +88,33 @@ export const archiveFinishedProducts = async (
       }
     });
 
-    // Create FinishedProductAuxiliaryArchive entries
     for (const auxData of auxiliaryArchivesData) {
-        await prisma.finishedProductAuxiliaryArchive.create({
-            data: auxData
-        });
+      await client.finishedProductAuxiliaryArchive.create({
+        data: auxData
+      });
     }
 
-    // Link original auxiliaries to the FP archive
-    await prisma.finishedProductAuxiliary.updateMany({
-        where: { apartOfFinishedProductId: fp.id },
-        data: { finishedProductArchiveId: fpArchive.id }
+    await client.finishedProductAuxiliary.updateMany({
+      where: { apartOfFinishedProductId: fp.id },
+      data: { finishedProductArchiveId: fpArchive.id }
     });
-    
-    // Update the original FinishedProduct record
-    await prisma.finishedProduct.update({
-        where: { id: fp.id },
-        data: {
-            name,
-            fillQuantity,
-            declaredQuantity,
-            freeShippingCost,
-            difficultyAdjustmentCost,
-            finishedProductTotalCost,
-            auxiliariesTotalCost,
-            productFillCost,
-            consumerPrice: processed ? processed.consumerPrice : fp.consumerPrice,
-            markup: processed ? processed.markup : fp.markup,
-            profit: processed ? processed.profit : fp.profit,
-            profitPercentage: processed ? processed.profitPercentage : fp.profitPercentage,
-        }
+
+    await client.finishedProduct.update({
+      where: { id: fp.id },
+      data: {
+        name,
+        fillQuantity,
+        declaredQuantity,
+        freeShippingCost,
+        difficultyAdjustmentCost,
+        finishedProductTotalCost,
+        auxiliariesTotalCost,
+        productFillCost,
+        consumerPrice: processed ? processed.consumerPrice : fp.consumerPrice,
+        markup: processed ? processed.markup : fp.markup,
+        profit: processed ? processed.profit : fp.profit,
+        profitPercentage: processed ? processed.profitPercentage : fp.profitPercentage,
+      }
     });
   }
 }

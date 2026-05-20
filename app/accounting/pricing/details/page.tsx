@@ -1,10 +1,10 @@
 import { accountingActions } from '@/actions/accounting'
+import { getUserId } from '@/actions/users/getUserId'
 import PageBreadcrumbs from '@/components/App/PageBreadcrumbs'
 import PageTitle from '@/components/Text/PageTitle'
 import React from 'react'
 import BasicsPanel from './_components/BasicsPanel'
 import ActionsPanel from './_components/ActionsPanel'
-import ApprovalStatus from './_components/ApprovalStatus'
 import FinishedProductsPanel from './_components/FinishedProductsPanel'
 import NotesPanel from './_components/NotesPanel'
 import ApproveButton from './_components/ApproveButton'
@@ -21,6 +21,8 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
   const examId = searchParams.id
   const examination = await accountingActions.examinations.getOne(examId);
   const noteTypes = await accountingActions.examinations.notes.getAllNoteTypes();
+  const currentUserId = await getUserId();
+  const isSelf = examination.userId === currentUserId;
 
 
   return (
@@ -30,7 +32,7 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
         <PageTitle>{`${examination.examinedItem.name} Pricing Examination `}</PageTitle>
         <div className="flex gap-2">
           <RejectButton examId={examId} />
-          <ApproveButton examId={examId} />
+          <ApproveButton examId={examId} isSelf={isSelf} />
         </div>
       </div>
 
