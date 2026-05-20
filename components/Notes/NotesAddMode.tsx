@@ -67,7 +67,7 @@ const NotesAddMode = <TNoteType extends NoteType>({ setMode, noteTypes, onNoteAd
       />
 
       <div className='flex flex-row justify-end gap-x-2'>
-        <button className='btn btn-warning' onClick={() => handleCancel()}>Cancel</button>
+        <button type='button' className='btn btn-warning' onClick={() => handleCancel()}>Cancel</button>
         <button className='btn btn-success' type='submit'>Submit</button>
       </div>
 

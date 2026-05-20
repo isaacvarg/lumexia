@@ -28,9 +28,20 @@ const TextField = ({ label, description, labelClass = 'default', errorClass = 'd
       <label className={classes.label[labelClass]}>{label}</label>
       {description && <p className="font-light text-lg text-base-content/80">{description}</p>}
       <input
+        type="text"
         value={field.state.value}
         className="input w-full input-lg"
         onChange={(e) => field.handleChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey &&
+            !e.nativeEvent.isComposing
+          ) {
+            e.preventDefault();
+            field.form.handleSubmit();
+          }
+        }}
       />
       {meta.isTouched && meta.errors.length > 0 ? (
         <p className={classes.errors[errorClass]}>{errors}</p>

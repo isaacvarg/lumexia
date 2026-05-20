@@ -81,7 +81,7 @@ const FinishedProductDetails = () => {
 
         <div>
           <form.AppForm>
-            <form.SubmitButton allowPristine>
+            <form.SubmitButton>
               Next
             </form.SubmitButton>
           </form.AppForm>

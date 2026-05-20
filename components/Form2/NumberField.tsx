@@ -32,6 +32,16 @@ const NumberField = ({ label, description, labelClass = 'default', errorClass = 
         className="input w-full input-lg"
         onChange={(e) => field.handleChange(e.target.valueAsNumber)}
         onWheel={(e) => e.currentTarget.blur()}
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey &&
+            !e.nativeEvent.isComposing
+          ) {
+            e.preventDefault();
+            field.form.handleSubmit();
+          }
+        }}
         type="number"
       />
       {meta.isTouched && meta.errors.length > 0 ? (

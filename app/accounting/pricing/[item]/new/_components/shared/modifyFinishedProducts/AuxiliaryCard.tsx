@@ -90,7 +90,7 @@ const AuxiliaryCard = ({ aux }: Props) => {
 
             <div>
               <form.AppForm>
-                <form.SubmitButton allowPristine>
+                <form.SubmitButton>
                   Save
                 </form.SubmitButton>
               </form.AppForm>
