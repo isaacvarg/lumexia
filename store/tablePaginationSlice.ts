@@ -25,6 +25,9 @@ type State = {
   requestArchive: StateData
   itemPricingExamiantions: StateData
   latestPricingExaminationsAll: StateData
+  allPricingExaminations: StateData
+  pricingExamContainers: StateData
+  pricingExamBomArchive: StateData
   mbpr: StateData,
   equipment: StateData,
   pricingBom: StateData,
@@ -76,6 +79,9 @@ export const useTablePagination = create<State & Actions>((set) => ({
   requestArchive: { pageSize: 50, pageIndex: 0 },
   itemPricingExamiantions: { pageSize: 50, pageIndex: 0 },
   latestPricingExaminationsAll: { pageSize: 50, pageIndex: 0 },
+  allPricingExaminations: { pageSize: 50, pageIndex: 0 },
+  pricingExamContainers: { pageSize: 50, pageIndex: 0 },
+  pricingExamBomArchive: { pageSize: 50, pageIndex: 0 },
   mbpr: { pageSize: 50, pageIndex: 0 },
   equipment: { pageSize: 50, pageIndex: 0 },
   pricingBom: { pageSize: 50, pageIndex: 0 },
