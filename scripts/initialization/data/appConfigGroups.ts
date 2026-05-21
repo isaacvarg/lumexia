@@ -14,6 +14,10 @@ export const data = {
     {
       "name": "general",
       "description": "Catch all group. Generally for configs before config groups introduced"
+    },
+    {
+      "name": "inventoryAudits",
+      "description": "Thresholds and toggles for the weekly inventory audit trigger cron"
     }
   ],
 };
