@@ -15,11 +15,23 @@ export const getOnePricingExamination = async (id: string) => {
                 }
             },
             user: true,
+            status: true,
+            approvedBy: true,
+            rejectedBy: true,
             itemPricingDataArchive: true,
+            consumerContainerArchive: {
+                include: {
+                    containerItem: true,
+                    ItemConsumerContainerArchive: { include: { uom: true } },
+                },
+            },
+            BomPricingDataArchive: { include: { item: true } },
+            producedPricingDataArchives: true,
             FinishedProductArchive: {
                 include: {
                     currentFinishedProduct: true,
-
+                    fillUom: true,
+                    filledWithItem: true,
                 },
             },
             PricingExaminationNote: {

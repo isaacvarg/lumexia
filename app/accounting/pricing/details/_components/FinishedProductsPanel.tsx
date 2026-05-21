@@ -1,40 +1,14 @@
 'use client'
 import { SinglePricingFinishedProduct } from '@/actions/accounting/examinations/getOne'
-import Card from '@/components/Card'
-import { Panels } from '@/components/Panels'
 import SectionTitle from '@/components/Text/SectionTitle'
 import { toFracitonalDigits } from '@/utils/data/toFractionalDigits'
 import React from 'react'
 
-const DataBox = ({ bigNumber, label, sublabel, isBad }: { bigNumber: string | number, label: string, sublabel: string, isBad?: boolean }) => {
-
-  const bg = `${isBad ? 'bg-rose-300' : 'bg-lilac-300'}`
-
-  return (
-    <div className={`rounded-xl text-neutral-800 p-5 ${bg} flex flex-col gap-y-2 items-center justify-center text-center`}>
-      <p className='font-poppins font-semibold text-base'>
-        {sublabel}
-      </p>
-      <p className='font-poppins  text-3xl font-semibold'>
-        {bigNumber}
-      </p>
-      <p className='font-poppins text-base'>
-        {label}
-      </p>
-
-    </div>
-
-  )
-
-}
-
 const FinishedProductsPanel = ({ finishedProducts }: { finishedProducts: SinglePricingFinishedProduct[] }) => {
 
   return (
-    <div className='flex flex-col gap-6 col-span-2'>
+    <div className='flex flex-col gap-6'>
       <SectionTitle>Finished Products</SectionTitle>
-
-
 
       <div className='grid grid-cols-2 gap-6'>
 
@@ -44,21 +18,45 @@ const FinishedProductsPanel = ({ finishedProducts }: { finishedProducts: SingleP
           const isBad = profitPercentage < 25;
 
           return (
-            <Panels.Root
+            <div
               key={fp.id}
+              className='card bg-base-100 border border-base-300 shadow-sm'
             >
+              <div className='card-body gap-4'>
+                <div className='flex items-center justify-between'>
+                  <h3 className='card-title'>{fp.name}</h3>
+                  <span className={`badge ${isBad ? 'badge-error' : 'badge-success'} badge-lg`}>
+                    {toFracitonalDigits.pricingCurrency(profitPercentage)}%
+                  </span>
+                </div>
 
-              <SectionTitle size='normal'>{fp.name}</SectionTitle>
+                <div className='stats stats-vertical lg:stats-horizontal w-full bg-base-200'>
+                  <div className='stat'>
+                    <div className='stat-title'>Website Price</div>
+                    <div className='stat-value text-2xl'>
+                      {toFracitonalDigits.pricingCurrency(fp.consumerPrice)}
+                    </div>
+                    <div className='stat-desc'>$/container</div>
+                  </div>
 
+                  <div className='stat'>
+                    <div className='stat-title'>Cost</div>
+                    <div className={`stat-value text-2xl ${isBad ? 'text-error' : ''}`}>
+                      {toFracitonalDigits.pricingCurrency(fp.finishedProductTotalCost)}
+                    </div>
+                    <div className='stat-desc'>$/container</div>
+                  </div>
 
-              <div className='grid grid-cols-2 gap-4'>
-
-                <DataBox bigNumber={toFracitonalDigits.pricingCurrency(fp.consumerPrice)} label='$/container' sublabel='Website Price' />
-                <DataBox bigNumber={toFracitonalDigits.pricingCurrency(fp.finishedProductTotalCost)} label={'$/container'} sublabel={'Cost'} isBad={isBad} />
-                <DataBox bigNumber={toFracitonalDigits.pricingCurrency(profit)} label='$' sublabel='Profit' isBad={isBad} />
-                <DataBox bigNumber={toFracitonalDigits.pricingCurrency(profitPercentage)} label='%' sublabel='Profit %' isBad={isBad} />
+                  <div className='stat'>
+                    <div className='stat-title'>Profit</div>
+                    <div className={`stat-value text-2xl ${isBad ? 'text-error' : 'text-success'}`}>
+                      {toFracitonalDigits.pricingCurrency(profit)}
+                    </div>
+                    <div className='stat-desc'>per container</div>
+                  </div>
+                </div>
               </div>
-            </Panels.Root>
+            </div>
           )
         })}
 

@@ -21,6 +21,9 @@ type State = {
   requestArchive: FilterArray
   itemPricingExamiantions: FilterArray
   latestPricingExaminationsAll: FilterArray
+  allPricingExaminations: FilterArray
+  pricingExamContainers: FilterArray
+  pricingExamBomArchive: FilterArray
   mbpr: FilterArray
   equipment: FilterArray
   pricingBom: FilterArray
@@ -76,6 +79,9 @@ export const useTableFacets = create<State & Actions>((set) => ({
   requestArchive: [],
   itemPricingExamiantions: [],
   latestPricingExaminationsAll: [],
+  allPricingExaminations: [],
+  pricingExamContainers: [],
+  pricingExamBomArchive: [],
   mbpr: [],
   equipment: [],
   pricingBom: [],

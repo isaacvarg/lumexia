@@ -1,4 +1,3 @@
-import PageBreadcrumbs from '@/components/App/PageBreadcrumbs'
 import React from 'react'
 import Card from '@/components/Card'
 import { getItems } from './_functions/getItems'
@@ -8,6 +7,8 @@ import { accountingActions } from '@/actions/accounting'
 import LatestExaminationsTable from './_components/LatestExaminationsTable'
 import QueueList from './_components/QueueList'
 import TemplatesButton from './_components/TemplatesButton'
+import AllExaminationsTable from './_components/AllExaminationsTable'
+import { Tabs } from '@/components/Tabs2'
 
 const PricingPage = async () => {
 
@@ -19,35 +20,40 @@ const PricingPage = async () => {
 
       <BeginPricingExamDialog items={items} />
 
-      <PageBreadcrumbs />
-
       <div className='flex justify-between items-center'>
         <div className='flex gap-x-4'>
           <BeginPricingExaminationButton />
         </div>
 
         <TemplatesButton />
-
-
       </div>
 
-      <div className='grid grid-cols-2 gap-6'>
+      <Tabs.Root defaultValue="overview">
+        <Tabs.List>
+          <Tabs.Trigger size="large" value="overview">Overview</Tabs.Trigger>
+          <Tabs.Trigger size="large" value="all">All Examinations</Tabs.Trigger>
+        </Tabs.List>
 
-        <Card.Root>
-          <Card.Title>Queue</Card.Title>
-          <QueueList />
+        <Tabs.ContentContainer>
+          <Tabs.Content value="overview">
+            <div className='grid grid-cols-2 gap-6'>
+              <Card.Root>
+                <Card.Title>Queue</Card.Title>
+                <QueueList />
+              </Card.Root>
 
+              <Card.Root>
+                <Card.Title>Latest</Card.Title>
+                <LatestExaminationsTable examinations={examinations} />
+              </Card.Root>
+            </div>
+          </Tabs.Content>
 
-        </Card.Root>
-
-        <Card.Root>
-          <Card.Title>Latest</Card.Title>
-
-          <LatestExaminationsTable examinations={examinations} />
-        </Card.Root>
-
-      </div>
-
+          <Tabs.Content value="all">
+            <AllExaminationsTable examinations={examinations} />
+          </Tabs.Content>
+        </Tabs.ContentContainer>
+      </Tabs.Root>
 
     </div >
   )

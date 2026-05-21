@@ -5,10 +5,12 @@ import PageTitle from '@/components/Text/PageTitle'
 import React from 'react'
 import BasicsPanel from './_components/BasicsPanel'
 import ActionsPanel from './_components/ActionsPanel'
-import FinishedProductsPanel from './_components/FinishedProductsPanel'
 import NotesPanel from './_components/NotesPanel'
 import ApproveButton from './_components/ApproveButton'
 import RejectButton from './_components/RejectButton'
+import PricingDetailsTabs from './_components/PricingDetailsTabs'
+import { procurementTypes } from '@/configs/staticRecords/procurementTypes'
+import { getProducedPricingByItem } from '../[item]/_functions/getProducedPricingExamination'
 
 interface PricingDetailsProps {
   searchParams: {
@@ -23,6 +25,11 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
   const noteTypes = await accountingActions.examinations.notes.getAllNoteTypes();
   const currentUserId = await getUserId();
   const isSelf = examination.userId === currentUserId;
+  const isPendingReview = examination.status?.name === 'Pending Review';
+  const isProduced = examination.examinedItem.procurementTypeId === procurementTypes.produced;
+  const producedExaminations = isProduced
+    ? await getProducedPricingByItem(examination.examinedItemId)
+    : [];
 
 
   return (
@@ -30,10 +37,12 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
 
       <div className="flex items-center justify-between">
         <PageTitle>{`${examination.examinedItem.name} Pricing Examination `}</PageTitle>
-        <div className="flex gap-2">
-          <RejectButton examId={examId} />
-          <ApproveButton examId={examId} isSelf={isSelf} />
-        </div>
+        {isPendingReview && (
+          <div className="flex gap-2">
+            <RejectButton examId={examId} />
+            <ApproveButton examId={examId} isSelf={isSelf} />
+          </div>
+        )}
       </div>
 
 
@@ -41,11 +50,13 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
         <BasicsPanel exam={examination} />
 
         <NotesPanel pricingExaminationId={examId} notes={examination.PricingExaminationNote} noteTypes={noteTypes} />
-
-
-        <FinishedProductsPanel finishedProducts={examination.FinishedProductArchive} />
-
       </div>
+
+      <PricingDetailsTabs
+        examination={examination}
+        isProduced={isProduced}
+        producedExaminations={producedExaminations}
+      />
 
 
 
