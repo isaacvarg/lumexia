@@ -9,8 +9,9 @@ import { Inventory } from "@/actions/inventory/getInventory";
 import { purchaseOrderStatuses } from "@/configs/staticRecords/purchaseOrderStatuses";
 import { requestStatuses } from "@/configs/staticRecords/requestStatuses";
 import { requestPriorities } from "@/configs/staticRecords/requestPriorities";
+import { requestNoteTypes } from "@/configs/staticRecords/requestNoteTypes";
 
-export const createRequest = async (material: BprBomItemInventory, priorityId: string, wasOverridden: boolean) => {
+export const createRequest = async (material: BprBomItemInventory, priorityId: string, wasOverridden: boolean, notes?: string) => {
 
 
   const requestingUserId = await getUserId()
@@ -43,6 +44,18 @@ export const createRequest = async (material: BprBomItemInventory, priorityId: s
     }
   });
 
+
+  const trimmedNotes = notes?.trim()
+  if (trimmedNotes) {
+    await prisma.requestNote.create({
+      data: {
+        requestId: purchasingRequest.id,
+        userId: requestingUserId,
+        content: trimmedNotes,
+        noteTypeId: requestNoteTypes.general,
+      },
+    })
+  }
 
   await createActivityLog("createPurchasingRequest", 'requestId', purchasingRequest.id, { context: `Request made for ${material.bom.item.name}`, snapshotId: snapshot.id })
 

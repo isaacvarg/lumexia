@@ -15,6 +15,7 @@ type RequestFormProps = {
 
 type Inputs = {
   priorityId: string;
+  notes?: string;
 }
 
 const RequestForm = ({
@@ -34,7 +35,7 @@ const RequestForm = ({
 
   const handleSubmit = async (data: Inputs) => {
     try {
-      await purchasingActions.requests.create(material, data.priorityId, wasWarningOverridden);
+      await purchasingActions.requests.create(material, data.priorityId, wasWarningOverridden, data.notes);
     } catch (error) {
       throw new Error("Error in creating request.")
     } finally {
@@ -116,6 +117,12 @@ const RequestForm = ({
           fieldName='priorityId'
           options={requestPriorities.map((priority) => ({ value: priority.id, label: priority.name }))}
         />}
+
+        <Form.TextArea
+          form={form}
+          fieldName='notes'
+          label='Notes (optional)'
+        />
 
         <div className='flex flex-row gap-x-2 justify-end'>
           <button className="btn btn-neutral btn-soft" onClick={handleCancel}>Back</button>
