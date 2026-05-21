@@ -1,4 +1,3 @@
-import PageBreadcrumbs from "@/components/App/PageBreadcrumbs"
 import { getMissingPricingData } from "./itemPricingData/getMissingPricingData"
 import MissingPricingDataPanel from "./itemPricingData/MissingPricingDataPanel"
 import { getMissingPoAccountingData } from "./poAccountingDetails/getMissingPoAccountingDetail"
@@ -12,8 +11,6 @@ const FixesPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
-
-      <PageBreadcrumbs />
 
       <div className="grid grid-cols-3 gap-4">
 
