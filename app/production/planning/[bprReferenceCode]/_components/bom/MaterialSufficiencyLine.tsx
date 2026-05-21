@@ -5,7 +5,6 @@ import useDialog from '@/hooks/useDialog'
 import { BprBomItemInventory } from '@/actions/inventory/inventory/getAllByBom'
 import { TbX } from 'react-icons/tb'
 import { LuCheck, LuAlertTriangle, LuX } from 'react-icons/lu'
-import { useAppSelection } from '@/store/appSlice'
 import Image from 'next/image'
 import { useBprDetailsActions } from '@/store/bprDetailsSlice'
 import { inventoryTypes } from '@/configs/staticRecords/inventoryTypes'
@@ -45,7 +44,6 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
   const { showDialog } = useDialog()
   const { setSelectedBomItem } = useBprDetailsActions()
-  const { user } = useAppSelection()
 
   const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.notTracked;
   const available = isConsumable ? 'Consumable' : toFracitonalDigits.weight(material.totalQuantityAvailable);
@@ -53,7 +51,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
   const isAvailableSufficient = material.totalQuantityAvailable >= material.quantity;
   const isSoftSufficient = isConsumable || material.totalQuantitySoftAvailability >= material.quantity;
-  const bgClasses: keyof typeof classes.bg = user?.roles.isPurchasing ? ((isAvailableSufficient || isConsumable) ? 'sufficient' : 'insufficient') : 'sufficient'
+  const bgClasses: keyof typeof classes.bg = (isAvailableSufficient || isConsumable) ? 'sufficient' : 'insufficient'
   const hasStagings = material.BprStaging.length !== 0
   const stagings = hasStagings ? material.BprStaging[0] : null
   const primaryVerification = stagings ? stagings.BprStagingVerification[0] : null;
@@ -71,31 +69,17 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
       <td>{toFracitonalDigits.weight(material.quantity)}</td>
 
-      {isDraft ? <td>{isConsumable ? 'Consumable' : available}</td> : (user?.roles.isPurchasing ? <td>{isConsumable ? 'Consumable' : available}</td> : null)}
-      {isDraft && <td>{toFracitonalDigits.weight(material.totalQuantitySoftAllocated)}</td>}
-      {isDraft && <td>{softAvailability}</td>}
-      {isDraft && (
-        <td>
-          {!isAvailableSufficient && !isConsumable
-            ? <LuX className="text-red-700 w-6 h-6" />
-            : !isSoftSufficient
-              ? <LuAlertTriangle className="text-yellow-700 w-6 h-6" />
-              : <LuCheck className="text-green-700 w-6 h-6" />
-          }
-        </td>
-      )}
-      {!isDraft && user?.roles.isPurchasing && <td>{toFracitonalDigits.weight(material.totalQuantitySoftAllocated)}</td>}
-      {!isDraft && user?.roles.isPurchasing && <td>{softAvailability}</td>}
-      {!isDraft && (
-        <td>
-          {!isAvailableSufficient && !isConsumable
-            ? <LuX className="text-red-700 w-6 h-6" />
-            : !isSoftSufficient
-              ? <LuAlertTriangle className="text-yellow-700 w-6 h-6" />
-              : <LuCheck className="text-green-700 w-6 h-6" />
-          }
-        </td>
-      )}
+      <td>{isConsumable ? 'Consumable' : available}</td>
+      <td>{toFracitonalDigits.weight(material.totalQuantitySoftAllocated)}</td>
+      <td>{softAvailability}</td>
+      <td>
+        {!isAvailableSufficient && !isConsumable
+          ? <LuX className="text-red-700 w-6 h-6" />
+          : !isSoftSufficient
+            ? <LuAlertTriangle className="text-yellow-700 w-6 h-6" />
+            : <LuCheck className="text-green-700 w-6 h-6" />
+        }
+      </td>
       {!isDraft && (stagings?.pulledByUser ? <td><UserIcon image={stagings.pulledByUser.image || ''} name={stagings.pulledByUser.name || ''} /></td> : <td><RedX /></td>)}
       {!isDraft && (primaryVerification ? <td><UserIcon image={primaryVerification.user.image || ''} name={primaryVerification.user.name || ''} /></td> : <td><RedX /></td>)}
       {!isDraft && (secondaryVerification ? <td><UserIcon image={secondaryVerification.user.image || ''} name={secondaryVerification.user.name || ''} /></td> : <td><RedX /></td>)}

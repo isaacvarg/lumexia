@@ -122,6 +122,7 @@ const RequestForm = ({
           form={form}
           fieldName='notes'
           label='Notes (optional)'
+          required={false}
         />
 
         <div className='flex flex-row gap-x-2 justify-end'>
