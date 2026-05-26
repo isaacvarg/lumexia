@@ -2,6 +2,7 @@
 import { useBprPlanningSelection } from "@/store/bprPlanningSlice"
 import { AnimatePresence, motion } from "framer-motion"
 import StatusTab from "../status/StatusTab"
+import TableTab from "../table/TableTab"
 
 const TabsContainer = () => {
 
@@ -19,6 +20,7 @@ const TabsContainer = () => {
       </motion.div>
 
       {currentTab === 'status' && <StatusTab />}
+      {currentTab === 'table' && <TableTab />}
 
     </AnimatePresence>
   )

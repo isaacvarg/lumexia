@@ -1,4 +1,5 @@
 import { BprStatus } from "@/actions/production/bprs/statuses/getAll"
+import { AllPlanningBpr } from "@/actions/production/getAllPlanningBprs"
 import { PlanningBpr } from "@/actions/production/getPlanningBprs"
 import { PlanningTab } from "@/app/production/planning/_components/shared/TabSelector"
 import { bprStatuses } from "@/configs/staticRecords/bprStatuses"
@@ -11,6 +12,7 @@ type State = {
   currentTab: PlanningTab
   currentStatusId: string | null
   bprs: Record<string, PlanningBpr[]>
+  allBprs: AllPlanningBpr[]
   statusCounts: Map<string, number>
   statuses: BprStatus[]
 }
@@ -19,6 +21,7 @@ type Actions = {
   actions: {
     setCurrentTab: (tab: PlanningTab) => void;
     setBprs: (bprs: PlanningBpr[]) => void;
+    setAllBprs: (bprs: AllPlanningBpr[]) => void;
     setStatuses: (statuses: BprStatus[]) => void;
     setCurrentStatusId: (statusId: string) => void;
   }
@@ -29,6 +32,7 @@ export const useBprPlanningSelection = create<State & Actions>((set) => ({
   currentStatusId: draft,
   statusCounts: new Map(),
   bprs: {},
+  allBprs: [],
   statuses: [],
 
   actions: {
@@ -42,6 +46,7 @@ export const useBprPlanningSelection = create<State & Actions>((set) => ({
 
       set(() => ({ bprs: grouped, statusCounts: counts }))
     },
+    setAllBprs: (allBprs) => set(() => ({ allBprs })),
     setStatuses: (statuses) => set(() => ({ statuses })),
     setCurrentStatusId: (statusId) => set(() => ({ currentStatusId: statusId })),
   }

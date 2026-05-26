@@ -15,6 +15,7 @@ import { getActiveMbpr } from "./getActiveMbpr";
 import { getAllMbprs } from "./getAllMbprs";
 import { getMbprsByItem } from "./getMbprsByItem";
 import { getPlanningBprs } from "./getPlanningBprs";
+import { getAllPlanningBprs } from "./getAllPlanningBprs";
 import { createActionable } from "./mbpr/actionables/create";
 import { getAllActionablesByMbpr } from "./mbpr/actionables/getAllByMbpr";
 import { updateActionable } from "./mbpr/actionables/update";
@@ -49,6 +50,7 @@ import { updateBpr } from "./updateBpr";
 export const productionActions = {
   planning: {
     getBprs: getPlanningBprs,
+    getAllBprs: getAllPlanningBprs,
   },
   bprs: {
     stagings: {
