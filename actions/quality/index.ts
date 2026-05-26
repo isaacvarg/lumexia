@@ -14,6 +14,9 @@ import { getAllInputDefinitions } from "./qc/inputDefinitions/getAll";
 import { updateInputDefinition } from "./qc/inputDefinitions/update";
 import { deleteQcItemParameter } from "./qc/itemParameters/delete";
 import { updateQcItemParameter } from "./qc/itemParameters/update";
+import { createQcItemSpecification } from "./qc/itemSpecifications/create";
+import { updateQcItemSpecification } from "./qc/itemSpecifications/update";
+import { deleteQcItemSpecification } from "./qc/itemSpecifications/delete";
 import { createQcParameter } from "./qc/parameters/create";
 import { getAllQcParameters } from "./qc/parameters/getAll";
 import { getAllQcParametersByItem } from "./qc/parameters/getAllByItem";
@@ -63,6 +66,11 @@ export const qualityActions = {
       getAllByItemAndRecord: getAllQcParametersByItemAndQcRecord,
       delete: deleteQcItemParameter,
       update: updateQcItemParameter,
+    },
+    itemSpecifications: {
+      create: createQcItemSpecification,
+      update: updateQcItemSpecification,
+      delete: deleteQcItemSpecification,
     },
     templates: {
       getAll: getAllQcTemplates,

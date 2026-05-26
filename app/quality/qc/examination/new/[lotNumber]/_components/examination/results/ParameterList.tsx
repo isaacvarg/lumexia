@@ -4,7 +4,7 @@ import { useQcExaminationActions, useQcExaminationSelection } from "@/store/qcEx
 
 const ParameterList = () => {
 
-  const { itemParameters, selectedItemParameter } = useQcExaminationSelection()
+  const { itemParameters, selectedItemParameter, results } = useQcExaminationSelection()
   const { setSelectedItemParameter } = useQcExaminationActions()
 
   return (
@@ -15,14 +15,17 @@ const ParameterList = () => {
         <div className="grid grid-cols-1 gap-2">
           {itemParameters.map(ip => {
             const isSelected = ip.id === selectedItemParameter?.id
+            const runCount = results.get(ip.id)?.length ?? 0
             return (
               <button
                 key={ip.id}
                 className={`btn ${isSelected ? 'btn-accent' : 'btn-secondary btn-outline'}`}
                 onClick={() => setSelectedItemParameter(ip)}
               >
-
-                {ip.parameter.name}
+                <span>{ip.parameter.name}</span>
+                {runCount > 0 && (
+                  <span className="badge badge-sm">{runCount}</span>
+                )}
               </button>
             )
           })}

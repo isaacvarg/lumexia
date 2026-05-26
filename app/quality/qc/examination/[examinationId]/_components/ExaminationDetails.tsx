@@ -28,9 +28,12 @@ const ExaminationDetails = ({
   noteTypes,
   files,
 }: Props) => {
-  const resultsMap = new Map(
-    results.map((result) => [result.qcItemParameterId, result])
-  );
+  const resultsMap = new Map<string, ExaminationResults[]>();
+  for (const r of results) {
+    const arr = resultsMap.get(r.qcItemParameterId) ?? [];
+    arr.push(r);
+    resultsMap.set(r.qcItemParameterId, arr);
+  }
 
   return (
     <Tabs.Root defaultValue="results">
@@ -46,6 +49,7 @@ const ExaminationDetails = ({
             <ResultsView
               itemParameters={itemParameters}
               results={resultsMap}
+              examinationTypeId={record.examinationTypeId}
             />
           </Tabs.Content>
           <Tabs.Content value="notes">

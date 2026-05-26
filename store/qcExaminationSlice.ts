@@ -16,7 +16,7 @@ type State = {
   itemParameters: QcItemParameter[]
   lots: Lot[];
   selectedExaminationType: ExaminationType | null
-  results: Map<string, ExaminationResults>
+  results: Map<string, ExaminationResults[]>
   selectedItemParameter: QcItemParameter | null
   specimentLot: SingleLot | null;
   step: number;
@@ -73,7 +73,12 @@ export const useQcExaminationSelection = create<State & Actions>((set, get) => (
     setLots: (lots) => set(() => ({ lots })),
     setRecord: (record) => set(() => ({ qcRecord: record })),
     setResults: (results) => {
-      const mapping = new Map(results.map(result => [result.qcItemParameterId, result]))
+      const mapping = new Map<string, ExaminationResults[]>()
+      for (const r of results) {
+        const arr = mapping.get(r.qcItemParameterId) ?? []
+        arr.push(r)
+        mapping.set(r.qcItemParameterId, arr)
+      }
       set(() => ({ results: mapping }))
     },
     setNotes: (notes) => set(() => ({ notes })),

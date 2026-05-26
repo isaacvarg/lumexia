@@ -2546,6 +2546,7 @@ model QcExaminationType {
 
   qcRecords         QcRecord[]
   qcParameterGroups QcParameterGroup[]
+  itemSpecifications QcItemSpecification[]
 
   @@map("qc_examination_types")
 }
@@ -2593,14 +2594,19 @@ model QcItemSpecificationInput {
 model QcItemSpecification {
   id                      String                     @id @default(uuid())
   itemParameterId         String                     @map("item_parameter_id")
+  examinationTypeId       String                     @map("examination_type_id")
+  name                    String
   valueA                  String                     @map("value_a")
   valueB                  String?                    @map("value_b")
   specificationType       String                     @map("specification_type")
+  displayOnCoa            Boolean                    @default(true) @map("display_on_coa")
   createdAt               DateTime                   @default(now()) @map("created_at")
   updatedAt               DateTime                   @updatedAt @map("updated_at")
   itemParameter           QcItemParameter            @relation(fields: [itemParameterId], references: [id])
+  examinationType         QcExaminationType          @relation(fields: [examinationTypeId], references: [id])
   itemSpecificationInputs QcItemSpecificationInput[]
 
+  @@index([itemParameterId, examinationTypeId])
   @@map("qc_item_specifications")
 }
 
@@ -2654,6 +2660,7 @@ model QcParameterResult {
   qcRecordId            String                   @map("qc_record_id")
   qcItemParameterId     String                   @map("qc_item_parameter_id")
   value                 String
+  runNumber             Int                      @default(1) @map("run_number")
   createdAt             DateTime                 @default(now()) @map("created_at")
   updatedAt             DateTime                 @updatedAt @map("updated_at")
   qcRecord              QcRecord                 @relation(fields: [qcRecordId], references: [id])
@@ -2662,7 +2669,7 @@ model QcParameterResult {
   QcParameter           QcParameter?             @relation(fields: [qcParameterId], references: [id])
   qcParameterId         String?
 
-  @@unique([qcRecordId, qcItemParameterId])
+  @@unique([qcRecordId, qcItemParameterId, runNumber])
   @@map("qc_parameter_results")
 }
 
@@ -2933,9 +2940,9 @@ model User {
   requestNotes                  RequestNote[]
   auditRequests                 AuditRequest[]
   auditRequestNotes             AuditRequestNote[]
-  pricingExaminations           PricingExamination[]           @relation("PricingExaminationDrafter")
-  pricingExaminationsApproved   PricingExamination[]           @relation("PricingExaminationApprovedBy")
-  pricingExaminationsRejected   PricingExamination[]           @relation("PricingExaminationRejectedBy")
+  pricingExaminations           PricingExamination[]            @relation("PricingExaminationDrafter")
+  pricingExaminationsApproved   PricingExamination[]            @relation("PricingExaminationApprovedBy")
+  pricingExaminationsRejected   PricingExamination[]            @relation("PricingExaminationRejectedBy")
   qcRecords                     QcRecord[]
   qcRecordNotes                 QcRecordNote[]
   qcAuditLog                    QcAuditLog[]

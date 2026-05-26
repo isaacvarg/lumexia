@@ -16,8 +16,13 @@ export const getAllQcParametersByItem = async (itemId: string) => {
       },
       specifications: {
         include: {
+          examinationType: true,
           itemSpecificationInputs: true,
-        }
+        },
+        orderBy: [
+          { examinationTypeId: 'asc' },
+          { name: 'asc' },
+        ],
       },
     }
   });
@@ -26,3 +31,4 @@ export const getAllQcParametersByItem = async (itemId: string) => {
 }
 
 export type QcItemParameter = Awaited<ReturnType<typeof getAllQcParametersByItem>>[number]
+export type QcItemSpecificationWithInputs = QcItemParameter["specifications"][number]

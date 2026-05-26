@@ -21,8 +21,13 @@ export const getAllQcParametersByItemAndQcRecord = async (itemId: string, qcReco
       },
       specifications: {
         include: {
+          examinationType: true,
           itemSpecificationInputs: true,
-        }
+        },
+        orderBy: [
+          { examinationTypeId: 'asc' },
+          { name: 'asc' },
+        ],
       },
       results: {
         where: {
@@ -30,7 +35,8 @@ export const getAllQcParametersByItemAndQcRecord = async (itemId: string, qcReco
         },
         include: {
           parameterInputResults: true,
-        }
+        },
+        orderBy: { runNumber: 'asc' },
       }
     }
   });

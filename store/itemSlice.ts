@@ -20,6 +20,7 @@ import { qualityActions } from "@/actions/quality";
 import { QcParameter } from "@/actions/quality/qc/parameters/getAll";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItem";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
+import { ExaminationType } from "@/actions/quality/qc/examinationTypes/getAll";
 import { QcTemplate } from "@/actions/quality/qc/templates/getAll";
 import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { ItemActivity } from "@/app/inventory/items/[name]/_actions/basics/getActivity";
@@ -51,6 +52,7 @@ export type ItemOptions = {
   itemFileTypes: ItemFileType[],
   qcTemplates: QcTemplate[],
   qcParameters: QcParameter[],
+  qcExaminationTypes: ExaminationType[],
 }
 
 
@@ -147,6 +149,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
     itemFileTypes: [],
     qcTemplates: [],
     qcParameters: [],
+    qcExaminationTypes: [],
   },
   filterPurchaseOrdersYear: undefined,
   pricingData: null,
@@ -177,7 +180,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
 
     getOptions: async () => {
       //fetch the data
-      const [itemTypes, procurementTypes, inventoryTypes, aliasTypes, suppliers, noteTypes, lotNoteTypes, uom, itemFileTypes, qcTemplates, qcParameters] = await Promise.all([
+      const [itemTypes, procurementTypes, inventoryTypes, aliasTypes, suppliers, noteTypes, lotNoteTypes, uom, itemFileTypes, qcTemplates, qcParameters, qcExaminationTypes] = await Promise.all([
         await itemTypeActions.getAll(),
         await procurementTypeActions.getAll(),
         await inventoryTypeActions.getAll(),
@@ -189,6 +192,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
         await getItemFileTypes(),
         await qualityActions.qc.templates.getAll(),
         await qualityActions.qc.parameters.getAll('wet'),
+        await qualityActions.qc.examinationTypes.getAll(),
       ]);
 
       // set state
@@ -205,6 +209,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
           itemFileTypes,
           qcTemplates,
           qcParameters,
+          qcExaminationTypes,
         }
       }));
     },

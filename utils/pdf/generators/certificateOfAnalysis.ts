@@ -11,20 +11,22 @@ import { getAutoTableEnd } from "../functions/getAutoTableEnd";
 import { createConfigLookup } from "@/utils/data/createConfigLookup";
 import { Config } from "@prisma/client";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItemAndQcRecord";
+import { formatSpecification } from "@/utils/qc/formatSpecification";
+import { findMatchingSpec } from "@/utils/qc/evaluateSpecification";
 
-const formatSpecification = (spec: QcItemParameter["specifications"][number] | undefined): string => {
-  if (!spec) return "Not Specified";
-  const { specificationType, valueA, valueB } = spec;
-  switch (specificationType) {
-    case "range":
-      return `${valueA} - ${valueB ?? ""}`;
-    case "max":
-      return `≤ ${valueA}`;
-    case "min":
-      return `≥ ${valueA}`;
-    default:
-      return valueA;
-  }
+const formatSpecConditions = (
+  spec: QcItemParameter["specifications"][number],
+  inputDefinitions: { id: string; name: string; unit: string }[],
+): string => {
+  if (spec.itemSpecificationInputs.length === 0) return "";
+  return spec.itemSpecificationInputs
+    .map((si) => {
+      const def = inputDefinitions.find((d) => d.id === si.parameterInputDefinitionId);
+      const label = def?.name ?? "";
+      const unit = def?.unit ? ` ${def.unit}` : "";
+      return `${label} ${si.value}${unit}`.trim();
+    })
+    .join(", ");
 };
 
 export const createCertificateOfAnalysis = async (
@@ -34,7 +36,8 @@ export const createCertificateOfAnalysis = async (
   examinationDate: Date,
   parameters: QcItemParameter[],
   statusName: string,
-  companyData: Config[]
+  companyData: Config[],
+  examinationTypeId: string,
 ): Promise<jsPDF> => {
   const logoDimensions = await getImageDimensions(logo);
   const companyLookup = createConfigLookup(companyData);
@@ -119,18 +122,43 @@ export const createCertificateOfAnalysis = async (
     .setTextColor("#333333");
   pdf.text("Results", leftX, resultsHeaderY);
 
-  // Results table
-  const tableRows = parameters.map((param) => {
-    const spec = param.specifications[0];
-    const result = param.results[0];
+  // Results table — one row per displayable spec (or one fallback row if none).
+  const tableRows = parameters.flatMap((param) => {
     const uom = param.parameter.uom && param.parameter.uom !== "" ? param.parameter.uom : "Not Applicable";
-    return [
-      param.parameter.name,
-      formatSpecification(spec),
-      result?.value ?? "N/A",
-      uom,
-      statusName,
-    ];
+    const visibleSpecs = param.specifications.filter(
+      (s) => s.displayOnCoa && s.examinationTypeId === examinationTypeId,
+    );
+
+    if (visibleSpecs.length === 0) {
+      const fallbackResult = param.results[0];
+      return [[
+        param.parameter.name,
+        "Not Specified",
+        fallbackResult?.value ?? "N/A",
+        uom,
+        statusName,
+      ]];
+    }
+
+    return visibleSpecs.map((spec) => {
+      const matchingRun = param.results.find((run) => {
+        const match = findMatchingSpec(visibleSpecs, run);
+        return match?.id === spec.id;
+      });
+      const conditions = formatSpecConditions(spec, param.parameter.inputDefinitions);
+      const label = spec.name
+        ? `${param.parameter.name} (${spec.name})`
+        : conditions
+          ? `${param.parameter.name} (${conditions})`
+          : param.parameter.name;
+      return [
+        label,
+        formatSpecification(spec),
+        matchingRun?.value ?? "—",
+        uom,
+        statusName,
+      ];
+    });
   });
 
   autoTable(pdf, {

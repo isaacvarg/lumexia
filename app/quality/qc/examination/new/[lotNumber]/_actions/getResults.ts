@@ -12,6 +12,10 @@ export const getResults = async (recordId: string) => {
       parameterInputResults: true,
       qcItemParameter: true,
     },
+    orderBy: [
+      { qcItemParameterId: 'asc' },
+      { runNumber: 'asc' },
+    ],
   });
 
   return results;

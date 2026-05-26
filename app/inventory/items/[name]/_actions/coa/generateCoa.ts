@@ -22,7 +22,8 @@ export const generateCoa = async (
     qcRecord.createdAt,
     parameters,
     qcRecord.status.name,
-    companyData
+    companyData,
+    qcRecord.examinationTypeId,
   );
 
   const dateStr = DateTime.now().toFormat("yyyy-MM-dd");

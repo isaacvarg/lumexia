@@ -7,7 +7,11 @@ export const getAllQcRecordsByBpr = async (bprId: string) => {
 
     const records = await prisma.qcRecord.findMany({
         where: {
-            linkedBprId: bprId,
+            examinedLot: {
+                lotOrigin: {
+                    bprId,
+                },
+            },
         },
         include: {
             conductedBy: true,
@@ -26,7 +30,8 @@ export const getAllQcRecordsByBpr = async (bprId: string) => {
             },
             linkedBpr: true,
             linkedPurchaseOrderItem: true,
-        }
+        },
+        orderBy: { createdAt: 'desc' },
     });
 
     return records
