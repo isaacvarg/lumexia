@@ -1,0 +1,12 @@
+model ExperimentGroup {
+    id        String   @id @default(uuid())
+    label     String
+    statusId  String   @map("status_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    status      ExperimentGroupStatus @relation(fields: [statusId], references: [id])
+    experiments Experiment[]
+
+    @@map("experiment_groups")
+}

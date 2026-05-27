@@ -1,0 +1,12 @@
+model ExperimentNoteFile {
+    id               String   @id @default(uuid())
+    experimentNoteId String   @map("experiment_note_id")
+    fileId           String   @map("file_id")
+    createdAt        DateTime @default(now()) @map("created_at")
+    updatedAt        DateTime @updatedAt @map("updated_at")
+
+    experimentNote ExperimentNote @relation(fields: [experimentNoteId], references: [id])
+    file           File           @relation(fields: [fileId], references: [id])
+
+    @@map("experiment_note_files")
+}

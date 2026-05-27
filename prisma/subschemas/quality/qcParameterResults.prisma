@@ -3,12 +3,13 @@ model QcParameterResult {
     qcRecordId            String                     @map("qc_record_id")
     qcItemParameterId     String                     @map("qc_item_parameter_id")
     value                 String
+    runNumber             Int                        @default(1) @map("run_number")
     createdAt             DateTime                   @default(now()) @map("created_at")
     updatedAt             DateTime                   @updatedAt @map("updated_at")
     qcRecord              QcRecord                   @relation(fields: [qcRecordId], references: [id])
     qcItemParameter       QcItemParameter            @relation(fields: [qcItemParameterId], references: [id])
     parameterInputResults QcParameterInputResult[]
 
-    @@unique([qcRecordId, qcItemParameterId])
+    @@unique([qcRecordId, qcItemParameterId, runNumber])
     @@map("qc_parameter_results")
 }

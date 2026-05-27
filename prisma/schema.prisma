@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Tue May 19 2026 09:20:46 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Wed May 27 2026 15:09:27 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -625,6 +625,8 @@ model File {
   qcRecordNoteFiles                QcRecordNoteFile[]
   mbprNoteFiles                    MbprNoteFile[]
   fileTags                         FileTag[]
+  experimentNoteFiles              ExperimentNoteFile[]
+  experimentFiles                  ExperimentFile[]
 
   @@map("files")
 }
@@ -1291,6 +1293,8 @@ model Item {
   discrepancyAuditItems                DiscrepancyAuditItem[]
   discreteUnitOfMeasurementConversions DiscreteUnitOfMeasurementConversion[]
   reorderingRule                       ReorderingRule?
+  experimentsAsPrimarySubject          Experiment[]
+  experimentVariantMaterials           ExperimentVariantMaterial[]
   BomPricingDataArchive                BomPricingDataArchive[]
   FinishedProductArchive               FinishedProductArchive[]
   FinishedProductAuxiliary             FinishedProductAuxiliary[]
@@ -2544,9 +2548,9 @@ model QcExaminationType {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  qcRecords         QcRecord[]
-  qcParameterGroups QcParameterGroup[]
-  itemSpecifications QcItemSpecification[]
+  qcRecords           QcRecord[]
+  qcParameterGroups   QcParameterGroup[]
+  QcItemSpecification QcItemSpecification[]
 
   @@map("qc_examination_types")
 }
@@ -2824,6 +2828,175 @@ model QcTemplate {
   @@map("qc_templates")
 }
 
+model ExperimentFile {
+  id           String   @id @default(uuid())
+  experimentId String   @map("experiment_id")
+  fileId       String   @map("file_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  experiment Experiment @relation(fields: [experimentId], references: [id])
+  file       File       @relation(fields: [fileId], references: [id])
+
+  @@map("experiment_files")
+}
+
+model ExperimentGroupStatus {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  textColor   String   @default("#000000") @map("text_color")
+  bgColor     String   @default("#077202") @map("bg_color")
+  sequence    Int      @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  experimentGroups ExperimentGroup[]
+
+  @@map("experiment_group_statuses")
+}
+
+model ExperimentGroup {
+  id        String   @id @default(uuid())
+  label     String
+  statusId  String   @map("status_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  status      ExperimentGroupStatus @relation(fields: [statusId], references: [id])
+  experiments Experiment[]
+
+  @@map("experiment_groups")
+}
+
+model ExperimentNoteFile {
+  id               String   @id @default(uuid())
+  experimentNoteId String   @map("experiment_note_id")
+  fileId           String   @map("file_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  experimentNote ExperimentNote @relation(fields: [experimentNoteId], references: [id])
+  file           File           @relation(fields: [fileId], references: [id])
+
+  @@map("experiment_note_files")
+}
+
+model ExperimentNoteType {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  textColor   String   @default("#000000") @map("text_color")
+  bgColor     String   @default("#077202") @map("bg_color")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  notes ExperimentNote[]
+
+  @@map("experiment_note_types")
+}
+
+model ExperimentNote {
+  id           String   @id @default(uuid())
+  experimentId String   @map("experiment_id")
+  noteTypeId   String   @map("note_type_id")
+  userId       String   @map("user_id")
+  content      String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  experiment Experiment           @relation(fields: [experimentId], references: [id])
+  noteType   ExperimentNoteType   @relation(fields: [noteTypeId], references: [id])
+  user       User                 @relation(fields: [userId], references: [id])
+  files      ExperimentNoteFile[]
+
+  @@map("experiment_notes")
+}
+
+model ExperimentSample {
+  id                  String   @id @default(uuid())
+  referenceCode       Int      @unique @default(autoincrement()) @map("reference_code")
+  experimentId        String   @map("experiment_id")
+  experimentVariantId String   @map("experiment_variant_id")
+  label               String
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  experiment        Experiment        @relation(fields: [experimentId], references: [id])
+  experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+
+  @@map("experiment_samples")
+}
+
+model ExperimentStatus {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  textColor   String   @default("#000000") @map("text_color")
+  bgColor     String   @default("#077202") @map("bg_color")
+  sequence    Int      @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  experiments Experiment[]
+
+  @@map("experiment_statuses")
+}
+
+model ExperimentVariantMaterial {
+  id                  String   @id @default(uuid())
+  experimentVariantId String   @map("experiment_variant_id")
+  itemId              String   @map("item_id")
+  concentration       Float
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+  item              Item              @relation(fields: [itemId], references: [id])
+
+  @@unique([experimentVariantId, itemId])
+  @@map("experiment_variant_materials")
+}
+
+model ExperimentVariant {
+  id           String   @id @default(uuid())
+  experimentId String   @map("experiment_id")
+  label        String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  experiment Experiment                  @relation(fields: [experimentId], references: [id])
+  materials  ExperimentVariantMaterial[]
+  samples    ExperimentSample[]
+
+  @@map("experiment_variants")
+}
+
+model Experiment {
+  id                    String   @id @default(uuid())
+  referenceCode         Int      @default(autoincrement()) @map("reference_code")
+  statusId              String   @map("status_id")
+  primaryInvestigatorId String   @map("primary_investigator_id")
+  primarySubjectId      String   @map("primary_subject_id")
+  experimentGroupId     String?  @map("experiment_group_id")
+  objective             String
+  hypothesis            String?
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  status              ExperimentStatus @relation(fields: [statusId], references: [id])
+  primaryInvestigator User             @relation(fields: [primaryInvestigatorId], references: [id])
+  primarySubject      Item             @relation(fields: [primarySubjectId], references: [id])
+  experimentGroup     ExperimentGroup? @relation(fields: [experimentGroupId], references: [id])
+
+  variants ExperimentVariant[]
+  samples  ExperimentSample[]
+  notes    ExperimentNote[]
+  files    ExperimentFile[]
+
+  @@map("experiments")
+}
+
 model Account {
   id                String   @id @default(cuid())
   userId            String   @map("user_id")
@@ -2922,53 +3095,55 @@ model UserRole {
 }
 
 model User {
-  id                            String                          @id @default(cuid())
-  name                          String?
-  email                         String?                         @unique
-  emailVerified                 DateTime?                       @map("email_verified")
-  image                         String?
-  accounts                      Account[]
-  sessions                      Session[]
-  createdAt                     DateTime                        @default(now())
-  updatedAt                     DateTime                        @updatedAt
-  purchaseOrders                PurchaseOrder[]
-  transactions                  Transaction[]
-  purchaseOrderNotes            PurchaseOrderNote[]
-  activityLogs                  ActivityLog[]
-  userConfigs                   UserConfig[]
-  purchasingRequests            PurchasingRequest[]
-  requestNotes                  RequestNote[]
-  auditRequests                 AuditRequest[]
-  auditRequestNotes             AuditRequestNote[]
-  pricingExaminations           PricingExamination[]            @relation("PricingExaminationDrafter")
-  pricingExaminationsApproved   PricingExamination[]            @relation("PricingExaminationApprovedBy")
-  pricingExaminationsRejected   PricingExamination[]            @relation("PricingExaminationRejectedBy")
-  qcRecords                     QcRecord[]
-  qcRecordNotes                 QcRecordNote[]
-  qcAuditLog                    QcAuditLog[]
-  files                         File[]
-  poAccountingAuditLogd         PoAccountingAuditLog[]
-  generalRequests               GeneralRequest[]
-  generalRequestNotes           GeneralRequestNote[]
-  PoAccountingNote              PoAccountingNote[]
-  PricingExaminationNote        PricingExaminationNote[]
-  DiscrepancyAuditItemNote      DiscrepancyAuditItemNote[]
-  InventoryAudit                InventoryAudit[]
-  LotNote                       LotNote[]
-  ItemNote                      ItemNote[]
-  BprBillOfMaterials            BprBillOfMaterials[]
-  BprNote                       BprNote[]
-  BprStaging                    BprStaging[]
-  BprStagingDenial              BprStagingDenial[]
-  BprStagingVerification        BprStagingVerification[]
-  BprStatusTransition           BprStatusTransition[]
-  BprStepActionableCompletion   BprStepActionableCompletion[]
-  BprStepActionableVerification BprStepActionableVerification[]
-  MbprNote                      MbprNote[]
-  PoPublicNote                  PoPublicNote[]
-  PoSupplierNote                PoSupplierNote[]
-  Authenticator                 Authenticator[]
-  UserRoleAssignment            UserRoleAssignment[]
+  id                               String                          @id @default(cuid())
+  name                             String?
+  email                            String?                         @unique
+  emailVerified                    DateTime?                       @map("email_verified")
+  image                            String?
+  accounts                         Account[]
+  sessions                         Session[]
+  createdAt                        DateTime                        @default(now())
+  updatedAt                        DateTime                        @updatedAt
+  purchaseOrders                   PurchaseOrder[]
+  transactions                     Transaction[]
+  purchaseOrderNotes               PurchaseOrderNote[]
+  activityLogs                     ActivityLog[]
+  userConfigs                      UserConfig[]
+  purchasingRequests               PurchasingRequest[]
+  requestNotes                     RequestNote[]
+  auditRequests                    AuditRequest[]
+  auditRequestNotes                AuditRequestNote[]
+  pricingExaminations              PricingExamination[]            @relation("PricingExaminationDrafter")
+  pricingExaminationsApproved      PricingExamination[]            @relation("PricingExaminationApprovedBy")
+  pricingExaminationsRejected      PricingExamination[]            @relation("PricingExaminationRejectedBy")
+  qcRecords                        QcRecord[]
+  qcRecordNotes                    QcRecordNote[]
+  qcAuditLog                       QcAuditLog[]
+  files                            File[]
+  poAccountingAuditLogd            PoAccountingAuditLog[]
+  generalRequests                  GeneralRequest[]
+  generalRequestNotes              GeneralRequestNote[]
+  experimentsAsPrimaryInvestigator Experiment[]
+  experimentNotes                  ExperimentNote[]
+  PoAccountingNote                 PoAccountingNote[]
+  PricingExaminationNote           PricingExaminationNote[]
+  DiscrepancyAuditItemNote         DiscrepancyAuditItemNote[]
+  InventoryAudit                   InventoryAudit[]
+  LotNote                          LotNote[]
+  ItemNote                         ItemNote[]
+  BprBillOfMaterials               BprBillOfMaterials[]
+  BprNote                          BprNote[]
+  BprStaging                       BprStaging[]
+  BprStagingDenial                 BprStagingDenial[]
+  BprStagingVerification           BprStagingVerification[]
+  BprStatusTransition              BprStatusTransition[]
+  BprStepActionableCompletion      BprStepActionableCompletion[]
+  BprStepActionableVerification    BprStepActionableVerification[]
+  MbprNote                         MbprNote[]
+  PoPublicNote                     PoPublicNote[]
+  PoSupplierNote                   PoSupplierNote[]
+  Authenticator                    Authenticator[]
+  UserRoleAssignment               UserRoleAssignment[]
 
   @@map("users")
 }

@@ -35,6 +35,8 @@ model File {
     qcRecordNoteFiles              QcRecordNoteFile[]
     mbprNoteFiles                  MbprNoteFile[]
     fileTags                       FileTag[]
+    experimentNoteFiles            ExperimentNoteFile[]
+    experimentFiles                ExperimentFile[]
 
     @@map("files")
 }

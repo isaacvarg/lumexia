@@ -1,0 +1,14 @@
+model ExperimentStatus {
+    id          String   @id @default(uuid())
+    name        String
+    description String
+    textColor   String   @default("#000000") @map("text_color")
+    bgColor     String   @default("#077202") @map("bg_color")
+    sequence    Int      @unique
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    experiments Experiment[]
+
+    @@map("experiment_statuses")
+}

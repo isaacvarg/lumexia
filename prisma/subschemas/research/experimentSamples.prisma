@@ -1,0 +1,14 @@
+model ExperimentSample {
+    id                  String   @id @default(uuid())
+    referenceCode       Int      @unique @default(autoincrement()) @map("reference_code")
+    experimentId        String   @map("experiment_id")
+    experimentVariantId String   @map("experiment_variant_id")
+    label               String
+    createdAt           DateTime @default(now()) @map("created_at")
+    updatedAt           DateTime @updatedAt @map("updated_at")
+
+    experiment        Experiment        @relation(fields: [experimentId], references: [id])
+    experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+
+    @@map("experiment_samples")
+}

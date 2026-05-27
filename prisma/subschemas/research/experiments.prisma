@@ -1,0 +1,24 @@
+model Experiment {
+    id                    String   @id @default(uuid())
+    referenceCode         Int      @default(autoincrement()) @map("reference_code")
+    statusId              String   @map("status_id")
+    primaryInvestigatorId String   @map("primary_investigator_id")
+    primarySubjectId      String   @map("primary_subject_id")
+    experimentGroupId     String?  @map("experiment_group_id")
+    objective             String
+    hypothesis            String?
+    createdAt             DateTime @default(now()) @map("created_at")
+    updatedAt             DateTime @updatedAt @map("updated_at")
+
+    status              ExperimentStatus    @relation(fields: [statusId], references: [id])
+    primaryInvestigator User                @relation(fields: [primaryInvestigatorId], references: [id])
+    primarySubject      Item                @relation(fields: [primarySubjectId], references: [id])
+    experimentGroup     ExperimentGroup?    @relation(fields: [experimentGroupId], references: [id])
+
+    variants ExperimentVariant[]
+    samples  ExperimentSample[]
+    notes    ExperimentNote[]
+    files    ExperimentFile[]
+
+    @@map("experiments")
+}

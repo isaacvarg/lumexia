@@ -1,0 +1,14 @@
+model ExperimentVariantMaterial {
+    id                  String   @id @default(uuid())
+    experimentVariantId String   @map("experiment_variant_id")
+    itemId              String   @map("item_id")
+    concentration       Float
+    createdAt           DateTime @default(now()) @map("created_at")
+    updatedAt           DateTime @updatedAt @map("updated_at")
+
+    experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+    item              Item              @relation(fields: [itemId], references: [id])
+
+    @@unique([experimentVariantId, itemId])
+    @@map("experiment_variant_materials")
+}

@@ -1,0 +1,13 @@
+model ExperimentVariant {
+    id           String   @id @default(uuid())
+    experimentId String   @map("experiment_id")
+    label        String
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+
+    experiment Experiment                  @relation(fields: [experimentId], references: [id])
+    materials  ExperimentVariantMaterial[]
+    samples    ExperimentSample[]
+
+    @@map("experiment_variants")
+}

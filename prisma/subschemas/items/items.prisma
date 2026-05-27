@@ -29,6 +29,8 @@ model Item {
     discrepancyAuditItems        DiscrepancyAuditItem[]
     discreteUnitOfMeasurementConversions                 DiscreteUnitOfMeasurementConversion[]
     reorderingRule               ReorderingRule?
+    experimentsAsPrimarySubject  Experiment[]
+    experimentVariantMaterials   ExperimentVariantMaterial[]
 
     @@map("items")
 }
