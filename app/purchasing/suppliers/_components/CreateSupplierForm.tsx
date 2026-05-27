@@ -4,6 +4,7 @@ import supplierActions from "@/actions/purchasing/supplierActions";
 import Dialog from "@/components/Dialog";
 import Form from "@/components/Form";
 import useDialog from "@/hooks/useDialog";
+import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 import { SelectOption } from "@/types/selectOption";
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { restructureData } from "@/utils/data/restructureData";
@@ -26,7 +27,10 @@ const CreateSupplierForm = () => {
   const { resetDialogContext } = useDialog();
 
   const handleSubmit = async (data: Inputs) => {
-    const newSupplier = await supplierActions.createNew(data);
+    const newSupplier = await supplierActions.createNew({
+      ...data,
+      recordStatusId: recordStatuses.active,
+    });
 
     await createActivityLog("createSupplier", "supplier", newSupplier.id, {
       context: `'${newSupplier.name}' supplier was created`,
