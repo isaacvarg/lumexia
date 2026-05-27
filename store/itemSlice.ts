@@ -20,6 +20,7 @@ import { qualityActions } from "@/actions/quality";
 import { QcParameter } from "@/actions/quality/qc/parameters/getAll";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItem";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
+import { QcMeasurementRow } from "@/app/inventory/items/[name]/_actions/quality/getMeasurements";
 import { ExaminationType } from "@/actions/quality/qc/examinationTypes/getAll";
 import { QcTemplate } from "@/actions/quality/qc/templates/getAll";
 import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
@@ -85,6 +86,7 @@ type State = {
   qualityTemplateViewMode: 'view' | 'add';
   qcItemParameters: QcItemParameter[];
   qcRecords: QcRecordExpanded[];
+  qcMeasurements: QcMeasurementRow[];
   discreteConversions: DiscreteConversion[],
   reorderingRule: ReorderingRule;
 }
@@ -117,6 +119,7 @@ type Actions = {
     setQualityTemplateViewMode: (mode: 'view' | 'add') => void;
     setQcItemParameters: (qcItemParameters: QcItemParameter[]) => void;
     setQcRecords: (qcRecords: QcRecordExpanded[]) => void;
+    setQcMeasurements: (qcMeasurements: QcMeasurementRow[]) => void;
     setDiscreteConversions: (conversions: DiscreteConversion[]) => void;
     setReorderingRule: (rule: ReorderingRule) => void;
   }
@@ -163,6 +166,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
   qualityTemplateViewMode: "view" as 'view', //lol,
   qcItemParameters: [],
   qcRecords: [],
+  qcMeasurements: [],
   discreteConversions: [],
   reorderingRule: null,
 
@@ -314,6 +318,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
     setQualityTemplateViewMode: (mode) => set(() => ({ qualityTemplateViewMode: mode })),
     setQcItemParameters: (qcItemParameters) => set(() => ({ qcItemParameters, })),
     setQcRecords: (qcRecords) => set(() => ({ qcRecords, })),
+    setQcMeasurements: (qcMeasurements) => set(() => ({ qcMeasurements, })),
     setDiscreteConversions: (conversions) => set(() => ({ discreteConversions: conversions })),
     setReorderingRule: (rule) => set(() => ({ reorderingRule: rule })),
 

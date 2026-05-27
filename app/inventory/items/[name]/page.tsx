@@ -15,6 +15,7 @@ import { getBprs } from "./_actions/production/getBprs";
 import { getAllItemFiles } from "./_actions/files/getAllItemFiles";
 import { qualityActions } from "@/actions/quality";
 import { getReorderingRule } from "@/actions/inventory/reorderingRules/get";
+import { getItemMeasurements } from "./_actions/quality/getMeasurements";
 import DangerZoneButton from "./_components/shared/DangerZoneButton";
 
 const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) => {
@@ -36,6 +37,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
     files,
     qcItemParameters,
     qcRecords,
+    qcMeasurements,
     discreteConversions,
     reorderingRule,
   ] = await Promise.all([
@@ -53,6 +55,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
     await getAllItemFiles(item.id),
     await qualityActions.qc.itemParameters.getByItem(item.id),
     await qualityActions.qc.records.getAllByItem(item.id),
+    await getItemMeasurements(item.id),
     await inventoryActions.items.discreteConversions.getAll(item.id),
     await getReorderingRule(item.id),
   ])
@@ -77,6 +80,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
         files={files}
         qcItemParameters={qcItemParameters}
         qcRecords={qcRecords}
+        qcMeasurements={qcMeasurements}
         discreteConversions={discreteConversions}
         reorderingRule={reorderingRule}
       />

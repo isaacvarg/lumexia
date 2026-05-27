@@ -19,6 +19,7 @@ import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItem";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
 import { DiscreteConversion } from "@/actions/inventory/items/discreteConversions/getAll";
 import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
+import { QcMeasurementRow } from "../../_actions/quality/getMeasurements";
 
 type StateSetterProps = {
   activity: ItemActivity[],
@@ -36,6 +37,7 @@ type StateSetterProps = {
   files: ItemFile[],
   qcItemParameters: QcItemParameter[]
   qcRecords: QcRecordExpanded[]
+  qcMeasurements: QcMeasurementRow[]
   discreteConversions: DiscreteConversion[]
   reorderingRule: ReorderingRule
 }
@@ -57,6 +59,7 @@ const StateSetter = ({
   files,
   qcItemParameters,
   qcRecords,
+  qcMeasurements,
   discreteConversions,
   reorderingRule,
 }: StateSetterProps) => {
@@ -80,6 +83,7 @@ const StateSetter = ({
     setQcItemParameters,
     getFilteredPurchaseOrders,
     setQcRecords,
+    setQcMeasurements,
     setCurrentTab,
     setSelectedAlias,
     setLotsViewMode,
@@ -135,10 +139,11 @@ const StateSetter = ({
     setFiles(files);
     setQcItemParameters(qcItemParameters)
     setQcRecords(qcRecords)
+    setQcMeasurements(qcMeasurements)
     setDiscreteConversions(discreteConversions)
     setReorderingRule(reorderingRule)
 
-  }, [item, options, getOptions, setActivity, activity, setAliases, aliases, setAudits, audits, setExaminations, examinations, setInventory, inventory, setNotes, notes, setPricingData, pricingData, setPurchaseOrders, purchaseOrders, setUsage, usage, setBprs, bprs, setActiveMbpr, activeMbpr, setFiles, files, qcItemParameters, setQcItemParameters, qcRecords, setQcRecords, discreteConversions, setDiscreteConversions, reorderingRule, setReorderingRule,]);
+  }, [item, options, getOptions, setActivity, activity, setAliases, aliases, setAudits, audits, setExaminations, examinations, setInventory, inventory, setNotes, notes, setPricingData, pricingData, setPurchaseOrders, purchaseOrders, setUsage, usage, setBprs, bprs, setActiveMbpr, activeMbpr, setFiles, files, qcItemParameters, setQcItemParameters, qcRecords, setQcRecords, qcMeasurements, setQcMeasurements, discreteConversions, setDiscreteConversions, reorderingRule, setReorderingRule,]);
 
   useEffect(() => {
     getFilteredPurchaseOrders();

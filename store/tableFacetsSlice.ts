@@ -35,6 +35,8 @@ type State = {
   poAccounting: FilterArray
   discrepancyAudit: FilterArray
   itemActivity: FilterArray
+  itemMeasurements: FilterArray
+  itemMeasurementsByParameter: FilterArray
   inventoryLots: FilterArray
   lotTransactions: FilterArray
   poActivity: FilterArray
@@ -93,6 +95,8 @@ export const useTableFacets = create<State & Actions>((set) => ({
   poAccounting: [],
   discrepancyAudit: [],
   itemActivity: [],
+  itemMeasurements: [],
+  itemMeasurementsByParameter: [],
   inventoryLots: [],
   lotTransactions: [],
   poActivity: [],

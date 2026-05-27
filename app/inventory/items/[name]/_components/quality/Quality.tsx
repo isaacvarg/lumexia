@@ -1,17 +1,16 @@
 import Examinations from "./Examinations"
+import Measurements from "./Measurements"
 import Parameters from "./Parameters"
 
 const Quality = () => {
-  //  parameter assignments
-  // group assignments 
-  // examinations
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-6">
+        <Examinations />
+        <Parameters />
+      </div>
 
-      <Examinations />
-      <Parameters />
-
-
+      <Measurements />
     </div>
   )
 }
