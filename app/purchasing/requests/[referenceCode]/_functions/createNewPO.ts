@@ -1,6 +1,7 @@
 "use server"
 
 import { getUserId } from "@/actions/users/getUserId";
+import { poAccountingStatuses } from "@/configs/staticRecords/poAccountingStatuses";
 import { purchaseOrderStatuses } from "@/configs/staticRecords/purchaseOrderStatuses";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 import prisma from "@/lib/prisma";
@@ -39,6 +40,15 @@ const createPO = async (supplierId: string, userId: string) => {
     }
   })
 
+  await prisma.poAccountingDetail.create({
+    data: {
+      purchaseOrderId: response.id,
+      statusId: poAccountingStatuses.notStarted,
+      paid: false,
+      packingSlipReceived: false,
+      paperworkGivenToAdmin: false,
+    }
+  })
 
   await createActivityLog('createPurchaseOrder', 'purchaseOrder', response.id, { context: `PO #${response.referenceCode} created` })
 
