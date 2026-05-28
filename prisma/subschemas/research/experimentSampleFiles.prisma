@@ -1,0 +1,12 @@
+model ExperimentSampleFile {
+    id        String   @id @default(uuid())
+    sampleId  String   @map("sample_id")
+    fileId    String   @map("file_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    sample ExperimentSample @relation(fields: [sampleId], references: [id])
+    file   File             @relation(fields: [fileId], references: [id])
+
+    @@map("experiment_sample_files")
+}

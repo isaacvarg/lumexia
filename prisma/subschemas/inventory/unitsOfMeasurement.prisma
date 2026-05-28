@@ -13,6 +13,7 @@ model UnitOfMeasurement {
     transactions                 Transaction[]
     purchaseOrderItem            PurchaseOrderItem[]
     discrepancyAuditItems        DiscrepancyAuditItem[]
+    experimentSamples            ExperimentSample[]
 
 
     @@map("units_of_measurement")

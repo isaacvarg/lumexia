@@ -55,6 +55,7 @@ type State = {
   mbprActivity: StateData,
   files: StateData,
   actionableTypes: StateData,
+  experiments: StateData,
 }
 
 
@@ -111,6 +112,7 @@ export const useTablePagination = create<State & Actions>((set) => ({
   mbprActivity: { pageSize: 20, pageIndex: 0 },
   files: { pageSize: 50, pageIndex: 0 },
   actionableTypes: { pageSize: 20, pageIndex: 0 },
+  experiments: { pageSize: 50, pageIndex: 0 },
 
 
   setPagination: (filterName, value) =>

@@ -1,14 +1,23 @@
 model ExperimentSample {
-    id                  String   @id @default(uuid())
-    referenceCode       Int      @unique @default(autoincrement()) @map("reference_code")
-    experimentId        String   @map("experiment_id")
-    experimentVariantId String   @map("experiment_variant_id")
+    id                  String    @id @default(uuid())
+    referenceCode       Int       @unique @default(autoincrement()) @map("reference_code")
+    experimentId        String    @map("experiment_id")
+    experimentVariantId String    @map("experiment_variant_id")
     label               String
-    createdAt           DateTime @default(now()) @map("created_at")
-    updatedAt           DateTime @updatedAt @map("updated_at")
+    size                Float?
+    uomId               String?   @map("uom_id")
+    preparedAt          DateTime? @map("prepared_at")
+    preparedById        String?   @map("prepared_by_id")
+    createdAt           DateTime  @default(now()) @map("created_at")
+    updatedAt           DateTime  @updatedAt @map("updated_at")
 
-    experiment        Experiment        @relation(fields: [experimentId], references: [id])
-    experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+    experiment        Experiment                          @relation(fields: [experimentId], references: [id])
+    experimentVariant ExperimentVariant                   @relation(fields: [experimentVariantId], references: [id])
+    uom               UnitOfMeasurement?                  @relation(fields: [uomId], references: [id])
+    preparedBy        User?                               @relation("ExperimentSamplePreparedBy", fields: [preparedById], references: [id])
+    preparationSteps  ExperimentSamplePreparationStep[]
+    notes             ExperimentSampleNote[]
+    files             ExperimentSampleFile[]
 
     @@map("experiment_samples")
 }

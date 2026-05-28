@@ -17,6 +17,8 @@ type NoteFileTable =
   | 'bprNoteFile'
   | 'mbprNoteFile'
   | 'qcRecordNoteFile'
+  | 'experimentNoteFile'
+  | 'experimentSampleNoteFile'
 
 const noteIdFieldMap: Record<NoteFileTable, string> = {
   requestNoteFile: 'requestNoteId',
@@ -33,6 +35,8 @@ const noteIdFieldMap: Record<NoteFileTable, string> = {
   bprNoteFile: 'bprNoteId',
   mbprNoteFile: 'mbprNoteId',
   qcRecordNoteFile: 'qcRecordNoteId',
+  experimentNoteFile: 'experimentNoteId',
+  experimentSampleNoteFile: 'experimentSampleNoteId',
 }
 
 export const createNoteFiles = async (table: NoteFileTable, noteId: string, fileIds: string[]) => {

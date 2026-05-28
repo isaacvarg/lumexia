@@ -1,4 +1,4 @@
-import { TbBook2, TbClipboardCheck, TbFiles, TbSettings, TbShoppingBag, TbShoppingBagPlus, TbSmartHome, TbTruck } from "react-icons/tb";
+import { TbBook2, TbClipboardCheck, TbFiles, TbFlask, TbSettings, TbShoppingBag, TbShoppingBagPlus, TbSmartHome, TbTruck } from "react-icons/tb";
 import { BsBox2Heart } from "react-icons/bs";
 import { TbScale, TbCreditCard, TbClipboardHeart } from "react-icons/tb";
 import { BiBuildings } from "react-icons/bi";
@@ -106,6 +106,16 @@ export const sidebarElements = [
         path: "/quality/qc/"
       }
 
+    ]
+  },
+  {
+    label: "R&D",
+    contents: [
+      {
+        label: "Experiments",
+        icon: <TbFlask />,
+        path: "/research/experiments",
+      },
     ]
   },
   {

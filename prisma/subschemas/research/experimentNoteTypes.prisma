@@ -7,7 +7,8 @@ model ExperimentNoteType {
     createdAt   DateTime @default(now()) @map("created_at")
     updatedAt   DateTime @updatedAt @map("updated_at")
 
-    notes ExperimentNote[]
+    notes       ExperimentNote[]
+    sampleNotes ExperimentSampleNote[]
 
     @@map("experiment_note_types")
 }

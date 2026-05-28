@@ -51,6 +51,7 @@ type State = {
   mbprActivity: FilterArray
   files: FilterArray
   actionableTypes: FilterArray
+  experiments: FilterArray
 };
 
 export type TableStateName = keyof State;
@@ -111,6 +112,7 @@ export const useTableFacets = create<State & Actions>((set) => ({
   mbprActivity: [],
   files: [],
   actionableTypes: [],
+  experiments: [],
 
   setFilter: (tableState, value) =>
     set((state) => ({

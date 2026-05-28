@@ -78,13 +78,25 @@ export async function POST(request: NextRequest) {
         width: 600,
         height: 800
       };
-      const thumbnail = await fromBuffer(buffer, options).bulk(1, { responseType: 'buffer' });
+      try {
+        const thumbnail = await fromBuffer(buffer, options).bulk(1, { responseType: 'buffer' });
+        const buf = thumbnail?.[0]?.buffer;
 
-      if (!thumbnail || !thumbnail[0] || !thumbnail[0].buffer) return
-      const thumbnailExtension = '.webp'; // Use webp for thumbnails for better compression
-      thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
-      await s3.putObject(bucketName, thumbnailObjectName, thumbnail[0].buffer, thumbnail[0].buffer.length, { 'Content-Type': 'image/webp' });
-      thumbnailBucketName = bucketName;
+        // pdf2pic silently returns a 0-length Buffer when its `gm`
+        // (GraphicsMagick) backend isn't available on the host. Skip
+        // storing the thumbnail in that case so the renderer can fall
+        // back to the PDF icon instead of a broken image.
+        if (buf && buf.length > 0) {
+          const thumbnailExtension = '.webp';
+          thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
+          await s3.putObject(bucketName, thumbnailObjectName, buf, buf.length, { 'Content-Type': 'image/webp' });
+          thumbnailBucketName = bucketName;
+        } else {
+          console.warn('PDF thumbnail generation produced an empty buffer; skipping. Is GraphicsMagick installed on the host?');
+        }
+      } catch (e) {
+        console.warn('PDF thumbnail generation failed; uploading PDF without thumbnail.', e);
+      }
     }
     // create the response rather than provide just upload info
     const responseData = {

@@ -3,11 +3,14 @@ model ExperimentVariantMaterial {
     experimentVariantId String   @map("experiment_variant_id")
     itemId              String   @map("item_id")
     concentration       Float
+    sequence            Int      @default(0)
+    phase               String?
     createdAt           DateTime @default(now()) @map("created_at")
     updatedAt           DateTime @updatedAt @map("updated_at")
 
-    experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
-    item              Item              @relation(fields: [itemId], references: [id])
+    experimentVariant ExperimentVariant                @relation(fields: [experimentVariantId], references: [id])
+    item              Item                              @relation(fields: [itemId], references: [id])
+    preparationSteps  ExperimentSamplePreparationStep[]
 
     @@unique([experimentVariantId, itemId])
     @@map("experiment_variant_materials")

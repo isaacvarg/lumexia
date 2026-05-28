@@ -37,6 +37,8 @@ model File {
     fileTags                       FileTag[]
     experimentNoteFiles            ExperimentNoteFile[]
     experimentFiles                ExperimentFile[]
+    experimentSampleNoteFiles      ExperimentSampleNoteFile[]
+    experimentSampleFiles          ExperimentSampleFile[]
 
     @@map("files")
 }

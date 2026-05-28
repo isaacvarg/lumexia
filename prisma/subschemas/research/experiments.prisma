@@ -5,7 +5,7 @@ model Experiment {
     primaryInvestigatorId String   @map("primary_investigator_id")
     primarySubjectId      String   @map("primary_subject_id")
     experimentGroupId     String?  @map("experiment_group_id")
-    objective             String
+    objective             String?
     hypothesis            String?
     createdAt             DateTime @default(now()) @map("created_at")
     updatedAt             DateTime @updatedAt @map("updated_at")

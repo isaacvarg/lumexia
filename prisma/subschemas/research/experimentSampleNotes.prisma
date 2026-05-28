@@ -1,0 +1,16 @@
+model ExperimentSampleNote {
+    id         String   @id @default(uuid())
+    sampleId   String   @map("sample_id")
+    noteTypeId String   @map("note_type_id")
+    userId     String   @map("user_id")
+    content    String
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+
+    sample   ExperimentSample           @relation(fields: [sampleId], references: [id])
+    noteType ExperimentNoteType         @relation(fields: [noteTypeId], references: [id])
+    user     User                       @relation(fields: [userId], references: [id])
+    files    ExperimentSampleNoteFile[]
+
+    @@map("experiment_sample_notes")
+}

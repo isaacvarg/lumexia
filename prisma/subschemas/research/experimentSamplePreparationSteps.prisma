@@ -1,0 +1,16 @@
+model ExperimentSamplePreparationStep {
+    id                          String   @id @default(uuid())
+    sampleId                    String   @map("sample_id")
+    experimentVariantMaterialId String   @map("experiment_variant_material_id")
+    completedAt                 DateTime @default(now()) @map("completed_at")
+    completedById               String?  @map("completed_by_id")
+    createdAt                   DateTime @default(now()) @map("created_at")
+    updatedAt                   DateTime @updatedAt @map("updated_at")
+
+    sample                    ExperimentSample          @relation(fields: [sampleId], references: [id])
+    experimentVariantMaterial ExperimentVariantMaterial @relation(fields: [experimentVariantMaterialId], references: [id])
+    completedBy               User?                     @relation("ExperimentSamplePreparationStepCompletedBy", fields: [completedById], references: [id])
+
+    @@unique([sampleId, experimentVariantMaterialId])
+    @@map("experiment_sample_preparation_steps")
+}

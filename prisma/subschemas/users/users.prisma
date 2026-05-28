@@ -29,6 +29,9 @@ model User {
     generalRequestNotes   GeneralRequestNote[]
     experimentsAsPrimaryInvestigator Experiment[]
     experimentNotes       ExperimentNote[]
+    preparedExperimentSamples           ExperimentSample[]                @relation("ExperimentSamplePreparedBy")
+    experimentSamplePreparationSteps    ExperimentSamplePreparationStep[] @relation("ExperimentSamplePreparationStepCompletedBy")
+    experimentSampleNotes               ExperimentSampleNote[]
 
     @@map("users")
 }
