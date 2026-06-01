@@ -55,6 +55,8 @@ import { deleteCostBatchSize } from "./costBatchSizes/delete";
 import { getCostSettings } from "./costSettings/get";
 import { updateCostSettings } from "./costSettings/update";
 import { getVariantCostProjections } from "./cost/getProjections";
+import { getVariantContext } from "./llmContext/getVariantContext";
+import { getSampleContext } from "./llmContext/getSampleContext";
 
 export const researchActions = {
   experiments: {
@@ -147,5 +149,9 @@ export const researchActions = {
   },
   cost: {
     getProjections: getVariantCostProjections,
+  },
+  llmContext: {
+    getVariantContext,
+    getSampleContext,
   },
 };

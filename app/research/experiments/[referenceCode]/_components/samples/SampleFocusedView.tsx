@@ -14,6 +14,7 @@ import SamplePreparationBody from "./SamplePreparationBody";
 import SampleNotesPanel from "./SampleNotesPanel";
 import SampleFilesPanel from "./SampleFilesPanel";
 import SampleMeasurementBody from "./SampleMeasurementBody";
+import CopyForLlmButton from "../shared/CopyForLlmButton";
 
 export type SampleFocusedMode = "preparation" | "notes" | "files" | "measurement";
 
@@ -89,18 +90,24 @@ const SampleFocusedView = ({
           </span>
         </div>
 
-        <div className="join">
-          {modes.map((m) => (
-            <button
-              key={m.value}
-              type="button"
-              className={`join-item btn btn-sm ${mode === m.value ? "btn-primary" : "btn-ghost"}`}
-              onClick={() => onModeChange(m.value)}
-            >
-              {m.icon}
-              {m.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="join">
+            {modes.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                className={`join-item btn btn-sm ${mode === m.value ? "btn-primary" : "btn-ghost"}`}
+                onClick={() => onModeChange(m.value)}
+              >
+                {m.icon}
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <CopyForLlmButton
+            tooltip="Copy this sample for an LLM"
+            getText={() => researchActions.llmContext.getSampleContext(sample.id)}
+          />
         </div>
       </div>
 

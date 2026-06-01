@@ -24,6 +24,7 @@ import AddMaterialDialog from "./AddMaterialDialog";
 import DeleteConfirm from "./DeleteConfirm";
 import PhaseSection from "./PhaseSection";
 import VariantMethodSection from "./VariantMethodSection";
+import CopyForLlmButton from "../shared/CopyForLlmButton";
 
 type Props = {
   variant: ExperimentVariantWithMaterials;
@@ -208,6 +209,10 @@ const VariantCard = ({ variant, items }: Props) => {
 
         <div className="flex items-center gap-3">
           {totalPill}
+          <CopyForLlmButton
+            tooltip="Copy this variant for an LLM"
+            getText={() => researchActions.llmContext.getVariantContext(variant.id)}
+          />
           <DeleteConfirm onConfirm={handleDeleteVariant} label="Delete variant" />
         </div>
       </div>

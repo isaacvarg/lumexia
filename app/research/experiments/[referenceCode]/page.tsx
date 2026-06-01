@@ -53,7 +53,12 @@ const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
 
   return (
     <div className="p-6 flex flex-col gap-6">
-      <Header experiment={experiment} />
+      <Header
+        experiment={experiment}
+        variants={variants}
+        samples={samples}
+        noteEntries={aggregatedNotes}
+      />
       <TabSelector />
       <TabsContainer
         experiment={experiment}

@@ -1,10 +1,21 @@
 import Link from "next/link";
 import { SingleExperiment } from "@/actions/research/getOneExperiment";
+import { ExperimentVariantWithMaterials } from "@/actions/research/variants/getAllByExperiment";
+import { ExperimentSampleRow } from "@/actions/research/samples/getAllByExperiment";
+import { AggregatedNoteEntry } from "@/actions/research/experimentNotes/getAggregatedFeed";
 import { getSlug } from "@/utils/general/getSlug";
+import ExperimentCopyButton from "./ExperimentCopyButton";
 
 const formatReferenceCode = (code: number) => `EXP-${String(code).padStart(4, "0")}`;
 
-const Header = ({ experiment }: { experiment: SingleExperiment }) => {
+type HeaderProps = {
+  experiment: SingleExperiment;
+  variants: ExperimentVariantWithMaterials[];
+  samples: ExperimentSampleRow[];
+  noteEntries: AggregatedNoteEntry[];
+};
+
+const Header = ({ experiment, variants, samples, noteEntries }: HeaderProps) => {
   const subject = experiment.primarySubject;
   const subjectHref = `/inventory/items/${getSlug(subject.name)}?id=${subject.id}`;
 
@@ -23,15 +34,23 @@ const Header = ({ experiment }: { experiment: SingleExperiment }) => {
           <span>Investigator: {experiment.primaryInvestigator.name ?? "—"}</span>
         </div>
       </div>
-      <span
-        className="px-3 py-1 rounded-xl font-poppins font-medium text-lg"
-        style={{
-          backgroundColor: experiment.status.bgColor,
-          color: experiment.status.textColor,
-        }}
-      >
-        {experiment.status.name}
-      </span>
+      <div className="flex items-center gap-3">
+        <ExperimentCopyButton
+          experiment={experiment}
+          variants={variants}
+          samples={samples}
+          noteEntries={noteEntries}
+        />
+        <span
+          className="px-3 py-1 rounded-xl font-poppins font-medium text-lg"
+          style={{
+            backgroundColor: experiment.status.bgColor,
+            color: experiment.status.textColor,
+          }}
+        >
+          {experiment.status.name}
+        </span>
+      </div>
     </div>
   );
 };

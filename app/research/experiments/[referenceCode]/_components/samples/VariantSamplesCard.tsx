@@ -14,6 +14,7 @@ import AddSampleDialog from "./AddSampleDialog";
 import EditSampleDialog from "./EditSampleDialog";
 import { SampleFocusedMode } from "./SampleFocusedView";
 import PrintLabelButton from "./printing/PrintLabelButton";
+import CopyForLlmButton from "../shared/CopyForLlmButton";
 
 type Props = {
   experimentId: string;
@@ -169,6 +170,10 @@ const SampleRow = ({ sample, variantLabel, onFocus }: SampleRowProps) => {
             <TbPaperclip /> Files
           </button>
           <PrintLabelButton sample={sample} variantLabel={variantLabel} />
+          <CopyForLlmButton
+            tooltip="Copy this sample for an LLM"
+            getText={() => researchActions.llmContext.getSampleContext(sample.id)}
+          />
         </div>
       </td>
       <td>
