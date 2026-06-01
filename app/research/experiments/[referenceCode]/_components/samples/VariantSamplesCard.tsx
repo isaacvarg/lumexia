@@ -13,6 +13,7 @@ import DeleteConfirm from "../variants/DeleteConfirm";
 import AddSampleDialog from "./AddSampleDialog";
 import EditSampleDialog from "./EditSampleDialog";
 import { SampleFocusedMode } from "./SampleFocusedView";
+import PrintLabelButton from "./printing/PrintLabelButton";
 
 type Props = {
   experimentId: string;
@@ -68,7 +69,12 @@ const VariantSamplesCard = ({
             </thead>
             <tbody>
               {samples.map((s) => (
-                <SampleRow key={s.id} sample={s} onFocus={onFocus} />
+                <SampleRow
+                  key={s.id}
+                  sample={s}
+                  variantLabel={variant.label}
+                  onFocus={onFocus}
+                />
               ))}
             </tbody>
           </table>
@@ -91,10 +97,11 @@ const VariantSamplesCard = ({
 
 type SampleRowProps = {
   sample: ExperimentSampleRow;
+  variantLabel: string;
   onFocus: (sampleId: string, mode: SampleFocusedMode) => void;
 };
 
-const SampleRow = ({ sample, onFocus }: SampleRowProps) => {
+const SampleRow = ({ sample, variantLabel, onFocus }: SampleRowProps) => {
   const router = useRouter();
   const { showDialog } = useDialog();
 
@@ -161,6 +168,7 @@ const SampleRow = ({ sample, onFocus }: SampleRowProps) => {
           >
             <TbPaperclip /> Files
           </button>
+          <PrintLabelButton sample={sample} variantLabel={variantLabel} />
         </div>
       </td>
       <td>
