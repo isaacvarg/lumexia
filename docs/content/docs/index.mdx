@@ -1,13 +1,26 @@
 ---
-title: Hello World
-description: Your first document
+title: Overview
+description: What Lumexia is and how this wiki is organized
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+Lumexia is a manufacturing and inventory management system that aims to make
+procurement, purchasing, pricing, production, quality, and resource planning easier
+and more traceable.
 
-## What is Next?
+This wiki documents how each module works and how they fit together.
+
+## Modules
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Inventory" href="/docs/inventory" description="On-hand, allocated, and available quantities, QR labels, audits, and trends." />
+  <Card title="Purchasing" href="/docs/purchasing" description="Procurement requests, purchase orders, and supplier management." />
+  <Card title="Receiving" href="/docs/receiving" description="Partial PO and line-item receiving." />
+  <Card title="Production" href="/docs/production" description="Master batch records and batch production records with lot tracing." />
+  <Card title="Quality" href="/docs/quality" description="Parameters, specifications, and quality examinations." />
+  <Card title="Accounting" href="/docs/accounting" description="Purchase-order matching and related accounting workflows." />
+  <Card title="Research & Development" href="/docs/research" description="Experiments, methods, costs, and parameter measurements." />
 </Cards>
+
+## Tech stack
+
+Next.js · TypeScript · PostgreSQL · Prisma · MinIO · Docker

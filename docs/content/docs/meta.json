@@ -1,0 +1,13 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "inventory",
+    "purchasing",
+    "receiving",
+    "production",
+    "quality",
+    "accounting",
+    "research"
+  ]
+}
