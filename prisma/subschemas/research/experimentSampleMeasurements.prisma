@@ -1,0 +1,18 @@
+model ExperimentSampleMeasurement {
+    id            String   @id @default(uuid())
+    sampleId      String   @map("sample_id")
+    qcParameterId String   @map("qc_parameter_id")
+    value         String
+    runNumber     Int      @default(1) @map("run_number")
+    createdById   String?  @map("created_by_id")
+    createdAt     DateTime @default(now()) @map("created_at")
+    updatedAt     DateTime @updatedAt @map("updated_at")
+
+    sample       ExperimentSample                   @relation(fields: [sampleId], references: [id])
+    qcParameter  QcParameter                        @relation(fields: [qcParameterId], references: [id])
+    createdBy    User?                              @relation("ExperimentSampleMeasurementCreatedBy", fields: [createdById], references: [id])
+    inputResults ExperimentSampleMeasurementInput[]
+
+    @@unique([sampleId, qcParameterId, runNumber])
+    @@map("experiment_sample_measurements")
+}

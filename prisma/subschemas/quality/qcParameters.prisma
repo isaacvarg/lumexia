@@ -14,6 +14,7 @@ model QcParameter {
     qcTemplateParameters QcTemplateParameter[]
     qcGroupParameters    QcGroupParameter[]
     inputDefinitions QcParameterInputDefinition[]
+    experimentSampleMeasurements ExperimentSampleMeasurement[]
 
     @@map("qc_parameters")
 }

@@ -32,6 +32,7 @@ model User {
     preparedExperimentSamples           ExperimentSample[]                @relation("ExperimentSamplePreparedBy")
     experimentSamplePreparationSteps    ExperimentSamplePreparationStep[] @relation("ExperimentSamplePreparationStepCompletedBy")
     experimentSampleNotes               ExperimentSampleNote[]
+    experimentSampleMeasurements        ExperimentSampleMeasurement[]     @relation("ExperimentSampleMeasurementCreatedBy")
 
     @@map("users")
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TbArrowLeft, TbFlask, TbNote, TbPaperclip } from "react-icons/tb";
+import { TbArrowLeft, TbFlask, TbNote, TbPaperclip, TbRulerMeasure } from "react-icons/tb";
 import { researchActions } from "@/actions/research";
 import { ExperimentSampleRow } from "@/actions/research/samples/getAllByExperiment";
 import { ExperimentVariantWithMaterials } from "@/actions/research/variants/getAllByExperiment";
@@ -13,8 +13,9 @@ import EditSampleDialog from "./EditSampleDialog";
 import SamplePreparationBody from "./SamplePreparationBody";
 import SampleNotesPanel from "./SampleNotesPanel";
 import SampleFilesPanel from "./SampleFilesPanel";
+import SampleMeasurementBody from "./SampleMeasurementBody";
 
-export type SampleFocusedMode = "preparation" | "notes" | "files";
+export type SampleFocusedMode = "preparation" | "notes" | "files" | "measurement";
 
 type Props = {
   sample: ExperimentSampleRow;
@@ -62,6 +63,7 @@ const SampleFocusedView = ({
 
   const modes: { value: SampleFocusedMode; label: string; icon: JSX.Element }[] = [
     { value: "preparation", label: "Preparation", icon: <TbFlask /> },
+    { value: "measurement", label: "Measure", icon: <TbRulerMeasure /> },
     { value: "notes", label: "Notes", icon: <TbNote /> },
     { value: "files", label: "Files", icon: <TbPaperclip /> },
   ];
@@ -105,6 +107,7 @@ const SampleFocusedView = ({
       {mode === "preparation" && (
         <SamplePreparationBody sample={sample} variant={variant} />
       )}
+      {mode === "measurement" && <SampleMeasurementBody sample={sample} />}
       {mode === "notes" && (
         <SampleNotesPanel sample={sample} notes={notes} noteTypes={noteTypes} />
       )}

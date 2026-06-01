@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 
 type CreateAnalogInput = {
   experimentId: string;
@@ -17,6 +18,7 @@ export const createExperimentVariantAnalog = async ({
     where: { id: mbprId },
     include: {
       BillOfMaterial: { include: { step: true } },
+      BatchStep: { include: { StepInstruction: true } },
     },
   });
 
@@ -26,6 +28,20 @@ export const createExperimentVariantAnalog = async ({
     if (a.step.sequence !== b.step.sequence) return a.step.sequence - b.step.sequence;
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
+
+  // Flatten the MBPR's step instructions into an ordered method: walk active
+  // steps in sequence order and emit one method step per active instruction,
+  // tagging each with its step's phase.
+  const activeSteps = [...mbpr.BatchStep]
+    .filter((s) => s.recordStatusId !== recordStatuses.archived)
+    .sort((a, b) => a.sequence - b.sequence);
+
+  const methodStepData: {
+    experimentVariantId: string;
+    sequence: number;
+    phase: string | null;
+    content: string;
+  }[] = [];
 
   return prisma.$transaction(async (tx) => {
     const variant = await tx.experimentVariant.create({
@@ -43,6 +59,24 @@ export const createExperimentVariantAnalog = async ({
         })),
         skipDuplicates: true,
       });
+    }
+
+    for (const step of activeSteps) {
+      const instructions = step.StepInstruction.filter(
+        (i) => i.recordStatusId !== recordStatuses.archived,
+      );
+      for (const instruction of instructions) {
+        methodStepData.push({
+          experimentVariantId: variant.id,
+          sequence: methodStepData.length,
+          phase: step.phase || null,
+          content: instruction.instructionContent,
+        });
+      }
+    }
+
+    if (methodStepData.length > 0) {
+      await tx.experimentVariantMethodStep.createMany({ data: methodStepData });
     }
 
     return variant;

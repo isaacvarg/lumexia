@@ -17,6 +17,7 @@ import { AggregatedFileEntry } from "@/actions/research/experimentFiles/getAggre
 import Basics from "../basics/Basics";
 import Variants from "../variants/Variants";
 import Samples from "../samples/Samples";
+import Cost from "../cost/Cost";
 import Notes from "../notes/Notes";
 import Files from "../files/Files";
 
@@ -90,6 +91,7 @@ const TabsContainer = ({
             noteTypes={noteTypes}
           />
         )}
+        {currentTab === "cost" && <Cost experimentId={experiment.id} />}
         {currentTab === "notes" && <Notes entries={aggregatedNotes} />}
         {currentTab === "files" && <Files entries={aggregatedFiles} />}
       </motion.div>

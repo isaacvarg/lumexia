@@ -12,6 +12,7 @@ model QcParameterInputDefinition {
     dataType QcDataType @relation(fields: [dataTypeId], references: [id])
     itemSpecificationInputs QcItemSpecificationInput[]
     parameterInputDefinitonResults QcParameterInputResult[]
+    experimentSampleMeasurementInputs ExperimentSampleMeasurementInput[]
 
 
     @@map("qc_parameter_input_definitions")

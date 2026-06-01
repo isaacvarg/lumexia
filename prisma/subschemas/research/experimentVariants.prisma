@@ -5,9 +5,10 @@ model ExperimentVariant {
     createdAt    DateTime @default(now()) @map("created_at")
     updatedAt    DateTime @updatedAt @map("updated_at")
 
-    experiment Experiment                  @relation(fields: [experimentId], references: [id])
-    materials  ExperimentVariantMaterial[]
-    samples    ExperimentSample[]
+    experiment  Experiment                    @relation(fields: [experimentId], references: [id])
+    materials   ExperimentVariantMaterial[]
+    samples     ExperimentSample[]
+    methodSteps ExperimentVariantMethodStep[]
 
     @@map("experiment_variants")
 }

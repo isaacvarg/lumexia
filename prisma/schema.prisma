@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Thu May 28 2026 10:44:08 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Mon Jun 01 2026 10:52:51 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -2632,19 +2632,20 @@ model QcParameterGroup {
 }
 
 model QcParameterInputDefinition {
-  id                             String                     @id @default(uuid())
-  parameterId                    String                     @map("parameter_id")
-  name                           String
-  label                          String
-  dataTypeId                     String                     @map("data_type_id")
-  required                       Boolean
-  unit                           String
-  createdAt                      DateTime                   @default(now()) @map("created_at")
-  updatedAt                      DateTime                   @updatedAt @map("updated_at")
-  parameter                      QcParameter                @relation(fields: [parameterId], references: [id])
-  dataType                       QcDataType                 @relation(fields: [dataTypeId], references: [id])
-  itemSpecificationInputs        QcItemSpecificationInput[]
-  parameterInputDefinitonResults QcParameterInputResult[]
+  id                                String                             @id @default(uuid())
+  parameterId                       String                             @map("parameter_id")
+  name                              String
+  label                             String
+  dataTypeId                        String                             @map("data_type_id")
+  required                          Boolean
+  unit                              String
+  createdAt                         DateTime                           @default(now()) @map("created_at")
+  updatedAt                         DateTime                           @updatedAt @map("updated_at")
+  parameter                         QcParameter                        @relation(fields: [parameterId], references: [id])
+  dataType                          QcDataType                         @relation(fields: [dataTypeId], references: [id])
+  itemSpecificationInputs           QcItemSpecificationInput[]
+  parameterInputDefinitonResults    QcParameterInputResult[]
+  experimentSampleMeasurementInputs ExperimentSampleMeasurementInput[]
 
   @@map("qc_parameter_input_definitions")
 }
@@ -2691,11 +2692,12 @@ model QcParameter {
   updatedAt      DateTime   @updatedAt @map("updated_at")
   dataType       QcDataType @relation(fields: [dataTypeId], references: [id])
 
-  qcItemParameters     QcItemParameter[]
-  qcParameterResults   QcParameterResult[]
-  qcTemplateParameters QcTemplateParameter[]
-  qcGroupParameters    QcGroupParameter[]
-  inputDefinitions     QcParameterInputDefinition[]
+  qcItemParameters             QcItemParameter[]
+  qcParameterResults           QcParameterResult[]
+  qcTemplateParameters         QcTemplateParameter[]
+  qcGroupParameters            QcGroupParameter[]
+  inputDefinitions             QcParameterInputDefinition[]
+  experimentSampleMeasurements ExperimentSampleMeasurement[]
 
   @@map("qc_parameters")
 }
@@ -2831,6 +2833,27 @@ model QcTemplate {
   @@map("qc_templates")
 }
 
+model ExperimentCostBatchSize {
+  id         String   @id @default(uuid())
+  label      String
+  quantityLb Float    @map("quantity_lb")
+  sequence   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("experiment_cost_batch_sizes")
+}
+
+model ExperimentCostSetting {
+  id              String   @id @default(uuid())
+  overheadPercent Float    @default(0) @map("overhead_percent")
+  overheadPerLb   Float    @default(0) @map("overhead_per_lb")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("experiment_cost_settings")
+}
+
 model ExperimentFile {
   id           String   @id @default(uuid())
   experimentId String   @map("experiment_id")
@@ -2930,6 +2953,39 @@ model ExperimentSampleFile {
   @@map("experiment_sample_files")
 }
 
+model ExperimentSampleMeasurementInput {
+  id                         String   @id @default(uuid())
+  measurementId              String   @map("measurement_id")
+  parameterInputDefinitionId String   @map("parameter_input_definition_id")
+  value                      String
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+
+  measurement              ExperimentSampleMeasurement @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+  parameterInputDefinition QcParameterInputDefinition  @relation(fields: [parameterInputDefinitionId], references: [id])
+
+  @@map("experiment_sample_measurement_inputs")
+}
+
+model ExperimentSampleMeasurement {
+  id            String   @id @default(uuid())
+  sampleId      String   @map("sample_id")
+  qcParameterId String   @map("qc_parameter_id")
+  value         String
+  runNumber     Int      @default(1) @map("run_number")
+  createdById   String?  @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  sample       ExperimentSample                   @relation(fields: [sampleId], references: [id])
+  qcParameter  QcParameter                        @relation(fields: [qcParameterId], references: [id])
+  createdBy    User?                              @relation("ExperimentSampleMeasurementCreatedBy", fields: [createdById], references: [id])
+  inputResults ExperimentSampleMeasurementInput[]
+
+  @@unique([sampleId, qcParameterId, runNumber])
+  @@map("experiment_sample_measurements")
+}
+
 model ExperimentSampleNoteFile {
   id                     String   @id @default(uuid())
   experimentSampleNoteId String   @map("experiment_sample_note_id")
@@ -2997,6 +3053,7 @@ model ExperimentSample {
   preparationSteps  ExperimentSamplePreparationStep[]
   notes             ExperimentSampleNote[]
   files             ExperimentSampleFile[]
+  measurements      ExperimentSampleMeasurement[]
 
   @@map("experiment_samples")
 }
@@ -3034,6 +3091,20 @@ model ExperimentVariantMaterial {
   @@map("experiment_variant_materials")
 }
 
+model ExperimentVariantMethodStep {
+  id                  String   @id @default(uuid())
+  experimentVariantId String   @map("experiment_variant_id")
+  sequence            Int      @default(0)
+  phase               String?
+  content             String
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+
+  @@map("experiment_variant_method_steps")
+}
+
 model ExperimentVariant {
   id           String   @id @default(uuid())
   experimentId String   @map("experiment_id")
@@ -3041,9 +3112,10 @@ model ExperimentVariant {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  experiment Experiment                  @relation(fields: [experimentId], references: [id])
-  materials  ExperimentVariantMaterial[]
-  samples    ExperimentSample[]
+  experiment  Experiment                    @relation(fields: [experimentId], references: [id])
+  materials   ExperimentVariantMaterial[]
+  samples     ExperimentSample[]
+  methodSteps ExperimentVariantMethodStep[]
 
   @@map("experiment_variants")
 }
@@ -3204,6 +3276,7 @@ model User {
   preparedExperimentSamples        ExperimentSample[]                @relation("ExperimentSamplePreparedBy")
   experimentSamplePreparationSteps ExperimentSamplePreparationStep[] @relation("ExperimentSamplePreparationStepCompletedBy")
   experimentSampleNotes            ExperimentSampleNote[]
+  experimentSampleMeasurements     ExperimentSampleMeasurement[]     @relation("ExperimentSampleMeasurementCreatedBy")
   PoAccountingNote                 PoAccountingNote[]
   PricingExaminationNote           PricingExaminationNote[]
   DiscrepancyAuditItemNote         DiscrepancyAuditItemNote[]

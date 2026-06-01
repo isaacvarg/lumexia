@@ -8,6 +8,7 @@ import { researchActions } from "@/actions/research";
 import { ExperimentVariantWithMaterials } from "@/actions/research/variants/getAllByExperiment";
 import { ExperimentSampleRow } from "@/actions/research/samples/getAllByExperiment";
 import { groupVariantMaterialsByPhase } from "@/utils/general/groupVariantMaterials";
+import VariantMethodSection from "../variants/VariantMethodSection";
 
 type Props = {
   sample: ExperimentSampleRow;
@@ -105,22 +106,27 @@ const SamplePreparationBody = ({ sample, variant }: Props) => {
         </div>
       </Card.Root>
 
-      {missingSize ? (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <Card.Root>
-          <p className="font-poppins text-lg text-base-content/70 italic">
-            This sample is missing a target size — click <strong>Edit details</strong>{" "}
-            above to set it.
-          </p>
+          <VariantMethodSection variant={variant} />
         </Card.Root>
-      ) : variant.materials.length === 0 ? (
-        <Card.Root>
-          <p className="font-poppins text-lg text-base-content/70 italic">
-            The source variant has no materials yet — add some on the Variants tab.
-          </p>
-        </Card.Root>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {orderedKeys.map((phaseKey) => {
+
+        {missingSize ? (
+          <Card.Root>
+            <p className="font-poppins text-lg text-base-content/70 italic">
+              This sample is missing a target size — click <strong>Edit details</strong>{" "}
+              above to set it.
+            </p>
+          </Card.Root>
+        ) : variant.materials.length === 0 ? (
+          <Card.Root>
+            <p className="font-poppins text-lg text-base-content/70 italic">
+              The source variant has no materials yet — add some on the Variants tab.
+            </p>
+          </Card.Root>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {orderedKeys.map((phaseKey) => {
             const materials = groups.get(phaseKey)!;
             return (
               <Card.Root key={phaseKey ?? "__unphased__"}>
@@ -168,10 +174,11 @@ const SamplePreparationBody = ({ sample, variant }: Props) => {
                   </tbody>
                 </table>
               </Card.Root>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -23,6 +23,7 @@ import useDialog from "@/hooks/useDialog";
 import AddMaterialDialog from "./AddMaterialDialog";
 import DeleteConfirm from "./DeleteConfirm";
 import PhaseSection from "./PhaseSection";
+import VariantMethodSection from "./VariantMethodSection";
 
 type Props = {
   variant: ExperimentVariantWithMaterials;
@@ -255,6 +256,10 @@ const VariantCard = ({ variant, items }: Props) => {
         >
           <TbPlus /> New phase
         </button>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-base-300">
+        <VariantMethodSection variant={variant} />
       </div>
 
       <AddMaterialDialog

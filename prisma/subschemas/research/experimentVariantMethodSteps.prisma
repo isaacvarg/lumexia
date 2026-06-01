@@ -1,0 +1,13 @@
+model ExperimentVariantMethodStep {
+    id                  String   @id @default(uuid())
+    experimentVariantId String   @map("experiment_variant_id")
+    sequence            Int      @default(0)
+    phase               String?
+    content             String
+    createdAt           DateTime @default(now()) @map("created_at")
+    updatedAt           DateTime @updatedAt @map("updated_at")
+
+    experimentVariant ExperimentVariant @relation(fields: [experimentVariantId], references: [id])
+
+    @@map("experiment_variant_method_steps")
+}

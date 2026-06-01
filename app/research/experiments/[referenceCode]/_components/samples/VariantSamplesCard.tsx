@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
-import { TbEdit, TbFlask, TbNote, TbPaperclip } from "react-icons/tb";
+import { TbEdit, TbFlask, TbNote, TbPaperclip, TbRulerMeasure } from "react-icons/tb";
 import Card from "@/components/Card";
 import useDialog from "@/hooks/useDialog";
 import { researchActions } from "@/actions/research";
@@ -136,6 +136,14 @@ const SampleRow = ({ sample, onFocus }: SampleRowProps) => {
             onClick={() => onFocus(sample.id, "preparation")}
           >
             <TbFlask /> Prepare
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => onFocus(sample.id, "measurement")}
+            aria-label="Measure sample"
+          >
+            <TbRulerMeasure /> Measure
           </button>
           <button
             type="button"

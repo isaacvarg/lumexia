@@ -1,0 +1,13 @@
+model ExperimentSampleMeasurementInput {
+    id                         String   @id @default(uuid())
+    measurementId              String   @map("measurement_id")
+    parameterInputDefinitionId String   @map("parameter_input_definition_id")
+    value                      String
+    createdAt                  DateTime @default(now()) @map("created_at")
+    updatedAt                  DateTime @updatedAt @map("updated_at")
+
+    measurement              ExperimentSampleMeasurement @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+    parameterInputDefinition QcParameterInputDefinition  @relation(fields: [parameterInputDefinitionId], references: [id])
+
+    @@map("experiment_sample_measurement_inputs")
+}

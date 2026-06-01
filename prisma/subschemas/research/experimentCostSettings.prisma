@@ -1,0 +1,9 @@
+model ExperimentCostSetting {
+    id              String   @id @default(uuid())
+    overheadPercent Float    @default(0) @map("overhead_percent")
+    overheadPerLb   Float    @default(0) @map("overhead_per_lb")
+    createdAt       DateTime @default(now()) @map("created_at")
+    updatedAt       DateTime @updatedAt @map("updated_at")
+
+    @@map("experiment_cost_settings")
+}

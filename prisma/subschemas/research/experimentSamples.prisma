@@ -18,6 +18,7 @@ model ExperimentSample {
     preparationSteps  ExperimentSamplePreparationStep[]
     notes             ExperimentSampleNote[]
     files             ExperimentSampleFile[]
+    measurements      ExperimentSampleMeasurement[]
 
     @@map("experiment_samples")
 }

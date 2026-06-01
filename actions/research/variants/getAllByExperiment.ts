@@ -10,6 +10,9 @@ export const getAllVariantsByExperiment = async (experimentId: string) => {
         include: { item: true },
         orderBy: { sequence: "asc" },
       },
+      methodSteps: {
+        orderBy: { sequence: "asc" },
+      },
     },
     orderBy: { createdAt: "asc" },
   });

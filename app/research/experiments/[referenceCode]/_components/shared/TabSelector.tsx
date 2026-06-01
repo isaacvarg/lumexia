@@ -1,9 +1,22 @@
 "use client";
 import TabButton from "./TabButton";
 
-export type ExperimentTab = "basics" | "variants" | "samples" | "notes" | "files";
+export type ExperimentTab =
+  | "basics"
+  | "variants"
+  | "samples"
+  | "cost"
+  | "notes"
+  | "files";
 
-const TABS: ExperimentTab[] = ["basics", "variants", "samples", "notes", "files"];
+const TABS: ExperimentTab[] = [
+  "basics",
+  "variants",
+  "samples",
+  "cost",
+  "notes",
+  "files",
+];
 
 const TabSelector = () => {
   return (

@@ -40,6 +40,21 @@ import { deleteSampleNote } from "./sampleNotes/delete";
 import { getAllSampleFilesBySample } from "./sampleFiles/getAllBySample";
 import { createSampleFile } from "./sampleFiles/create";
 import { deleteSampleFile } from "./sampleFiles/delete";
+import { getAllMeasurementsBySample } from "./measurements/getAllBySample";
+import { createSampleMeasurement } from "./measurements/create";
+import { updateSampleMeasurement } from "./measurements/update";
+import { deleteSampleMeasurement } from "./measurements/delete";
+import { createVariantMethodStep } from "./methodSteps/create";
+import { updateVariantMethodStep } from "./methodSteps/update";
+import { deleteVariantMethodStep } from "./methodSteps/delete";
+import { reorderVariantMethodSteps } from "./methodSteps/reorder";
+import { getAllCostBatchSizes } from "./costBatchSizes/getAll";
+import { createCostBatchSize } from "./costBatchSizes/create";
+import { updateCostBatchSize } from "./costBatchSizes/update";
+import { deleteCostBatchSize } from "./costBatchSizes/delete";
+import { getCostSettings } from "./costSettings/get";
+import { updateCostSettings } from "./costSettings/update";
+import { getVariantCostProjections } from "./cost/getProjections";
 
 export const researchActions = {
   experiments: {
@@ -107,5 +122,30 @@ export const researchActions = {
     getAllBySample: getAllSampleFilesBySample,
     create: createSampleFile,
     delete: deleteSampleFile,
+  },
+  measurements: {
+    getAllBySample: getAllMeasurementsBySample,
+    create: createSampleMeasurement,
+    update: updateSampleMeasurement,
+    delete: deleteSampleMeasurement,
+  },
+  methodSteps: {
+    create: createVariantMethodStep,
+    update: updateVariantMethodStep,
+    delete: deleteVariantMethodStep,
+    reorder: reorderVariantMethodSteps,
+  },
+  costBatchSizes: {
+    getAll: getAllCostBatchSizes,
+    create: createCostBatchSize,
+    update: updateCostBatchSize,
+    delete: deleteCostBatchSize,
+  },
+  costSettings: {
+    get: getCostSettings,
+    update: updateCostSettings,
+  },
+  cost: {
+    getProjections: getVariantCostProjections,
   },
 };
