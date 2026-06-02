@@ -9,12 +9,13 @@ import TabsContainer from "./_components/shared/TabsContainer";
 
 type PageProps = {
   params: { referenceCode: string };
-  searchParams: { id?: string };
+  searchParams: { id?: string; sampleId?: string };
 };
 
 const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
   const id = searchParams.id;
   if (!id) return notFound();
+  const initialSampleId = searchParams.sampleId;
 
   const [
     experiment,
@@ -74,6 +75,7 @@ const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
         experimentFiles={experimentFiles}
         aggregatedNotes={aggregatedNotes}
         aggregatedFiles={aggregatedFiles}
+        initialSampleId={initialSampleId}
       />
     </div>
   );

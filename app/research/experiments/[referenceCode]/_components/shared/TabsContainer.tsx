@@ -1,5 +1,6 @@
 "use client";
-import { useTabSelection } from "@/store/tabSlice";
+import { useEffect } from "react";
+import { useTabSelection, useTabActions } from "@/store/tabSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { SingleExperiment } from "@/actions/research/getOneExperiment";
 import { ExperimentGroup } from "@/actions/research/getAllExperimentGroups";
@@ -35,6 +36,7 @@ type TabsContainerProps = {
   experimentFiles: ExperimentFileRow[];
   aggregatedNotes: AggregatedNoteEntry[];
   aggregatedFiles: AggregatedFileEntry[];
+  initialSampleId?: string;
 };
 
 const TabsContainer = ({
@@ -51,9 +53,17 @@ const TabsContainer = ({
   experimentFiles,
   aggregatedNotes,
   aggregatedFiles,
+  initialSampleId,
 }: TabsContainerProps) => {
   const { activeTab } = useTabSelection();
+  const { setActiveTab } = useTabActions();
   const currentTab = activeTab["experimentDetails"] ?? "basics";
+
+  // When arriving via a scanned sample QR, jump straight to the Samples tab; Samples
+  // itself seeds the focused view from initialSampleId.
+  useEffect(() => {
+    if (initialSampleId) setActiveTab("experimentDetails", "samples");
+  }, [initialSampleId, setActiveTab]);
 
   return (
     <AnimatePresence mode="wait">
@@ -91,6 +101,7 @@ const TabsContainer = ({
             samples={samples}
             uoms={uoms}
             noteTypes={noteTypes}
+            initialSampleId={initialSampleId}
           />
         )}
         {currentTab === "cost" && <Cost experimentId={experiment.id} />}

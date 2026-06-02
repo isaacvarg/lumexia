@@ -16,6 +16,7 @@ type Props = {
   samples: ExperimentSampleRow[];
   uoms: Uom[];
   noteTypes: ExperimentNoteTypeRow[];
+  initialSampleId?: string;
 };
 
 type FocusedState = { id: string; mode: SampleFocusedMode };
@@ -28,8 +29,14 @@ const Samples = ({
   samples,
   uoms,
   noteTypes,
+  initialSampleId,
 }: Props) => {
-  const [focused, setFocused] = useState<FocusedState | null>(null);
+  // Seed the focused view from a scanned sample QR (only if it matches a known sample).
+  const [focused, setFocused] = useState<FocusedState | null>(() =>
+    initialSampleId && samples.some((s) => s.id === initialSampleId)
+      ? { id: initialSampleId, mode: "preparation" }
+      : null,
+  );
 
   if (focused) {
     const sample = samples.find((s) => s.id === focused.id) ?? null;

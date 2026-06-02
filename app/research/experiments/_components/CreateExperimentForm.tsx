@@ -5,8 +5,9 @@ import { Item } from "@/actions/inventory/getAllItems";
 import Dialog from "@/components/Dialog";
 import SearcherUnmanaged from "@/components/Search/SearcherUnmanaged";
 import useDialog from "@/hooks/useDialog";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { DialogContext } from "@/context/DialogContext";
 
 type CreateExperimentFormProps = {
   items: Item[];
@@ -16,6 +17,11 @@ const CreateExperimentForm = ({ items }: CreateExperimentFormProps) => {
   const [input, setInput] = useState("");
   const [results, setResults] = useState<Item[]>([]);
   const { resetDialogContext } = useDialog();
+  const { isDialogOpen, activeDialogIdentifier } = useContext(DialogContext);
+  // Only capture Enter while the create dialog is open — otherwise its preventDefault
+  // on the Enter keydown swallows the terminating Enter that barcode/QR scanners send.
+  const isCreateDialogOpen =
+    isDialogOpen && activeDialogIdentifier === "createExperiment";
 
   const handlePick = async (item: Item) => {
     await researchActions.experiments.create({ primarySubjectId: item.id });
@@ -30,7 +36,7 @@ const CreateExperimentForm = ({ items }: CreateExperimentFormProps) => {
       event.preventDefault();
       if (results[0]) handlePick(results[0]);
     },
-    { enableOnFormTags: true, preventDefault: true },
+    { enableOnFormTags: true, preventDefault: true, enabled: isCreateDialogOpen },
   );
 
   return (

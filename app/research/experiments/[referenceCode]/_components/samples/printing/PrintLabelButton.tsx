@@ -4,6 +4,7 @@ import { TbPrinter, TbLoader2, TbCheck, TbAlertTriangle } from "react-icons/tb";
 import { ExperimentSampleRow } from "@/actions/research/samples/getAllByExperiment";
 import { renderSampleLabelCanvas } from "./renderSampleLabel";
 import { printCanvas, isWebBluetoothAvailable } from "./niimbotPrinter";
+import { buildScanPayload, SCAN_TYPES } from "@/lib/scan/scanPayload";
 
 type Props = {
   sample: ExperimentSampleRow;
@@ -43,7 +44,7 @@ const PrintLabelButton = ({
         variantLabel,
         sampleLabel: sample.label,
         preparedAt: sample.preparedAt,
-        qrContent: sample.id,
+        qrContent: buildScanPayload(SCAN_TYPES.sample, sample.id),
       });
       await printCanvas(canvas);
       setStatus("done");

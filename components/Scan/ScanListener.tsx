@@ -31,10 +31,14 @@ const ScanListener: React.FC<ScanListenerProps> = ({
   );
 
   useEffect(() => {
-    window.addEventListener("keypress", handleScan);
+    // Use keydown (not keypress): keydown still fires for the scanner's terminating
+    // Enter even when another handler calls preventDefault() on it (e.g. an always-on
+    // useHotkeys('enter', { preventDefault: true })), which would otherwise suppress the
+    // follow-up keypress and silently break scanning on that page.
+    window.addEventListener("keydown", handleScan);
 
     return () => {
-      window.removeEventListener("keypress", handleScan);
+      window.removeEventListener("keydown", handleScan);
     };
   }, [handleScan]);
 

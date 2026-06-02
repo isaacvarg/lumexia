@@ -1,6 +1,7 @@
 import React from "react";
 import Table from "./_components/Table";
 import CreateExperiment from "./_components/CreateExperiment";
+import ExperimentsScanListener from "./_components/ScanListener";
 import { researchActions } from "@/actions/research";
 
 const ExperimentsPage = async () => {
@@ -12,6 +13,7 @@ const ExperimentsPage = async () => {
 
   return (
     <div className="bg-base-200 rounded-xl px-6">
+      <ExperimentsScanListener />
       <Table experiments={experiments} />
       <CreateExperiment />
     </div>
