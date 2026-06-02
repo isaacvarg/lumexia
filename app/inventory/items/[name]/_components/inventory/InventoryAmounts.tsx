@@ -2,10 +2,13 @@ import Card from "@/components/Card"
 import { useItemSelection } from "@/store/itemSlice"
 import { toFracitonalDigits } from "@/utils/data/toFractionalDigits";
 import { LuInfo } from "react-icons/lu";
+import useDialog from "@/hooks/useDialog";
+import OnOrderDialog, { onOrderDialog } from "./OnOrderDialog";
 
 const InventoryAmounts = () => {
 
   const { inventory } = useItemSelection();
+  const { showDialog } = useDialog();
 
   if (!inventory) return false
 
@@ -24,17 +27,19 @@ const InventoryAmounts = () => {
         <AmountData amount={inventory.totalQuantityOnHand} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
       </Card.Root>
 
-      <Card.Root>
-        <div className="flex justify-between items-center">
-          <Card.Title>On Order</Card.Title>
-          <div className="tooltip" data-tip="Quantity from open purchase orders that has not yet been received.">
-            <button className="btn btn-ghost">
-              <LuInfo />
-            </button>
+      <div onClick={() => showDialog(onOrderDialog)} className="cursor-pointer hover:opacity-90 transition-opacity">
+        <Card.Root>
+          <div className="flex justify-between items-center">
+            <Card.Title>On Order</Card.Title>
+            <div className="tooltip" data-tip="Quantity from open purchase orders that has not yet been received. Click to see contributing purchase orders.">
+              <button className="btn btn-ghost" onClick={(e) => e.stopPropagation()}>
+                <LuInfo />
+              </button>
+            </div>
           </div>
-        </div>
-        <AmountData amount={inventory.totalQuantityOnOrder} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
-      </Card.Root>
+          <AmountData amount={inventory.totalQuantityOnOrder} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
+        </Card.Root>
+      </div>
 
       <Card.Root>
         <div className="flex justify-between items-center">
@@ -84,6 +89,7 @@ const InventoryAmounts = () => {
         <AmountData amount={inventory.totalQuantitySoftAvailability} uomAbbreviation={inventory.item?.inventoryUom.abbreviation || ''} />
       </Card.Root>
 
+      <OnOrderDialog />
 
     </div>
   )
