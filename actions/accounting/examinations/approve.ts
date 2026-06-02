@@ -10,15 +10,11 @@ export const approvePricingExamination = async (examinationId: string) => {
 
     const exam = await prisma.pricingExamination.findUniqueOrThrow({
         where: { id: examinationId },
-        select: { userId: true, statusId: true },
+        select: { statusId: true },
     })
 
     if (exam.statusId !== pricingExaminationStatuses.pendingReview) {
         throw new Error("Only pricing examinations that are pending review can be approved.")
-    }
-
-    if (exam.userId === userId) {
-        throw new Error("You cannot approve a pricing examination that you drafted.")
     }
 
     const response = await prisma.pricingExamination.update({

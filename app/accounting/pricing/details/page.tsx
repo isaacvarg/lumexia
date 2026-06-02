@@ -1,5 +1,4 @@
 import { accountingActions } from '@/actions/accounting'
-import { getUserId } from '@/actions/users/getUserId'
 import PageBreadcrumbs from '@/components/App/PageBreadcrumbs'
 import PageTitle from '@/components/Text/PageTitle'
 import React from 'react'
@@ -23,8 +22,6 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
   const examId = searchParams.id
   const examination = await accountingActions.examinations.getOne(examId);
   const noteTypes = await accountingActions.examinations.notes.getAllNoteTypes();
-  const currentUserId = await getUserId();
-  const isSelf = examination.userId === currentUserId;
   const isPendingReview = examination.status?.name === 'Pending Review';
   const isProduced = examination.examinedItem.procurementTypeId === procurementTypes.produced;
   const producedExaminations = isProduced
@@ -40,7 +37,7 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
         {isPendingReview && (
           <div className="flex gap-2">
             <RejectButton examId={examId} />
-            <ApproveButton examId={examId} isSelf={isSelf} />
+            <ApproveButton examId={examId} />
           </div>
         )}
       </div>

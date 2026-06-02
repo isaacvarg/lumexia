@@ -7,14 +7,11 @@ import { FaRegThumbsUp } from 'react-icons/fa'
 
 type Props = {
   examId: string
-  isSelf?: boolean
 }
 
-const ApproveButton = ({ examId, isSelf = false }: Props) => {
+const ApproveButton = ({ examId }: Props) => {
   const [isPending, setIsPending] = useState(false)
   const router = useRouter()
-
-  if (isSelf) return null
 
   const handleApprove = async () => {
     if (isPending) return
