@@ -18,6 +18,8 @@ import CopyForLlmButton from "../shared/CopyForLlmButton";
 
 type Props = {
   experimentId: string;
+  experimentReferenceCode: number;
+  primarySubject: string;
   variant: ExperimentVariantWithMaterials;
   samples: ExperimentSampleRow[];
   uoms: Uom[];
@@ -28,6 +30,8 @@ const formatSampleRef = (code: number) => `S-${String(code).padStart(2, "0")}`;
 
 const VariantSamplesCard = ({
   experimentId,
+  experimentReferenceCode,
+  primarySubject,
   variant,
   samples,
   uoms,
@@ -74,6 +78,8 @@ const VariantSamplesCard = ({
                   key={s.id}
                   sample={s}
                   variantLabel={variant.label}
+                  experimentReferenceCode={experimentReferenceCode}
+                  primarySubject={primarySubject}
                   onFocus={onFocus}
                 />
               ))}
@@ -99,10 +105,18 @@ const VariantSamplesCard = ({
 type SampleRowProps = {
   sample: ExperimentSampleRow;
   variantLabel: string;
+  experimentReferenceCode: number;
+  primarySubject: string;
   onFocus: (sampleId: string, mode: SampleFocusedMode) => void;
 };
 
-const SampleRow = ({ sample, variantLabel, onFocus }: SampleRowProps) => {
+const SampleRow = ({
+  sample,
+  variantLabel,
+  experimentReferenceCode,
+  primarySubject,
+  onFocus,
+}: SampleRowProps) => {
   const router = useRouter();
   const { showDialog } = useDialog();
 
@@ -169,7 +183,12 @@ const SampleRow = ({ sample, variantLabel, onFocus }: SampleRowProps) => {
           >
             <TbPaperclip /> Files
           </button>
-          <PrintLabelButton sample={sample} variantLabel={variantLabel} />
+          <PrintLabelButton
+            sample={sample}
+            variantLabel={variantLabel}
+            experimentReferenceCode={experimentReferenceCode}
+            primarySubject={primarySubject}
+          />
           <CopyForLlmButton
             tooltip="Copy this sample for an LLM"
             getText={() => researchActions.llmContext.getSampleContext(sample.id)}

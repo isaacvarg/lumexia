@@ -6,6 +6,6 @@
 export const LABEL_WIDTH_PX = 400; // 50 mm
 export const LABEL_HEIGHT_PX = 240; // 30 mm
 
-export const PRINT_DIRECTION: "left" | "top" = "left";
+export const PRINT_DIRECTION: "left" | "top" = "top";
 
 export const DEFAULT_QUANTITY = 1;

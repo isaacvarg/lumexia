@@ -10,6 +10,8 @@ import SampleFocusedView, { SampleFocusedMode } from "./SampleFocusedView";
 
 type Props = {
   experimentId: string;
+  experimentReferenceCode: number;
+  primarySubject: string;
   variants: ExperimentVariantWithMaterials[];
   samples: ExperimentSampleRow[];
   uoms: Uom[];
@@ -18,7 +20,15 @@ type Props = {
 
 type FocusedState = { id: string; mode: SampleFocusedMode };
 
-const Samples = ({ experimentId, variants, samples, uoms, noteTypes }: Props) => {
+const Samples = ({
+  experimentId,
+  experimentReferenceCode,
+  primarySubject,
+  variants,
+  samples,
+  uoms,
+  noteTypes,
+}: Props) => {
   const [focused, setFocused] = useState<FocusedState | null>(null);
 
   if (focused) {
@@ -68,6 +78,8 @@ const Samples = ({ experimentId, variants, samples, uoms, noteTypes }: Props) =>
           <VariantSamplesCard
             key={v.id}
             experimentId={experimentId}
+            experimentReferenceCode={experimentReferenceCode}
+            primarySubject={primarySubject}
             variant={v}
             samples={samples.filter((s) => s.experimentVariantId === v.id)}
             uoms={uoms}

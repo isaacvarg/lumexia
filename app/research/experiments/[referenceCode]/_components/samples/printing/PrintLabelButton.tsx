@@ -8,11 +8,18 @@ import { printCanvas, isWebBluetoothAvailable } from "./niimbotPrinter";
 type Props = {
   sample: ExperimentSampleRow;
   variantLabel: string;
+  experimentReferenceCode: number;
+  primarySubject: string;
 };
 
 type Status = "idle" | "working" | "done" | "error";
 
-const PrintLabelButton = ({ sample, variantLabel }: Props) => {
+const PrintLabelButton = ({
+  sample,
+  variantLabel,
+  experimentReferenceCode,
+  primarySubject,
+}: Props) => {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -30,9 +37,11 @@ const PrintLabelButton = ({ sample, variantLabel }: Props) => {
     setStatus("working");
     try {
       const canvas = await renderSampleLabelCanvas({
-        referenceCode: sample.referenceCode,
-        sampleLabel: sample.label,
+        experimentReferenceCode,
+        sampleReferenceCode: sample.referenceCode,
+        primarySubject,
         variantLabel,
+        sampleLabel: sample.label,
         preparedAt: sample.preparedAt,
         qrContent: sample.id,
       });

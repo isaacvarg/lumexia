@@ -85,6 +85,8 @@ const TabsContainer = ({
         {currentTab === "samples" && (
           <Samples
             experimentId={experiment.id}
+            experimentReferenceCode={experiment.referenceCode}
+            primarySubject={experiment.primarySubject.name}
             variants={variants}
             samples={samples}
             uoms={uoms}

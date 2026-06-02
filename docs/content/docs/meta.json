@@ -1,7 +1,11 @@
 {
   "title": "Documentation",
   "pages": [
-    "index",
+	"---Getting Started---",
+		"index",
+		"getting-started/installation",
+
+  "---Modules---",
     "inventory",
     "purchasing",
     "receiving",

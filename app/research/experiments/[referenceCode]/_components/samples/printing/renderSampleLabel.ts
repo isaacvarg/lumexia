@@ -1,16 +1,21 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { DateTime } from "luxon";
+import type { IconType } from "react-icons";
+import { LuBook } from "react-icons/lu";
+import { AiOutlineExperiment } from "react-icons/ai";
 import { generateQR } from "@/actions/qr/generateQR";
 import { LABEL_WIDTH_PX, LABEL_HEIGHT_PX } from "./niimbotConfig";
 
 export type SampleLabelData = {
-  referenceCode: number;
-  sampleLabel: string;
+  experimentReferenceCode: number;
+  sampleReferenceCode: number;
+  primarySubject: string;
   variantLabel: string;
+  sampleLabel: string;
   preparedAt: Date | string | null;
   qrContent: string;
 };
-
-const formatSampleRef = (code: number) => `S-${String(code).padStart(2, "0")}`;
 
 const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
@@ -19,6 +24,14 @@ const loadImage = (src: string): Promise<HTMLImageElement> =>
     img.onerror = reject;
     img.src = src;
   });
+
+// Render a react-icons component to a black SVG image we can draw on the canvas.
+const loadIconImage = (Icon: IconType, sizePx: number): Promise<HTMLImageElement> => {
+  const svg = renderToStaticMarkup(
+    createElement(Icon, { color: "#000000", size: sizePx }),
+  );
+  return loadImage(`data:image/svg+xml;base64,${btoa(svg)}`);
+};
 
 // renders the sample label onto an offscreen canvas at the printer's pixel size.
 export const renderSampleLabelCanvas = async (
@@ -57,28 +70,46 @@ export const renderSampleLabelCanvas = async (
     return `${t}…`;
   };
 
-  // Reference code (large).
-  ctx.font = "bold 44px Arial, sans-serif";
-  ctx.fillText(formatSampleRef(data.referenceCode), leftX, 56);
+  // Top line: [notebook] experiment # [experiment flask] sample #  (icons + numbers).
+  const iconSize = 32;
+  const iconTop = 12;
+  const topBaseline = 42;
+  ctx.font = "bold 34px Arial, sans-serif";
+
+  const [notebookImg, experimentImg] = await Promise.all([
+    loadIconImage(LuBook, iconSize),
+    loadIconImage(AiOutlineExperiment, iconSize),
+  ]);
+
+  let topX = leftX;
+  ctx.drawImage(notebookImg, topX, iconTop, iconSize, iconSize);
+  topX += iconSize + 8;
+  const expCode = String(data.experimentReferenceCode);
+  ctx.fillText(expCode, topX, topBaseline);
+  topX += ctx.measureText(expCode).width + 22;
+
+  ctx.drawImage(experimentImg, topX, iconTop, iconSize, iconSize);
+  topX += iconSize + 8;
+  ctx.fillText(String(data.sampleReferenceCode), topX, topBaseline);
+
+  // Primary subject (clipped so it never crosses the QR).
+  ctx.font = "26px Arial, sans-serif";
+  ctx.fillText(ellipsize(data.primarySubject, "26px Arial, sans-serif"), leftX, 84);
+
+  // Variant name.
+  ctx.font = "bold 24px Arial, sans-serif";
+  ctx.fillText(ellipsize(data.variantLabel, "bold 24px Arial, sans-serif"), leftX, 122);
 
   // Sample label.
-  ctx.font = "28px Arial, sans-serif";
-  ctx.fillText(ellipsize(data.sampleLabel, "28px Arial, sans-serif"), leftX, 100);
+  ctx.font = "22px Arial, sans-serif";
+  ctx.fillText(ellipsize(data.sampleLabel, "22px Arial, sans-serif"), leftX, 158);
 
-  // Variant label.
-  ctx.font = "bold 24px Arial, sans-serif";
-  ctx.fillText(
-    ellipsize(data.variantLabel, "bold 24px Arial, sans-serif"),
-    leftX,
-    140,
-  );
-
-  // Prepared date.
+  // Prepared date (very bottom).
   const prepared = data.preparedAt
     ? `Prepared ${DateTime.fromJSDate(new Date(data.preparedAt)).toFormat("DD")}`
     : "Not prepared";
   ctx.font = "20px Arial, sans-serif";
-  ctx.fillText(ellipsize(prepared, "20px Arial, sans-serif"), leftX, 180);
+  ctx.fillText(ellipsize(prepared, "20px Arial, sans-serif"), leftX, 224);
 
   return canvas;
 };
