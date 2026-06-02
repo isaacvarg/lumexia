@@ -22,7 +22,10 @@ export const evaluateInventoryAuditTriggers = async () => {
   }
 
   const items = await prisma.item.findMany({
-    where: { procurementTypeId: procurementTypes.purchased },
+    where: {
+      procurementTypeId: procurementTypes.purchased,
+      itemTypeId: { in: config.enabledItemTypeIds },
+    },
     select: { id: true, name: true },
   })
 

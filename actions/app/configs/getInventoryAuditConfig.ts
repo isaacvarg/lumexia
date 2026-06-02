@@ -45,6 +45,11 @@ const CONFIG_SEEDS: ConfigSeed[] = [
   },
 ]
 
+// per-item-type toggle keys are namespaced so the cron can gate whole categories
+const ITEM_TYPE_KEY_PREFIX = 'auditTriggerItemType:'
+const itemTypeKey = (itemTypeId: string) => `${ITEM_TYPE_KEY_PREFIX}${itemTypeId}`
+const itemTypeIdFromKey = (key: string) => key.slice(ITEM_TYPE_KEY_PREFIX.length)
+
 const parseBoolean = (raw: string | undefined, fallback: boolean) => {
   if (raw === undefined) return fallback
   return raw.trim().toLowerCase() === 'true'
@@ -69,7 +74,17 @@ export const ensureInventoryAuditConfigs = async () => {
   })
   const byKey = new Map(existing.map((c) => [c.key, c]))
 
-  const missing = CONFIG_SEEDS.filter((s) => !byKey.has(s.key))
+  // dynamically seed one boolean toggle per item type; default enabled so
+  // behaviour is unchanged until the user opts a category out.
+  const itemTypes = await prisma.itemType.findMany({ select: { id: true, name: true } })
+  const itemTypeSeeds: ConfigSeed[] = itemTypes.map((t) => ({
+    key: itemTypeKey(t.id),
+    value: 'true',
+    dataType: 'boolean',
+    description: t.name,
+  }))
+
+  const missing = [...CONFIG_SEEDS, ...itemTypeSeeds].filter((s) => !byKey.has(s.key))
   if (missing.length > 0) {
     await prisma.config.createMany({
       data: missing.map((s) => ({
@@ -80,6 +95,14 @@ export const ensureInventoryAuditConfigs = async () => {
         configGroupId: group!.id,
       })),
     })
+  }
+
+  // keep item-type labels fresh if a type was renamed
+  for (const t of itemTypes) {
+    const current = byKey.get(itemTypeKey(t.id))
+    if (current && current.description !== t.name) {
+      await prisma.config.update({ where: { id: current.id }, data: { description: t.name } })
+    }
   }
 
   return prisma.config.findMany({
@@ -104,5 +127,8 @@ export const getInventoryAuditConfig = async () => {
     negativeStock: {
       enabled: parseBoolean(map.get('auditTriggerNegativeStockEnabled'), true),
     },
+    enabledItemTypeIds: configs
+      .filter((c) => c.key.startsWith(ITEM_TYPE_KEY_PREFIX) && parseBoolean(c.value, true))
+      .map((c) => itemTypeIdFromKey(c.key)),
   }
 }

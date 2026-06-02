@@ -16,11 +16,19 @@ type Config = {
   description: string
 }
 
-type Props = {
-  configs: Config[]
+type ItemType = {
+  id: string
+  name: string
 }
 
-const InventoryAuditSettingsForm = ({ configs }: Props) => {
+type Props = {
+  configs: Config[]
+  itemTypes: ItemType[]
+}
+
+const ITEM_TYPE_KEY_PREFIX = 'auditTriggerItemType:'
+
+const InventoryAuditSettingsForm = ({ configs, itemTypes }: Props) => {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -134,6 +142,28 @@ const InventoryAuditSettingsForm = ({ configs }: Props) => {
         </Panels.Root>
 
       </div>
+
+      <Panels.Root>
+        <Text.SectionTitle size="small">Item categories</Text.SectionTitle>
+        <Text.Normal>
+          Only items in enabled categories are evaluated by the audit trigger cron. Disable a category to skip its items entirely.
+        </Text.Normal>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+          {itemTypes.map((type) => {
+            const key = `${ITEM_TYPE_KEY_PREFIX}${type.id}`
+            return (
+              <div key={type.id} className="flex items-center justify-between gap-2">
+                <span className="font-medium">{type.name}</span>
+                <ToggleSwitch
+                  checked={values[key] === 'true'}
+                  onChange={setBool(key)}
+                  name={key}
+                />
+              </div>
+            )
+          })}
+        </div>
+      </Panels.Root>
 
       <div className="flex justify-end">
         <button
