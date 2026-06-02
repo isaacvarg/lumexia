@@ -22,7 +22,7 @@ const ToggleField = ({ label, labelClass = 'default' }: ToggleFieldProps) => {
 
       <input
         type="checkbox"
-        className="toggle"
+        className="toggle toggle-primary"
         checked={field.state.value}
         onChange={(e) => field.handleChange(e.target.checked)}
       />

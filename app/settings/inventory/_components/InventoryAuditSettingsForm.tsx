@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import * as Switch from "@radix-ui/react-switch"
 import { Panels } from "@/components/Panels"
 import Text from "@/components/Text"
 import useToast from "@/hooks/useToast"
@@ -186,14 +185,13 @@ type ToggleSwitchProps = {
 }
 
 const ToggleSwitch = ({ checked, onChange, name }: ToggleSwitchProps) => (
-  <Switch.Root
-    className="w-[42px] h-[25px] rounded-full relative border-cutty-sark-200 bg-cutty-sark-100 data-[state=checked]:bg-cutty-sark-500 outline-none cursor-default"
+  <input
+    type="checkbox"
+    className="toggle toggle-primary"
     checked={checked}
-    onCheckedChange={onChange}
     name={name}
-  >
-    <Switch.Thumb className="block w-[21px] h-[21px] bg-white rounded-full shadow-[0_2px_2px] shadow-cutty-sark-600 transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[19px]" />
-  </Switch.Root>
+    onChange={(e) => onChange(e.target.checked)}
+  />
 )
 
 export default InventoryAuditSettingsForm
