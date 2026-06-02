@@ -6,15 +6,18 @@ import UserIcon from "@/components/UI/UserIcon"
 import { dateFormatWithTime } from "@/configs/data/dateFormatString"
 import { qcRecordStatuses } from "@/configs/staticRecords/qcRecordStatuses"
 import { useItemSelection } from "@/store/itemSlice"
+import useDialog from "@/hooks/useDialog"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { TbCalendar, TbX } from "react-icons/tb"
 import Import from "./Import"
+import NewExamination, { newExaminationDialog } from "./NewExamination"
 
 const Examinations = () => {
 
   const { qcRecords, item } = useItemSelection()
+  const { showDialog } = useDialog()
   const router = useRouter()
   const [isImport, setIsImport] = useState(false);
   const handleClick = (record: QcRecordExpanded) => {
@@ -39,15 +42,25 @@ const Examinations = () => {
             : <button onClick={() => setIsImport(true)} className='btn btn-primary'>Import</button>
           }
           {!isImport && (
-            <button
-              onClick={() => router.push(`/quality/qc/examination/bulk-entry/${item?.name}`)}
-              className='btn btn-secondary'
-            >
-              Bulk Entry
-            </button>
+            <>
+              <button
+                onClick={() => router.push(`/quality/qc/examination/bulk-entry/${item?.name}`)}
+                className='btn btn-secondary'
+              >
+                Bulk Entry
+              </button>
+              <button
+                onClick={() => showDialog(newExaminationDialog)}
+                className='btn btn-primary'
+              >
+                New Examination
+              </button>
+            </>
           )}
         </div>
       </div>
+
+      <NewExamination />
 
       {isImport && <Import />}
 
