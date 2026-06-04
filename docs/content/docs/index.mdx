@@ -1,15 +1,48 @@
 ---
 title: Overview
-description: What Lumexia is and how this wiki is organized
+description: What is Lumexia
 ---
 
-Lumexia is a manufacturing and inventory management system that aims to make
-procurement, purchasing, pricing, production, quality, and resource planning easier
-and more traceable.
+## What is Lumexia
 
-This wiki documents how each module works and how they fit together.
+Lumexia is a manufacturing, quality and inventory management system that helps a production business run smoothly from end to end. 
 
-## Modules
+It keeps track of every item and material stock by managing lot numbers, different inventory quantities, label generation and scanning, inventory audits, and reconciliation of discrepancies. It manages the full purchase cycle from raising procurement requests, issuing purchase orders, and receiving deliveries.  
+
+On the production side, it holds master batch records that can be instantiated via batch production records. There is a compounding workflow to help batches be made consistently with step by step instructions, quality checks, and full traceability back to the exact lots of materials used.
+
+Lumexia also covers quality testing, accounting reconciliation with payment methods, parametric pricing and costing of produced formulations and purchased items with approval workflow, and research & development electronic laboratory notebook featuring label laboratory sample label generation. 
+
+In short, Lumexia brings procurement, inventory, production, quality, pricing, and research & development in one place so the business stays organized, traceable, informed, and in control.
+
+## Motivations
+
+This project came out of great necessity and a dash of selfish motivation to make my job easier and fuel my love to digitally organize.
+
+Previously, I worked as a formulations and anayltical chemist for a white label cosmetic and bath product manufacturer. Despite having brilliant formulations and chemists, the company lacked robust digital solutions; most of the workflows involved physical paper trails, unorganized spreadsheets or the memory of specific employees. 
+
+This became very problematic as the company grew, but the tipping point during the midst of the COVID pandemic. During this time we had to switch to producing and shipping insane volumes of our hand sanitizer, which previously did average sales.
+
+Procurement of materials to fulfill the bill of materials began to become very chaotic due to: material availability, extreme pricing fluctuations, material quality issues and chemical compatability and stability with our existing formulations. Managing the chemistry side of this was cumbersome, but it had huge ramifications for our financial, production, and purchasing departments. So all this paired with our "analog" workflows made the process tumultuously unmanageable. 
+
+At the time,  I was begining to learn javascript and some other technologies for fun (autodidact tendencies) and suggested I help out using some of this new knowledge to improve our workflow. Lumexia has grown quite a bit since then and has become something that helped make my co-workers easier. In retrospect, this projects scope was way to large for a learning project and it grew on a lot of surfaces due to requests from co-workers help them out. A lot of these decisions were made with my personal needs and those of my co-workers, however, I tried to keep others in the industry in mind. 
+
+## Similar Projects and Software
+
+There are several projects or software available that are similar to Lumexia. It certainly is not the first inventory or manufacturing management software. If the decisions made for the the various modules or the specificity bias for cosmetic manufacturing is not for you, or you just want to check out similar projects I encourage you to take a look at these other projects:
+
+- [Odoo ❤️](https://www.odoo.com)
+- [Dozuki](https://www.dozuki.com)
+- [BatchMaster](https://www.batchmaster.com)
+- [SciNote ELN](https://www.scinote.net/product/)
+- [Homebox ❤️](https://homebox.software/en/)
+  - This one is for home inventory, but an amazing open-source software
+
+## License
+
+Currently, the project is licensed under [PolyForm Noncommercial License 1.0.0](https://github.com/isaacvarg/lumexia?tab=License-1-ov-file). I am currently struggling with determining which license to apply to this project. I understand that this prevents other companies from using this application, which is far from my original intent as a lover of open source and self hosting enthusiast. I am working on expanding my knowledge of software licensing so that others can benefit from Lumexia and also join me in improving it.
+
+## Modules (move this elsewhere)
 
 <Cards>
   <Card title="Inventory" href="/docs/inventory" description="On-hand, allocated, and available quantities, QR labels, audits, and trends." />
