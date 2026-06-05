@@ -1,0 +1,26 @@
+---
+title: Prerequisites
+---
+
+## Node.js
+
+I manage different node instances on my system using [mise](https://mise.jdx.dev). However, you can install node the traditional way or other environment managers, such as nvm.
+
+```bash
+mise install node@20.20.2
+```
+
+## PostgreSQL
+
+PostgreSQL is used as the database for Lumexia via [PrismaORM](https://www.prisma.io/orm).
+
+- This app was developed with PostgreSQL 15.
+
+## S3
+
+An object store system is required. Currently the project uses MinIO. However, I have been using [rustfs](https://rustfs.com) in other projects and have been liking it, so this project will eventually be switched to that.
+
+<Callout title="GitHub Issue">
+This is tracked on [issue #96](https://github.com/isaacvarg/lumexia/issues/96)
+</Callout>
+
