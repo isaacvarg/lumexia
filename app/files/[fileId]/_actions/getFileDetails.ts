@@ -3,6 +3,8 @@ import { s3 } from "@/lib/s3"
 import prisma from "@/lib/prisma"
 import { getSlug } from "@/utils/general/getSlug"
 import { FileModule } from "../../_actions/getAllFiles"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 export type FileTypeOption = {
   id: string;
@@ -88,10 +90,18 @@ export const getFileDetails = async (fileId: string): Promise<FileDetails | null
 
   if (!file) return null;
 
-  const url = await s3.presignedGetObject(file.bucketName, file.objectName, 3600);
+  const url = await getSignedUrl(
+    s3,
+    new GetObjectCommand({ Bucket: file.bucketName, Key: file.objectName }),
+    { expiresIn: 3600 }
+  );
   const thumbnailUrl =
     file.thumbnailBucketName && file.thumbnailObjectName
-      ? await s3.presignedGetObject(file.thumbnailBucketName, file.thumbnailObjectName, 3600)
+      ? await getSignedUrl(
+          s3,
+          new GetObjectCommand({ Bucket: file.thumbnailBucketName, Key: file.thumbnailObjectName }),
+          { expiresIn: 3600 }
+        )
       : null;
 
   let fileModule: FileModule = "unassigned";

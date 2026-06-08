@@ -3,4 +3,37 @@ title: Manual
 description: How to build Lumexia from source
 ---
 
+<Callout>
+This is work in progress
+</Callout>
+
+
+```bash
+# clone repo
+git clone https://github.com/isaacvarg/lumexia.git
+
+# go into directory 
+cd lumexia
+z lumexia
+
+# install packages
+npm install
+```
+
+```bash
+# copy env template
+cp .env.example .env
+````
+
+`DATABASE_URL` is the prisma connection string
+
+
+## databse stuff
+
+```bash
+npx prisma migrate deploy
+```
+
+
+
 

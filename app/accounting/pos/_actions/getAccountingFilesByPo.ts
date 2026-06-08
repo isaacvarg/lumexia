@@ -1,6 +1,8 @@
 'use server'
 import { s3 } from "@/lib/s3"
 import prisma from "@/lib/prisma"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 export const getAccountingFilesByPo = async (poId: string) => {
 
@@ -21,14 +23,18 @@ export const getAccountingFilesByPo = async (poId: string) => {
   // presign url
   const filesWithUrls = await Promise.all(
     filesFromDb.map(async (poFile) => {
-      const url = await s3.presignedGetObject(
-        poFile.file.bucketName,
-        poFile.file.objectName,
-        3600
+      const url = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: poFile.file.bucketName, Key: poFile.file.objectName }),
+        { expiresIn: 3600 }
       );
 
       const thumbnailUrl = (poFile.file.thumbnailBucketName && poFile.file.thumbnailObjectName) ?
-        await s3.presignedGetObject(poFile.file.thumbnailBucketName, poFile.file.thumbnailObjectName) :
+        await getSignedUrl(
+          s3,
+          new GetObjectCommand({ Bucket: poFile.file.thumbnailBucketName, Key: poFile.file.thumbnailObjectName }),
+          { expiresIn: 3600 }
+        ) :
         null
 
       return {

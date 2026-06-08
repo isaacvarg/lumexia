@@ -1,6 +1,8 @@
 'use server'
 import { s3 } from "@/lib/s3"
 import prisma from "@/lib/prisma"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 export type FileModule =
   | "item"
@@ -73,18 +75,18 @@ export const getAllFiles = async (): Promise<UnifiedFileEntry[]> => {
 
   const entries = await Promise.all(
     files.map(async (file) => {
-      const url = await s3.presignedGetObject(
-        file.bucketName,
-        file.objectName,
-        3600
+      const url = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: file.bucketName, Key: file.objectName }),
+        { expiresIn: 3600 }
       );
 
       const thumbnailUrl =
         file.thumbnailBucketName && file.thumbnailObjectName
-          ? await s3.presignedGetObject(
-              file.thumbnailBucketName,
-              file.thumbnailObjectName,
-              3600
+          ? await getSignedUrl(
+              s3,
+              new GetObjectCommand({ Bucket: file.thumbnailBucketName, Key: file.thumbnailObjectName }),
+              { expiresIn: 3600 }
             )
           : null;
 

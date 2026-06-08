@@ -13,7 +13,7 @@ Made with:
 - TypeScript
 - PostgreSQL
 - Prisma
-- Minio
+- RustFS
 - Docker
 
 ## Roadmap

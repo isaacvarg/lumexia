@@ -1,12 +1,28 @@
 import sharp from 'sharp';
 import { NextRequest, NextResponse } from 'next/server';
 import { s3 } from '@/lib/s3';
+import {
+  CreateBucketCommand,
+  HeadBucketCommand,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { getUserId } from '@/actions/users/getUserId';
 import prisma from '@/lib/prisma';
 import { fromBuffer } from "pdf2pic"
+
+async function bucketExists(name: string): Promise<boolean> {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: name }));
+    return true;
+  } catch (err: unknown) {
+    const status = (err as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode;
+    if (status === 404 || status === 301 || status === 403) return false;
+    throw err;
+  }
+}
 
 export type FileResponseData = {
   name: string
@@ -41,9 +57,8 @@ export async function POST(request: NextRequest) {
     }
 
     // TODO ensure that bucket exists on app startup not every time we upload
-    const bucketExists = await s3.bucketExists(bucketName);
-    if (!bucketExists) {
-      await s3.makeBucket(bucketName);
+    if (!(await bucketExists(bucketName))) {
+      await s3.send(new CreateBucketCommand({ Bucket: bucketName }));
       console.log(`Bucket ${bucketName} created.`);
     }
 
@@ -53,11 +68,13 @@ export async function POST(request: NextRequest) {
     const fileExtension = path.extname(file.name);
     const objectName = `${pathPrefix}/${uuidv4()}${fileExtension}`;
 
-    const metaData = {
-      'Content-Type': file.type,
-    };
-
-    const uploadInfo = await s3.putObject(bucketName, objectName, buffer, file.size, metaData);
+    const uploadInfo = await s3.send(new PutObjectCommand({
+      Bucket: bucketName,
+      Key: objectName,
+      Body: buffer,
+      ContentLength: file.size,
+      ContentType: file.type,
+    }));
 
     let thumbnailObjectName: string | null = null;
     let thumbnailBucketName: string | null = null;
@@ -67,7 +84,13 @@ export async function POST(request: NextRequest) {
       const thumbnailBuffer = await sharp(buffer).resize(128, 128, { fit: 'inside' }).toBuffer();
       const thumbnailExtension = '.webp'; // Use webp for thumbnails for better compression
       thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
-      await s3.putObject(bucketName, thumbnailObjectName, thumbnailBuffer, thumbnailBuffer.length, { 'Content-Type': 'image/webp' });
+      await s3.send(new PutObjectCommand({
+        Bucket: bucketName,
+        Key: thumbnailObjectName,
+        Body: thumbnailBuffer,
+        ContentLength: thumbnailBuffer.length,
+        ContentType: 'image/webp',
+      }));
       thumbnailBucketName = bucketName;
     }
 
@@ -89,7 +112,13 @@ export async function POST(request: NextRequest) {
         if (buf && buf.length > 0) {
           const thumbnailExtension = '.webp';
           thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
-          await s3.putObject(bucketName, thumbnailObjectName, buf, buf.length, { 'Content-Type': 'image/webp' });
+          await s3.send(new PutObjectCommand({
+            Bucket: bucketName,
+            Key: thumbnailObjectName,
+            Body: buf,
+            ContentLength: buf.length,
+            ContentType: 'image/webp',
+          }));
           thumbnailBucketName = bucketName;
         } else {
           console.warn('PDF thumbnail generation produced an empty buffer; skipping. Is GraphicsMagick installed on the host?');
@@ -105,8 +134,8 @@ export async function POST(request: NextRequest) {
       size: file.size,
       bucket: bucketName,
       objectName: objectName,
-      etag: uploadInfo.etag,
-      versionId: uploadInfo.versionId,
+      etag: uploadInfo.ETag ?? '',
+      versionId: uploadInfo.VersionId ?? null,
       thumbnailObjectName: thumbnailObjectName,
       thumbnailBucketName: thumbnailBucketName,
     };

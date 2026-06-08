@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { s3 } from "@/lib/s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 import JSZip from "jszip";
 import { Readable } from "stream";
@@ -172,11 +173,11 @@ export async function GET(
   await Promise.all(
     itemFiles.map(async (itemFile) => {
       try {
-        const stream = await s3.getObject(
-          itemFile.file.bucketName,
-          itemFile.file.objectName
-        );
-        const buffer = await streamToBuffer(stream as unknown as Readable);
+        const { Body } = await s3.send(new GetObjectCommand({
+          Bucket: itemFile.file.bucketName,
+          Key: itemFile.file.objectName,
+        }));
+        const buffer = await streamToBuffer(Body as unknown as Readable);
         filesFolder.file(itemFile.file.name, buffer);
       } catch {
         // skip files that can't be retrieved
@@ -189,11 +190,11 @@ export async function GET(
   await Promise.all(
     bomItemFiles.map(async (itemFile) => {
       try {
-        const stream = await s3.getObject(
-          itemFile.file.bucketName,
-          itemFile.file.objectName
-        );
-        const buffer = await streamToBuffer(stream as unknown as Readable);
+        const { Body } = await s3.send(new GetObjectCommand({
+          Bucket: itemFile.file.bucketName,
+          Key: itemFile.file.objectName,
+        }));
+        const buffer = await streamToBuffer(Body as unknown as Readable);
         const itemFolder = bomFilesFolder.folder(itemFile.item.name)!;
         itemFolder.file(itemFile.file.name, buffer);
       } catch {
