@@ -25,6 +25,9 @@ const MaterialAllocationPanels = ({
 
   const router = useRouter()
 
+  const availableAfterBatch = material.totalQuantityAvailable - material.quantity;
+  const softAvailabilityAfterBatch = material.totalQuantitySoftAvailability - material.quantity;
+
   const handleProductClick = () => {
     const formattedName = getSlug(material.bom.item.name);
     const path = `/inventory/items/${`${formattedName}?id=${material.bom.item.id}`} `
@@ -53,11 +56,11 @@ const MaterialAllocationPanels = ({
         <div className="flex flex-col gap-y-4">
           <Text.SectionTitle size="small">General</Text.SectionTitle>
           <Text.LabelDataPair label="On Hand" tooltip="Physical quantity currently in stock across all lots of this item." data={`${toFracitonalDigits.weight(material.totalQuantityOnHand)} lbs`} />
-          <Text.LabelDataPair label="Allocated" tooltip="Quantity committed to other confirmed BPRs (queued, staging, compounding, awaiting materials, or completed) that have not yet consumed their materials. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantityAllocated)} lbs`} />
-          <Text.LabelDataPair label="Soft Allocated" tooltip="Quantity committed to other draft BPRs that have not yet been confirmed. These will become Allocated once the BPR is confirmed. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAllocated)} lbs`} />
-          <Text.LabelDataPair label="Available" tooltip="On Hand minus Allocated. The quantity free to be allocated right now." data={`${toFracitonalDigits.weight(material.totalQuantityAvailable)} lbs`} />
-          <Text.LabelDataPair label="Soft Availability" tooltip="Available minus Soft Allocated. The quantity that would remain free if every current draft BPR were confirmed." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAvailability)} lbs`} />
+          <Text.LabelDataPair label="Allocated (Other Batches)" tooltip="Quantity committed to other confirmed BPRs (queued, staging, compounding, awaiting materials, or completed) that have not yet consumed their materials. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantityAllocated)} lbs`} />
+          <Text.LabelDataPair label="Soft Allocated (Other Batches)" tooltip="Quantity committed to other draft BPRs that have not yet been confirmed. These will become Allocated once the BPR is confirmed. Excludes this BPR." data={`${toFracitonalDigits.weight(material.totalQuantitySoftAllocated)} lbs`} />
           <Text.LabelDataPair label="Required for this Batch" tooltip="Amount of this material required to complete this BPR's batch." data={`${toFracitonalDigits.weight(material.quantity)} lbs`} />
+          <Text.LabelDataPair label="Available after this Batch" tooltip="On Hand minus Allocated (other batches) minus this batch's requirement. The quantity that would remain free once this batch is allocated." data={`${toFracitonalDigits.weight(availableAfterBatch)} lbs`} />
+          <Text.LabelDataPair label="Soft Availability after this Batch" tooltip="Available after this batch minus Soft Allocated (other batches). The quantity that would remain free if this batch and every current draft BPR were confirmed." data={`${toFracitonalDigits.weight(softAvailabilityAfterBatch)} lbs`} />
         </div>
 
         <div className="flex flex-col gap-y-6">

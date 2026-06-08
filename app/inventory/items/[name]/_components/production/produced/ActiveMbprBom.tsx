@@ -1,5 +1,6 @@
 import Card from "@/components/Card"
 import { useItemSelection } from "@/store/itemSlice"
+import { recordStatuses } from "@/configs/staticRecords/recordStatuses"
 import { toFracitonalDigits } from "@/utils/data/toFractionalDigits"
 
 const ActiveMbprBom = () => {
@@ -8,6 +9,10 @@ const ActiveMbprBom = () => {
 
 
   if (!activeMbpr) return false;
+
+  const activeSize = activeMbpr.BatchSize.find(bz => bz.recordStatusId === recordStatuses.active)
+
+  if (!activeSize) return false;
 
   return (
     <Card.Root span={2}>
@@ -27,7 +32,7 @@ const ActiveMbprBom = () => {
           <tbody>
             {activeMbpr?.BillOfMaterial.sort((a, b) => parseInt(a.identifier) - parseInt(b.identifier)).map(b => {
 
-              const amount = (b.concentration * 0.01) * activeMbpr.BatchSize[0].quantity
+              const amount = (b.concentration * 0.01) * activeSize.quantity
               return (
                 <tr key={b.id}>
 
