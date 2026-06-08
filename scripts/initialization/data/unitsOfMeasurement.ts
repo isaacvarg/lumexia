@@ -1,5 +1,3 @@
-import prisma from "@/lib/prisma";
-
 export const data = {
   modelName: 'unitOfMeasurement',
   staticRecordName: 'uom',

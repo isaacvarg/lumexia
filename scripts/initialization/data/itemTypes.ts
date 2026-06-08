@@ -1,5 +1,7 @@
 export const data = {
   modelName: 'itemType',
+  staticRecordName: null,
+  staticRecordKeyName: null,
   seed: [
     {
       "name": "Essential Oil"

@@ -3,7 +3,7 @@ model ItemTypeConfig {
     isPricingExaminationTriggerEnabled Boolean  @map("is_pricing_examination_trigger_enabled")
     createdAt                          DateTime @default(now()) @map("created_at")
     updatedAt                          DateTime @updatedAt @map("updated_at")
-    itemType                           ItemType @relation(fields: [itemTypeId], references: [id])
+    itemType                           ItemType @relation(fields: [itemTypeId], references: [id], onDelete: Cascade)
     itemTypeId                         String   @unique @map("item_type_id")
 
     @@map("item_type_configs")

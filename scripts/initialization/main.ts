@@ -10,7 +10,7 @@ const prismaClient = prisma as any;
 const generatedRecords: { [key: string]: any } = {};
 
 const processFileData = async (fileName: string, data: any, isDependency: boolean) => {
-  let { modelName, seed, staticRecordName, staticRecordKeyName, dependencies, dependencyIterator } = data;
+  let { modelName, seed, staticRecordName, staticRecordKeyName, dependencies, dependencyIterator, generateStaticRecord } = data;
 
   // If it's a dependency, resolve the seed data by injecting other generated records
   if (isDependency) {
@@ -52,8 +52,6 @@ const processFileData = async (fileName: string, data: any, isDependency: boolea
     return;
   }
 
-  // Clear existing data
-  await prismaClient[modelName].deleteMany({});
   console.log(`🌱  Seeding ${modelName}...`);
 
   // Seed data
@@ -62,12 +60,26 @@ const processFileData = async (fileName: string, data: any, isDependency: boolea
   });
   console.log(`✅ Seeded ${response.length} records into ${modelName}.`);
 
+  // Skip static record generation for config/settings tables that are never referenced by static name
+  if (generateStaticRecord === false) {
+    console.log(`⏭️  Skipping static record generation for ${fileName}.`);
+    return;
+  }
+
   // Create static records
   const outputPath = path.join(__dirname, "..", "..", "configs", "staticRecords", fileName);
   const exportName = staticRecordName ? staticRecordName : path.basename(fileName, '.ts');
   const keyName = staticRecordKeyName ? staticRecordKeyName : 'name';
-  const transformedRecords = response.reduce((acc: any, curr: any) => {
-    acc[toCamelCase(curr[keyName])] = curr.id;
+  const transformedRecords = response.reduce((acc: any, curr: any, index: number) => {
+    const keyValue = curr[keyName];
+    if (keyValue == null || typeof keyValue !== 'string') {
+      throw new Error(
+        `Cannot build static record: record at index ${index} has a missing or non-string value for key "${keyName}" ` +
+        `(got ${JSON.stringify(keyValue)}). Set "staticRecordKeyName" in the data file to a field present on every record, ` +
+        `or ensure each seeded record defines "${keyName}".\n  Offending record: ${JSON.stringify(curr)}`
+      );
+    }
+    acc[toCamelCase(keyValue)] = curr.id;
     return acc;
   }, {});
 
@@ -108,14 +120,36 @@ const Main = async () => {
     }
   }
 
+  // Clear existing data before seeding. Dependent tables (children) must be cleared
+  // before the regular tables (parents) they reference, otherwise the parent deleteMany
+  // fails on re-runs with a foreign key constraint violation.
+  console.log('🧹 Clearing existing data (dependent tables first)...');
+  for (const file of [...dependentFiles, ...regularFiles]) {
+    const { modelName } = file.data;
+    if (!prismaClient[modelName]) continue;
+    try {
+      await prismaClient[modelName].deleteMany({});
+    } catch (error) {
+      throw new Error(`💔 Failed while clearing "${file.fileName}": ${(error as Error).message}`, { cause: error });
+    }
+  }
+
   console.log('🌱 Processing non-dependent files first...');
   for (const file of regularFiles) {
-    await processFileData(file.fileName, file.data, false);
+    try {
+      await processFileData(file.fileName, file.data, false);
+    } catch (error) {
+      throw new Error(`💔 Failed while seeding "${file.fileName}": ${(error as Error).message}`, { cause: error });
+    }
   }
 
   console.log('🌱 Processing dependent files...');
   for (const file of dependentFiles) {
-    await processFileData(file.fileName, file.data, true);
+    try {
+      await processFileData(file.fileName, file.data, true);
+    } catch (error) {
+      throw new Error(`💔 Failed while seeding "${file.fileName}": ${(error as Error).message}`, { cause: error });
+    }
   }
 };
 
