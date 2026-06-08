@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import useCommandPalletPages from './Commands/Pages'
 import CommandButton from './CommandButton'
 import { Search } from '../Search'
@@ -16,13 +16,24 @@ const CommandCenter = () => {
     const mergedData = [...pages, ...items]
     const [results, setResults] = useState<Command[]>([])
 
+    // Keep a ref to the latest input so the debounced onQueryComplete callback
+    // can tell whether its results are stale. SearcherUnmanaged returns the full
+    // dataset when the input is empty; we never render that (we show `pages`
+    // instead), so drop it to avoid a transient full-list render on the first
+    // keystroke that would expand the dialog then snap back.
+    const inputRef = useRef(input)
+    inputRef.current = input
+    const handleResults = useCallback((next: Command[]) => {
+        setResults(inputRef.current.trim() === '' ? [] : next)
+    }, [])
+
     return (
         <div className='flex flex-col gap-y-2'>
 
             <Search.SearcherUnmanaged
                 data={mergedData}
                 keys={['label', 'terms']}
-                onQueryComplete={setResults}
+                onQueryComplete={handleResults}
                 input={input}
                 setInput={setInput}
 
@@ -38,7 +49,7 @@ const CommandCenter = () => {
 
                 )}
 
-                {results && results.map((result, index) => <CommandButton key={index} command={result} index={index} />)}
+                {input && results.map((result, index) => <CommandButton key={index} command={result} index={index} />)}
             </div>
 
         </div>

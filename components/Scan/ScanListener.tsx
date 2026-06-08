@@ -15,6 +15,25 @@ const ScanListener: React.FC<ScanListenerProps> = ({
 
   const handleScan = useCallback(
     (event: KeyboardEvent) => {
+      // Ignore keystrokes that can't be from a hardware scanner: modifier-key
+      // chords (e.g. Ctrl+K) and anything typed into a focused editable element
+      // (the command palette, search inputs, etc.). Otherwise the global listener
+      // hijacks the user's typing and submits it as a "scan" on Enter.
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       if (event.key === "Enter") {
         if (scannedData.trim() !== "") {
           onScanComplete(scannedData);
