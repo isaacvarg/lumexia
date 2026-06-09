@@ -11,4 +11,8 @@ export const s3 = new S3Client({
     secretAccessKey: process.env.S3_SECRET_KEY || "",
   },
   forcePathStyle: true,
+  // AWS SDK v3 now sends by default
+  // (x-amz-checksum-mode=ENABLED) with a 400. Only send them when required.
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
 });

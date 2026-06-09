@@ -65,8 +65,13 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // callers pass prefixes inconsistently (e.g. "/item/", "research/sample-1").
+    // strip leading/trailing slashes and collapse internal ones so keys never
+    // contain empty segments — S3/MinIO presigned URLs with "//" fail to match.
+    const normalizedPrefix = pathPrefix.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+
     const fileExtension = path.extname(file.name);
-    const objectName = `${pathPrefix}/${uuidv4()}${fileExtension}`;
+    const objectName = `${normalizedPrefix}/${uuidv4()}${fileExtension}`;
 
     const uploadInfo = await s3.send(new PutObjectCommand({
       Bucket: bucketName,
@@ -83,7 +88,7 @@ export async function POST(request: NextRequest) {
     if (file.type.startsWith('image/')) {
       const thumbnailBuffer = await sharp(buffer).resize(128, 128, { fit: 'inside' }).toBuffer();
       const thumbnailExtension = '.webp'; // Use webp for thumbnails for better compression
-      thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
+      thumbnailObjectName = `${normalizedPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
       await s3.send(new PutObjectCommand({
         Bucket: bucketName,
         Key: thumbnailObjectName,
@@ -111,7 +116,7 @@ export async function POST(request: NextRequest) {
         // back to the PDF icon instead of a broken image.
         if (buf && buf.length > 0) {
           const thumbnailExtension = '.webp';
-          thumbnailObjectName = `${pathPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
+          thumbnailObjectName = `${normalizedPrefix}/thumbnails/${uuidv4()}${thumbnailExtension}`;
           await s3.send(new PutObjectCommand({
             Bucket: bucketName,
             Key: thumbnailObjectName,
