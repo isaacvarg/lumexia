@@ -3,14 +3,14 @@
 // this component differs from search in that the results are output to the component
 // rather than displayed
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TbSearch } from "react-icons/tb";
 import Fuse from 'fuse.js'
 
 type SearchProps<T> = {
   data: T[],
   keys: string[]
-  onQueryComplete: Dispatch<SetStateAction<T[]>>
+  onQueryComplete: (results: T[]) => void
 }
 
 const Searcher = <T,>({ data, keys, onQueryComplete }: SearchProps<T>) => {

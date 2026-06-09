@@ -14,7 +14,7 @@ type SearchProps<T> = {
   keys: string[]
   input: any
   setInput: Dispatch<SetStateAction<string>>
-  onQueryComplete: Dispatch<SetStateAction<T[]>>
+  onQueryComplete: (results: T[]) => void
   limit?: number
 }
 
