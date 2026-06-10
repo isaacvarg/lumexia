@@ -6,6 +6,9 @@ import { getUser } from "@/actions/users/getUser";
 import { getAllUserConfigs } from "./_actions/getAllConfigs";
 import AppConfigurations from "./_components/AppConfigurations";
 import { userConfigGroups } from "@/configs/staticRecords/userConfigGroups";
+import TabSelector from "./_components/shared/TabSelector";
+import TabsContainer from "./_components/shared/TabsContainer";
+import ProfileSettings from "./_components/ProfileSettings";
 
 const UserPage = async () => {
 
@@ -18,11 +21,16 @@ const UserPage = async () => {
     <div className="flex flex-col gap-y-6">
       <Title />
 
-
-      <div className="grid grid-cols-3 gap-4">
-        <UserRoles allRoles={allRoles} user={user} />
-        <AppConfigurations configs={configs.filter(config => config.configGroupId === userConfigGroups.general)} />
-      </div>
+      <TabSelector />
+      <TabsContainer
+        main={
+          <div className="grid grid-cols-3 gap-4">
+            <ProfileSettings />
+            <UserRoles allRoles={allRoles} user={user} />
+            <AppConfigurations configs={configs.filter(config => config.configGroupId === userConfigGroups.general)} />
+          </div>
+        }
+      />
 
     </div>
   )

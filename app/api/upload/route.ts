@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // callers pass prefixes inconsistently (e.g. "/item/", "research/sample-1").
     // strip leading/trailing slashes and collapse internal ones so keys never
-    // contain empty segments — S3/MinIO presigned URLs with "//" fail to match.
+    // contain empty segments — S3/RustFS presigned URLs with "//" fail to match.
     const normalizedPrefix = pathPrefix.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
 
     const fileExtension = path.extname(file.name);

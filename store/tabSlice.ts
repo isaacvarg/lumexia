@@ -3,6 +3,7 @@ import { InvestigationTab } from '@/store/investigationSlice';
 import { PurchasingTab } from '@/app/purchasing/purchase-orders/[purchaseOrder]/_components/shared/TabSelector';
 import { RequestTab } from '@/app/purchasing/requests/_components/shared/TabSelector';
 import { ExperimentTab } from '@/app/research/experiments/[referenceCode]/_components/shared/TabSelector';
+import { UserSettingsTab } from '@/app/settings/user/_components/shared/TabSelector';
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -13,6 +14,7 @@ export type TabsConfig = {
   requests: RequestTab,
   investigation: InvestigationTab,
   experimentDetails: ExperimentTab,
+  userSettings: UserSettingsTab,
 };
 
 type TabGroupKey = keyof TabsConfig;
@@ -35,6 +37,7 @@ const initialState: TabState = {
     requests: 'new',
     investigation: 'lots',
     experimentDetails: 'basics',
+    userSettings: 'main',
   },
 }
 

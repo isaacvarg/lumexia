@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { userRoles } from "@/configs/staticRecords/userRoles";
+import { getFileUrl } from "@/actions/files/getUrl";
 
 export const getUser = async () => {
   const session = await auth();
@@ -27,6 +28,14 @@ export const getUser = async () => {
 
   // some transformations for easier use
 
+  // Uploaded avatars are stored as bare RustFS object keys (no scheme), whereas
+  // Discord avatars are absolute URLs. Resolve object keys to a fresh presigned
+  // URL so every consumer can treat user.image as a ready-to-use URL.
+  let image = user.image
+  if (image && !image.startsWith('http')) {
+    image = await getFileUrl(process.env.S3_BUCKET_NAME!, image)
+  }
+
   const isPurchasing = user &&
     user.UserRoleAssignment.length > 0 &&
     user.UserRoleAssignment.some(r => r.userRoleId === userRoles.purchasing)
@@ -44,6 +53,7 @@ export const getUser = async () => {
 
   return {
     ...user,
+    image,
     roles: {
       isPurchasing,
       isProduction,
