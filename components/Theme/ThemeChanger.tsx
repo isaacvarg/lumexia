@@ -4,6 +4,7 @@ import { updateUserConfig } from "@/actions/users/updateUserConfig";
 import useDialog from "@/hooks/useDialog";
 
 const themes = [
+  "latte", "frappe", "macchiato", "mocha",
   "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
   "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden",
   "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black",

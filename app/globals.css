@@ -3,6 +3,11 @@
     themes: all;
 }
 
+@plugin "../configs/themes/catppuccin/latte.ts";
+@plugin "../configs/themes/catppuccin/frappe.ts";
+@plugin "../configs/themes/catppuccin/macchiato.ts";
+@plugin "../configs/themes/catppuccin/mocha.ts";
+
 @theme inline {
   --font-poppins: var(--font-poppins);
   --font-roboto: var(--font-roboto);
