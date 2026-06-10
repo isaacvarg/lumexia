@@ -7,23 +7,29 @@ description: How to build Lumexia from source
 This is work in progress
 </Callout>
 
+## Download the source code
 
+You can download the source code for Lumexia from the [GitHub repository](https://github.com/isaacvarg/lumexia). 
+
+You can either clone the repository using Git or download it as a ZIP file and extract it
 ```bash
 # clone repo
 git clone https://github.com/isaacvarg/lumexia.git
+````
 
-# go into directory 
-cd lumexia
-z lumexia
+## Install Dependencies
 
-# install packages
+The [prerequisites guide](/docs/gettings-started/prerequisites) lists and provides instructions on installing required environment dependencies, such as database and object store.
+
+```bash
+# change directories into lumexia
+z or cd lumexia
+
+# install node dependencies
 npm install
 ```
 
-```bash
-# copy env template
-cp .env.example .env
-````
+
 
 `DATABASE_URL` is the prisma connection string
 
@@ -31,8 +37,34 @@ cp .env.example .env
 ## databse stuff
 
 ```bash
+# prepares the database
 npx prisma migrate deploy
+
+# generate prisma client
+npx prisma generate
+
+# initializes with necessary seeded data
+npm run init
+
+# generate static records so we don't have to fetch them
+npm run generate-static-records
 ```
+
+## running
+
+```bash
+# development server
+npm run dev
+
+# build
+npm run build
+```
+
+## login
+
+- The first user login create a user with the `System Admin` role.
+  - This allows the user to edit company settings and user roles
+
 
 
 

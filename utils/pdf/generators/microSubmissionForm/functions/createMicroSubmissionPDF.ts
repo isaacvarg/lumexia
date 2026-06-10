@@ -5,12 +5,10 @@ import { DateTime } from "luxon";
 import "../../../assets/fonts/Lato-Black-normal";
 import "../../../assets/fonts/Lato-Regular-normal";
 import "../../../assets/fonts/Lato-Bold-normal";
-import { ssfForm } from "../assets/ssfForm";
 import { IBprForSSF } from "@/app/quality/micro/new/_functions/getBprs";
-import { signature } from "../assets/signature";
 import { MicroFormResponses } from "../generateMicroSubmissionForm";
 
-export const createMicroSubmissionPDF = async (group: string[], index: number, bpr: IBprForSSF, submissionNumber: number, pdf: jsPDF, microFormResponses: MicroFormResponses) => {
+export const createMicroSubmissionPDF = async (group: string[], index: number, bpr: IBprForSSF, submissionNumber: number, pdf: jsPDF, microFormResponses: MicroFormResponses, microFormTemplate: string | null, signature: string | null) => {
 
     console.log('fixed me', submissionNumber)
     const currentDate = DateTime.now().toFormat("dd MMM yyyy");
@@ -26,7 +24,9 @@ export const createMicroSubmissionPDF = async (group: string[], index: number, b
         pdf.addPage()
     }
 
-    pdf.addImage(ssfForm, "PNG", 0, 0, 459, 354.6818);
+    if (microFormTemplate) {
+        pdf.addImage(microFormTemplate, "PNG", 0, 0, 459, 354.6818);
+    }
 
     pdf
         .setFontSize(10)
@@ -47,7 +47,7 @@ export const createMicroSubmissionPDF = async (group: string[], index: number, b
 
     pdf.text(submittedBy, 115, 304);
 
-    if (includeSignature) {
+    if (includeSignature && signature) {
         pdf.addImage(signature, "PNG", 285, 275, 56.625, 35.325);
     }
 

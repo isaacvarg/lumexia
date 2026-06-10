@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import microSubmissionActions from "@/actions/quality/microSubmissionActions";
 import { Config } from "@prisma/client";
 import { createConfigLookup } from "@/utils/data/createConfigLookup";
+import { getCompanyPdfImages } from "@/actions/app/images/getCompanyPdfImages";
 
 export interface MicroFormResponses {
   submittedBy: string;
@@ -21,6 +22,7 @@ export interface MicroFormResponses {
 
 export const generateMicroSubmissionForm = async (bpr: IBprForSSF, samples: IMicroFormInputs, microFormData: Config[]) => {
     const groupedSamples = getSampleGroups(samples);
+    const { microFormTemplate, signature } = await getCompanyPdfImages();
     const microFormResponsesLookup = createConfigLookup(microFormData);
 
     const microFormResponses = {
@@ -48,7 +50,7 @@ export const generateMicroSubmissionForm = async (bpr: IBprForSSF, samples: IMic
         });
         const submissionNumber = await submission.submissionNumber;
 
-        await createMicroSubmissionPDF(group, index, bpr, submissionNumber, pdf, microFormResponses);
+        await createMicroSubmissionPDF(group, index, bpr, submissionNumber, pdf, microFormResponses, microFormTemplate, signature);
     });
 
     // Use Promise.all to wait for all promises to resolve

@@ -12,7 +12,7 @@ import { getAutoTableEnd } from "../functions/getAutoTableEnd";
 import { DateTime } from "luxon";
 import { toFracitonalDigits } from "@/utils/data/toFractionalDigits";
 import { FlattenedOrderItem } from "@/app/purchasing/purchase-orders/[purchaseOrder]/_functions/flattenOrderItems";
-import logo from "@/utils/pdf/assets/images/logo";
+import { getCompanyPdfImages } from "@/actions/app/images/getCompanyPdfImages";
 import { PoSupplierNote } from "@/actions/purchasing/purchaseOrders/notes/supplier/getAll";
 import { PoPublicNote } from "@/actions/purchasing/purchaseOrders/notes/public/getAll";
 import { createConfigLookup } from "@/utils/data/createConfigLookup";
@@ -37,7 +37,8 @@ export const createPurchaseOrder = async (
   poSupplierNotes: PoSupplierNote[]
 ) => {
   // data
-  const logoDimensions = await getImageDimensions(logo);
+  const { logo } = await getCompanyPdfImages();
+  const logoDimensions = logo ? await getImageDimensions(logo) : null;
 
 
   const companyLookup = createConfigLookup(companyData);
@@ -89,13 +90,15 @@ export const createPurchaseOrder = async (
   });
 
   // Header Image
-  pdf.addImage(
-    company.logo,
-    30,
-    20,
-    logoDimensions.width * logoResizeFactor,
-    logoDimensions.height * logoResizeFactor
-  );
+  if (company.logo && logoDimensions) {
+    pdf.addImage(
+      company.logo,
+      30,
+      20,
+      logoDimensions.width * logoResizeFactor,
+      logoDimensions.height * logoResizeFactor
+    );
+  }
 
   // PO Basic Info
   pdf

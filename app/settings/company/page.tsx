@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import TabSelector from "./_components/shared/TabSelector"
 import TabsContainer from "./_components/shared/TabsContainer"
 import CompanyInfoForm from "./_components/CompanyInfoForm"
+import CompanyImagesForm from "./_components/CompanyImagesForm"
 
 const CompanySettingsPage = async () => {
 
@@ -17,6 +18,7 @@ const CompanySettingsPage = async () => {
 
   const companyConfigs = await appActions.configs.getByGroup('company')
   const company = createConfigLookup(companyConfigs)
+  const imageUrls = await appActions.images.getUrls()
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -25,7 +27,7 @@ const CompanySettingsPage = async () => {
       <TabSelector />
       <TabsContainer
         info={<CompanyInfoForm company={company} />}
-        images={<p className="text-base-content/70">Company images coming soon.</p>}
+        images={<CompanyImagesForm images={imageUrls} />}
       />
     </div>
   )

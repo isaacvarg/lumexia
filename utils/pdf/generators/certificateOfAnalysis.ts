@@ -6,7 +6,7 @@ import { getImageDimensions } from "../functions/getImageDimensions";
 import "../assets/fonts/Lato-Black-normal";
 import "../assets/fonts/Lato-Regular-normal";
 import "../assets/fonts/Lato-Bold-normal";
-import logo from "@/utils/pdf/assets/images/logo";
+import { getCompanyPdfImages } from "@/actions/app/images/getCompanyPdfImages";
 import { getAutoTableEnd } from "../functions/getAutoTableEnd";
 import { createConfigLookup } from "@/utils/data/createConfigLookup";
 import { Config } from "@prisma/client";
@@ -39,7 +39,8 @@ export const createCertificateOfAnalysis = async (
   companyData: Config[],
   examinationTypeId: string,
 ): Promise<jsPDF> => {
-  const logoDimensions = await getImageDimensions(logo);
+  const { logo } = await getCompanyPdfImages();
+  const logoDimensions = logo ? await getImageDimensions(logo) : null;
   const companyLookup = createConfigLookup(companyData);
 
   const company = {
@@ -68,11 +69,13 @@ export const createCertificateOfAnalysis = async (
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const logoResizeFactor = 0.3;
-  const logoW = logoDimensions.width * logoResizeFactor;
-  const logoH = logoDimensions.height * logoResizeFactor;
+  const logoW = logoDimensions ? logoDimensions.width * logoResizeFactor : 0;
+  const logoH = logoDimensions ? logoDimensions.height * logoResizeFactor : 0;
 
   // Centered logo
-  pdf.addImage(logo, (pageWidth - logoW) / 2, 20, logoW, logoH);
+  if (logo && logoDimensions) {
+    pdf.addImage(logo, (pageWidth - logoW) / 2, 20, logoW, logoH);
+  }
 
   const afterLogo = 20 + logoH + 12;
 
