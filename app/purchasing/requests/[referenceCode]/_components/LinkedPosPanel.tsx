@@ -25,9 +25,9 @@ const LinkedPosPanel = ({ pos, linkedPosAmounts }: LinkedPosPanelProps) => {
 
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-2'>
 
-      <div className='flex items-center justify-between'>
+      <div className='flex items-end justify-between'>
         <SectionTitle>Linked POs</SectionTitle>        <div className='flex gap-x-2'>
           <button className='btn btn-secondary' onClick={handleAdd}>
             <span className='text-xl'> <TbPlugConnected /></span>

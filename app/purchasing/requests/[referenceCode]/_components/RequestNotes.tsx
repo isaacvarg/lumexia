@@ -32,8 +32,8 @@ const RequestNotes = ({ notes, noteTypes, requestId, maxHeight = 'small' }: {
 
   return (
     <div className='flex flex-col gap-2'>
-      <SectionTitle>Basics</SectionTitle>
-      <Card.Root>
+      <SectionTitle>Notes</SectionTitle>
+      <Card.Root shadow="none"  >
 
         <NotesManager<RequestNote, RequestNoteType>
           notes={notes}
@@ -43,6 +43,7 @@ const RequestNotes = ({ notes, noteTypes, requestId, maxHeight = 'small' }: {
           maxHeight={maxHeight}
           style="flat"
           noteStyle="elevated"
+          showTitle={false}
         />
       </Card.Root>
     </div>

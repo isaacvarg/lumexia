@@ -59,7 +59,7 @@ const RequestDetailsPage = async ({ searchParams }: RequestDetailsProps) => {
       <NewPurchaseOrderDialog requestId={request.id} suppliers={suppliers} linkablePOs={linkablePos} itemId={request.itemId} />
       <RequestDetailsPageTitle request={request} />
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-2 gap-8'>
 
         <BasicDetailsPanel
           suppliers={suppliers}

@@ -13,7 +13,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
 
       <div className='grid grid-cols-2 gap-4'>
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
 
           <div className='card-body'>
 
@@ -30,7 +30,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
           </div>
         </div>
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
 
           <div className='card-body'>
 
@@ -53,7 +53,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
           </div>
         </div>
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
 
           <div className='card-body'>
 
@@ -62,10 +62,10 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
             <div className='grid grid-cols-2 gap-2'>
               {pos.map((po) => {
                 return (
-                  <div key={po?.id} className='card bg-accent/50'>
+                  <div key={po?.id} className='card bg-base-100 border border-base-300'>
                     <div className='card-body'>
-                      <h2 className='font-semibold'>{po?.referenceCode}</h2>
-                      <h2 className=''>{po?.supplier.name}</h2>
+                      <h2 className='font-semibold text-xl'>{po?.referenceCode}</h2>
+                      <h2 className=' text-xl'>{po?.supplier.name}</h2>
 
                     </div>
                   </div>

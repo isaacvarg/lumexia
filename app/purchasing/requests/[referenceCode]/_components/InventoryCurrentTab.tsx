@@ -37,7 +37,7 @@ const InventoryCurrentTab = ({ inventory, otherRequests, lastAuditRequests }: { 
       <div className="grid grid-cols-2 gap-4" >
 
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
           <div className=" card-body flex flex-col gap-y-4">
             <div className='flex justify-between items-center'>
               <div className='card-title'>Current Inventory</div>
@@ -57,7 +57,7 @@ const InventoryCurrentTab = ({ inventory, otherRequests, lastAuditRequests }: { 
 
 
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
           <div className=" card-body flex flex-col gap-y-4">
             <div className='card-title'>Pending BPRs</div>
 
@@ -95,7 +95,7 @@ const InventoryCurrentTab = ({ inventory, otherRequests, lastAuditRequests }: { 
           </div>
         </div>
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
 
           <div className=" card-body flex flex-col gap-y-4">
             <div className='card-title'>Purchases</div>
@@ -130,7 +130,7 @@ const InventoryCurrentTab = ({ inventory, otherRequests, lastAuditRequests }: { 
 
 
 
-        <div className='card bg-base-300'>
+        <div className='card bg-base-200'>
 
           <div className=" card-body flex flex-col gap-y-4">
             <div className='card-title'>Allocations</div>
