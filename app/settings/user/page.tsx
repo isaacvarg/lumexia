@@ -9,12 +9,15 @@ import { userConfigGroups } from "@/configs/staticRecords/userConfigGroups";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
 import ProfileSettings from "./_components/ProfileSettings";
+import DashboardSettings from "./_components/DashboardSettings";
+import { getHomeDashLayout } from "@/actions/users/homeDash/getHomeDashLayout";
 
 const UserPage = async () => {
 
   const allRoles = await userRoleActions.getAll();
   const user = await getUser();
   const configs = await getAllUserConfigs(user.id);
+  const homeDashLayout = await getHomeDashLayout();
 
 
   return (
@@ -30,6 +33,7 @@ const UserPage = async () => {
             <AppConfigurations configs={configs.filter(config => config.configGroupId === userConfigGroups.general)} />
           </div>
         }
+        dashboard={<DashboardSettings layout={homeDashLayout} />}
       />
 
     </div>

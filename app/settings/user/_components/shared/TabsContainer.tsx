@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useTabSelection } from "@/store/tabSlice"
 import React from "react"
 
-const TabsContainer = ({ main }: { main: React.ReactNode }) => {
+const TabsContainer = ({ main, dashboard }: { main: React.ReactNode, dashboard: React.ReactNode }) => {
 
   const { activeTab } = useTabSelection()
   const currentTab = activeTab.userSettings;
@@ -18,7 +18,7 @@ const TabsContainer = ({ main }: { main: React.ReactNode }) => {
         transition={{ duration: 0.2 }}
       >
         {currentTab === 'main' && main}
-        {currentTab === 'dashboard' && null}
+        {currentTab === 'dashboard' && dashboard}
       </motion.div>
     </AnimatePresence>
   )

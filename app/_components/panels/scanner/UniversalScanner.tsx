@@ -8,7 +8,6 @@ import { scanActions } from "@/actions/scan";
 
 type Status = "idle" | "resolving" | "notFound";
 
-// Dashboard card: scan any QR (sample, lot, or legacy bare UUID) and route accordingly.
 const UniversalScanner = () => {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
