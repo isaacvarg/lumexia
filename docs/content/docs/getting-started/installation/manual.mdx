@@ -2,11 +2,6 @@
 title: Manual
 description: How to build Lumexia from source
 ---
-
-<Callout>
-This is work in progress
-</Callout>
-
 ## Download the source code
 
 You can download the source code for Lumexia from the [GitHub repository](https://github.com/isaacvarg/lumexia). 
@@ -19,22 +14,22 @@ git clone https://github.com/isaacvarg/lumexia.git
 
 ## Install Dependencies
 
-The [prerequisites guide](/docs/gettings-started/prerequisites) lists and provides instructions on installing required environment dependencies, such as database and object store.
+The [prerequisites guide](/docs/getting-started/installation/prerequisites) lists and provides instructions on installing required environment dependencies, such as database and object store.
 
 ```bash
 # change directories into lumexia
-z or cd lumexia
+cd lumexia
 
 # install node dependencies
 npm install
 ```
 
 
+## Prepare the database
 
-`DATABASE_URL` is the prisma connection string
+Migrations must be deployed so that the struture of the database matches the schema, then the prisma client must be generated. 
 
-
-## databse stuff
+The database must be seeded with data used throughout the application, such as default statuses, configs, etc. Lastly, static records must be generated. These are files that plainly store records that are often used so that database calls are not needed.
 
 ```bash
 # prepares the database
@@ -46,11 +41,34 @@ npx prisma generate
 # initializes with necessary seeded data
 npm run init
 
-# generate static records so we don't have to fetch them
+# generate static records
 npm run generate-static-records
 ```
 
-## running
+## Seed a demo instance (optional)
+
+To stand up a public **demo** instance that looks "lived-in" — populated with suppliers, products, MBPRs, purchase orders, batch production records, inventory and purchasing requests — run the demo seed **after** the database has been prepared above. It layers transactional dummy data on top of the required reference data, so it must run after `npm run init` and `npm run generate-static-records`.
+
+The demo seed is gated behind the `DEMO_SEED` environment variable so it can never run against a real instance by accident. Set it only on the demo deployment:
+
+```bash
+# in the demo deployment's .env
+DEMO_SEED="true"
+```
+
+```bash
+# seed transactional demo data (runs after init + generate-static-records)
+npm run seed:demo
+
+# wipe only the demo/transactional data and re-seed back to a fresh start state
+npm run seed:demo:reset
+```
+
+All demo records are backdated relative to the time you run the seed, so the instance always looks recently active. `seed:demo:reset` leaves reference data and the system user untouched, making it safe to run on a schedule to refresh the demo after visitors poke around.
+
+> A normal production install should **not** run `seed:demo`. Omitting it is the entire separation between a demo instance and a fresh one.
+
+## Start or build 
 
 ```bash
 # development server
@@ -60,10 +78,9 @@ npm run dev
 npm run build
 ```
 
-## login
+## First user login 
 
-- The first user login create a user with the `System Admin` role.
-  - This allows the user to edit company settings and user roles
+The first user login create a user with the `System Admin` role. This allows the user to edit company settings, images and user roles
 
 
 
