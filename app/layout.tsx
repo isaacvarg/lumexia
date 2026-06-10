@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import Toast from "@/components/Toast";
 import CommandPallet from "@/components/CommandPallet/CommandPallet";
 import Sidebar from "./_components/sidebar/Sidebar";
-import { getRandomIntBetween } from "@/utils/general/getRandomIntBetween";
 import { getUserConfig } from "@/actions/users/getUserConfig";
 import { AuthProvider } from "./_components/state/AuthProvider";
 import QueryProvider from "./_components/state/QueryProvider";

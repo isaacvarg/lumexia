@@ -11,74 +11,74 @@ import { motion } from "framer-motion";
 
 const Sidebar = () => {
 
-    const { data: auditRequests } = useAuditRequest();
-    const { data: purchasingRequests } = useAllPurchasingRequests();
-    const { isSidebarCollapsed } = useAppSelection()
+  const { data: auditRequests } = useAuditRequest();
+  const { data: purchasingRequests } = useAllPurchasingRequests();
+  const { isSidebarCollapsed } = useAppSelection()
 
-    const sidebarVariants = {
-        expanded: {
-            width: "18rem", // w-72
-            transition: {
-                duration: 0.3,
-                ease: "easeInOut",
-            },
-        },
-        collapsed: {
-            width: "5rem", // w-20
-            transition: {
-                duration: 0.3,
-                ease: "easeInOut",
-            },
-        },
-    };
+  const sidebarVariants = {
+    expanded: {
+      width: "18rem",
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut",
+      },
+    },
+    collapsed: {
+      width: "5rem",
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut",
+      },
+    },
+  };
 
-    return (
-        <motion.div
-            variants={sidebarVariants}
-            animate={isSidebarCollapsed ? "collapsed" : "expanded"}
-            className="pt-2 pb-8 shadow-xl bg-base-100 shadow-base-300 z-40 min-h-dvh"
-        >
+  return (
+    <motion.div
+      variants={sidebarVariants}
+      animate={isSidebarCollapsed ? "collapsed" : "expanded"}
+      className="pt-2 pb-8 shadow-xl bg-base-100 shadow-base-300 z-40 min-h-dvh"
+    >
 
-            <SidebarHeader isSidebarCollapsed={isSidebarCollapsed} />
+      <SidebarHeader isSidebarCollapsed={isSidebarCollapsed} />
 
-            <div className="flex flex-col gap-y-8 px-4">
+      <div className="flex flex-col gap-y-8 px-4">
 
-                {sidebarElements.map((group) => {
+        {sidebarElements.map((group) => {
 
-                    return (
-                        <div key={group.label} className="flex flex-col gap-y-3">
-                            <SidebarGroupTitle isSidebarCollapsed={isSidebarCollapsed}>{group.label}</SidebarGroupTitle>
-                            <div className="flex flex-col gap-y-2">
-                                {group.contents.map((sidebarItem) => {
+          return (
+            <div key={group.label} className="flex flex-col gap-y-3">
+              <SidebarGroupTitle isSidebarCollapsed={isSidebarCollapsed}>{group.label}</SidebarGroupTitle>
+              <div className="flex flex-col gap-y-2">
+                {group.contents.map((sidebarItem) => {
 
-                                    let badgeData: number | string | undefined;
+                  let badgeData: number | string | undefined;
 
-                                    switch (sidebarItem.label) {
-                                        case 'Audit':
-                                            badgeData = auditRequests
-                                            break;
-                                        case 'Requests':
-                                            badgeData = purchasingRequests
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    return (
-                                        <SidebarButton key={sidebarItem.label} {...sidebarItem} badge={badgeData} isSidebarCollapsed={isSidebarCollapsed} />
-                                    )
-                                })}
-                            </div>
-
-                        </div>
-
-
-                    )
+                  switch (sidebarItem.label) {
+                    case 'Audit':
+                      badgeData = auditRequests
+                      break;
+                    case 'Requests':
+                      badgeData = purchasingRequests
+                      break;
+                    default:
+                      break;
+                  }
+                  return (
+                    <SidebarButton key={sidebarItem.label} {...sidebarItem} badge={badgeData} isSidebarCollapsed={isSidebarCollapsed} />
+                  )
                 })}
+              </div>
+
             </div>
 
-        </motion.div>
 
-    );
+          )
+        })}
+      </div>
+
+    </motion.div>
+
+  );
 };
 
 export default Sidebar;
