@@ -8,8 +8,8 @@ import { DateTime } from "luxon";
 
 const classes = {
     color: {
-        active: 'bg-emerald-300',
-        archived: 'bg-rose-200',
+        active: 'bg-success text-success-content',
+        archived: 'bg-error text-error-content',
     }
 }
 

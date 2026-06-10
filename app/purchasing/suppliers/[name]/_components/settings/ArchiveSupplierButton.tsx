@@ -27,13 +27,12 @@ const ArchiveSupplierButton = () => {
       <SectionTitle>Archive Supplier</SectionTitle>
 
       <Card.Root>
-        <div className="justify-between h-full flex flex-col">
+        <div className="flex items-center justify-between gap-4">
           <div className="font-poppins text-xl font-medium text-base-content">
             This will effectively delete this supplier. Use with extreme caution.
           </div>
 
           <button onClick={() => showDialog('archiveSupplier')} className="btn btn-error btn-outline">Archive Supplier</button>
-
         </div>
       </Card.Root>
       <Alert.Root identifier="archiveSupplier">

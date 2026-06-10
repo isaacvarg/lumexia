@@ -34,7 +34,7 @@ const QueueList = () => {
                 return (
                     <div
                         key={exam.id}
-                        className="flex px-4 py-2 rounded-xl bg-neutral-100 font-poppins text-xl font-medium hover:bg-lilac-300 hover:cursor-pointer"
+                        className="flex px-4 py-2 rounded-xl bg-base-200 text-base-content font-poppins text-xl font-medium hover:bg-base-300 hover:cursor-pointer"
                         onClick={() => router.push(`/accounting/pricing/${exam.examinedItem.referenceCode}/new?id=${exam.examinedItem.id}&examId=${exam.id}`)}
                     >
                         {exam.examinedItem.name}

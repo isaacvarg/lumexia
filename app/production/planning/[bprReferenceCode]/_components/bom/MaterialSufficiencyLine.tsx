@@ -11,7 +11,8 @@ import { inventoryTypes } from '@/configs/staticRecords/inventoryTypes'
 
 const classes = {
   bg: {
-    insufficient: 'bg-red-300',
+    insufficient: 'bg-error/30',
+    warning: 'bg-warning/30',
     sufficient: '',
   }
 }
@@ -36,7 +37,7 @@ const UserIcon = ({ image, name }: { image: string, name: string }) => {
 
 const RedX = () => {
   return (
-    <span className='text-2xl text-red-400'><TbX /></span>
+    <span className='text-2xl text-error'><TbX /></span>
   )
 }
 
@@ -51,7 +52,11 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
   const isAvailableSufficient = material.totalQuantityAvailable >= material.quantity;
   const isSoftSufficient = isConsumable || material.totalQuantitySoftAvailability >= material.quantity;
-  const bgClasses: keyof typeof classes.bg = (isAvailableSufficient || isConsumable) ? 'sufficient' : 'insufficient'
+  const bgClasses: keyof typeof classes.bg = (!isAvailableSufficient && !isConsumable)
+    ? 'insufficient'
+    : !isSoftSufficient
+      ? 'warning'
+      : 'sufficient'
   const hasStagings = material.BprStaging.length !== 0
   const stagings = hasStagings ? material.BprStaging[0] : null
   const primaryVerification = stagings ? stagings.BprStagingVerification[0] : null;
@@ -63,7 +68,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
   }
 
   return (
-    <tr className={`${classes.bg[bgClasses]} hover:bg-neutral-200 hover:cursor-pointer`} onClick={() => handleClick()}>
+    <tr className={`${classes.bg[bgClasses]} hover:bg-base-200 hover:cursor-pointer`} onClick={() => handleClick()}>
       <th>{material.bom.identifier}</th>
       <td>{material.bom.item.name}</td>
 
@@ -74,10 +79,10 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
       <td>{softAvailability}</td>
       <td>
         {!isAvailableSufficient && !isConsumable
-          ? <LuX className="text-red-700 w-6 h-6" />
+          ? <LuX className="text-error w-6 h-6" />
           : !isSoftSufficient
-            ? <LuAlertTriangle className="text-yellow-700 w-6 h-6" />
-            : <LuCheck className="text-green-700 w-6 h-6" />
+            ? <LuAlertTriangle className="text-warning w-6 h-6" />
+            : <LuCheck className="text-success w-6 h-6" />
         }
       </td>
       {!isDraft && (stagings?.pulledByUser ? <td><UserIcon image={stagings.pulledByUser.image || ''} name={stagings.pulledByUser.name || ''} /></td> : <td><RedX /></td>)}
