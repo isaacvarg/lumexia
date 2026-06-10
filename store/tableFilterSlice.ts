@@ -50,6 +50,7 @@ type State = {
   files: string
   actionableTypes: string
   experiments: string
+  users: string
 }
 
 
@@ -108,6 +109,7 @@ export const useTableFilter = create<State & Actions>((set) => ({
   files: '',
   actionableTypes: '',
   experiments: '',
+  users: '',
 
   setFilter: (filterName, value) => set((state) => ({
     ...state,

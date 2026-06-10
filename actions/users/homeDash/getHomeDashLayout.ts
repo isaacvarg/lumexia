@@ -27,9 +27,9 @@ const parseConfig = (value: string): StoredPanelConfig => {
   }
 }
 
-export const getHomeDashLayout = async (): Promise<HomeDashPanel[]> => {
+export const getHomeDashLayout = async (targetUserId?: string): Promise<HomeDashPanel[]> => {
 
-  const userId = await getUserId()
+  const userId = targetUserId ?? await getUserId()
 
   const rows = await prisma.userConfig.findMany({
     where: {

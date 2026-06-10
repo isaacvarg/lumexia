@@ -49,6 +49,9 @@ export const getUser = async () => {
   const isProductionQualitySecondary = user && user.UserRoleAssignment.length > 0 &&
     user.UserRoleAssignment.some(r => r.userRoleId === userRoles.productionQualitySecondary)
 
+  const isSystemAdmin = user && user.UserRoleAssignment.length > 0 &&
+    user.UserRoleAssignment.some(r => r.userRoleId === userRoles.systemAdmin)
+
 
 
   return {
@@ -59,6 +62,7 @@ export const getUser = async () => {
       isProduction,
       isProductionQuality,
       isProductionQualitySecondary,
+      isSystemAdmin,
     }
   };
 };

@@ -52,6 +52,7 @@ type State = {
   files: FilterArray
   actionableTypes: FilterArray
   experiments: FilterArray
+  users: FilterArray
 };
 
 export type TableStateName = keyof State;
@@ -113,6 +114,7 @@ export const useTableFacets = create<State & Actions>((set) => ({
   files: [],
   actionableTypes: [],
   experiments: [],
+  users: [],
 
   setFilter: (tableState, value) =>
     set((state) => ({

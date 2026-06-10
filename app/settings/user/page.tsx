@@ -1,7 +1,5 @@
-import userActions from "@/actions/users/userAction"
 import Title from "./_components/Title"
-import userRoleActions from "@/actions/users/userRoles"
-import UserRoles from "./_components/UserRoles";
+import UserRolesDisplay from "./_components/UserRolesDisplay";
 import { getUser } from "@/actions/users/getUser";
 import { getAllUserConfigs } from "./_actions/getAllConfigs";
 import AppConfigurations from "./_components/AppConfigurations";
@@ -14,7 +12,6 @@ import { getHomeDashLayout } from "@/actions/users/homeDash/getHomeDashLayout";
 
 const UserPage = async () => {
 
-  const allRoles = await userRoleActions.getAll();
   const user = await getUser();
   const configs = await getAllUserConfigs(user.id);
   const homeDashLayout = await getHomeDashLayout();
@@ -29,7 +26,7 @@ const UserPage = async () => {
         main={
           <div className="grid grid-cols-3 gap-4">
             <ProfileSettings />
-            <UserRoles allRoles={allRoles} user={user} />
+            <UserRolesDisplay user={user} />
             <AppConfigurations configs={configs.filter(config => config.configGroupId === userConfigGroups.general)} />
           </div>
         }

@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Mon Jun 08 2026 16:16:07 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Wed Jun 10 2026 11:32:14 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -3248,6 +3248,7 @@ model User {
   email                            String?                           @unique
   emailVerified                    DateTime?                         @map("email_verified")
   image                            String?
+  disabled                         Boolean                           @default(false)
   accounts                         Account[]
   sessions                         Session[]
   createdAt                        DateTime                          @default(now())

@@ -24,7 +24,7 @@ import { updateHomeDashPanel } from "@/actions/users/homeDash/updateHomeDashPane
 import { reorderHomeDash } from "@/actions/users/homeDash/reorderHomeDash"
 import { PanelSpan } from "@/app/_components/panels/registry"
 
-const DashboardSettings = ({ layout }: { layout: HomeDashPanel[] }) => {
+const DashboardSettings = ({ layout, userId }: { layout: HomeDashPanel[], userId?: string }) => {
 
   const router = useRouter()
   const [panels, setPanels] = useState<HomeDashPanel[]>(layout)
@@ -40,13 +40,13 @@ const DashboardSettings = ({ layout }: { layout: HomeDashPanel[] }) => {
 
   const handleToggle = async (id: string, enabled: boolean) => {
     setPanels(prev => prev.map(p => p.id === id ? { ...p, enabled } : p))
-    await updateHomeDashPanel(id, { enabled })
+    await updateHomeDashPanel(id, { enabled }, userId)
     router.refresh()
   }
 
   const handleSpanChange = async (id: string, span: PanelSpan) => {
     setPanels(prev => prev.map(p => p.id === id ? { ...p, span } : p))
-    await updateHomeDashPanel(id, { span })
+    await updateHomeDashPanel(id, { span }, userId)
     router.refresh()
   }
 
@@ -61,7 +61,7 @@ const DashboardSettings = ({ layout }: { layout: HomeDashPanel[] }) => {
     const reordered = arrayMove(panels, oldIndex, newIndex).map((p, i) => ({ ...p, order: i }))
     setPanels(reordered)
 
-    await reorderHomeDash(reordered.map(p => p.id))
+    await reorderHomeDash(reordered.map(p => p.id), userId)
     router.refresh()
   }
 
