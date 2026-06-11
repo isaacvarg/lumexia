@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import aliasTypeActions from "@/actions/inventory/aliasTypes";
 import prisma from "@/lib/prisma";
-import { createItemFileType } from "../_actions/createItemFileType";
+import { createItemFileType } from "@/app/inventory/_actions/createItemFileType";
 
 const FileTypeForm = ({ setIsAdd }: { setIsAdd: Dispatch<SetStateAction<boolean>> }) => {
   const router = useRouter()

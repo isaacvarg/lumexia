@@ -1,7 +1,7 @@
 import itemTypeActions from "@/actions/inventory/itemTypeActions";
 import { useAppForm } from "@/components/Form2"
 import { Dispatch, SetStateAction } from "react";
-import { createItemTypeConfig } from "../_actions/createItemTypeConfig";
+import { createItemTypeConfig } from "@/app/inventory/_actions/createItemTypeConfig";
 import { useRouter } from "next/navigation";
 
 const ItemTypesForm = ({ setIsAdd }: { setIsAdd: Dispatch<SetStateAction<boolean>> }) => {

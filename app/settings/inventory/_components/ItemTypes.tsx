@@ -3,16 +3,29 @@ import { ItemType } from "@/actions/inventory/itemTypes/getAll"
 import Card from "@/components/Card"
 import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
-import { updateItemTypes } from "../_actions/updateItemTypes"
+import { updateItemTypes } from "@/app/inventory/_actions/updateItemTypes"
+import { deleteItemType } from "@/app/inventory/_actions/deleteItemType"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { TbPlus } from "react-icons/tb"
+import { TbPlus, TbTrash } from "react-icons/tb"
 import ItemTypesForm from "./ItemTypesForm"
+import DeletionErrorAlert from "./shared/DeletionErrorAlert"
 
 const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
 
-
+  const router = useRouter();
   const [isAdd, setIsAdd] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteItemType(id);
+    if (!result.success) {
+      setDeleteError(result.error);
+      return;
+    }
+    router.refresh();
+  };
+
   const form = useAppForm({
     defaultValues: {
       itemTypes,
@@ -26,7 +39,7 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
     }
   })
   return (
-    <div className="flex flex-col gap-4 col-span-3">
+    <div className="flex flex-col gap-4 col-span-2">
       <div className="flex justify-between items-center">
         <SectionTitle>Item Types</SectionTitle>
 
@@ -57,20 +70,32 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
                           key={`itemTypes[${i}].id`}
                           className="flex flex-col gap-1">
                           <label className="font-medium text-xl text-base-content">{_.name}</label>
-                          <div className='grid grid-cols-2 gap-2'>
-                            <form.AppField
-                              name={`itemTypes[${i}].name`} >
-                              {(subField) => (
-                                <subField.TextField label={'Name'} labelClass="soft" />
-                              )}
-                            </form.AppField>
-                            <form.AppField
-                              key={`itemTypes[${i}].id`}
-                              name={`itemTypes[${i}].config.isPricingExaminationTriggerEnabled`} >
-                              {(subField) => (
-                                <subField.ToggleField label={'Triggers Pricing Exam'} labelClass="soft" />
-                              )}
-                            </form.AppField>
+                          <div className='flex items-end gap-6'>
+                            <div className="flex-1">
+                              <form.AppField
+                                name={`itemTypes[${i}].name`} >
+                                {(subField) => (
+                                  <subField.TextField label={'Name'} labelClass="soft" />
+                                )}
+                              </form.AppField>
+                            </div>
+                            <div className="mb-2">
+                              <form.AppField
+                                key={`itemTypes[${i}].id`}
+                                name={`itemTypes[${i}].config.isPricingExaminationTriggerEnabled`} >
+                                {(subField) => (
+                                  <subField.ToggleField label={'Triggers Pricing Exam'} labelClass="soft" />
+                                )}
+                              </form.AppField>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(_.id)}
+                              className="btn btn-error btn-soft"
+                              aria-label={`Delete ${_.name}`}
+                            >
+                              <TbTrash className="size-4" />
+                            </button>
                           </div>
                         </div>
 
@@ -94,6 +119,12 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
         )}
 
       </Card.Root>
+
+      <DeletionErrorAlert
+        identifier="itemTypeDeletionError"
+        error={deleteError}
+        onClose={() => setDeleteError(null)}
+      />
 
     </div>
 

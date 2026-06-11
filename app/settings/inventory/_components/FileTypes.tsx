@@ -3,16 +3,28 @@ import Card from "@/components/Card";
 import SectionTitle from "@/components/Text/SectionTitle";
 import FileTypeForm from "./FileTypeForm";
 import { useState } from "react";
-import { TbPlus } from "react-icons/tb";
+import { TbPlus, TbTrash } from "react-icons/tb";
 import { useAppForm } from "@/components/Form2";
-import { ItemFileType } from "../items/[name]/_actions/files/getItemFilesTypes";
-import { updateItemFileType } from "../_actions/updateItemFileTypes";
+import { ItemFileType } from "@/app/inventory/items/[name]/_actions/files/getItemFilesTypes";
+import { updateItemFileType } from "@/app/inventory/_actions/updateItemFileTypes";
+import { deleteItemFileType } from "@/app/inventory/_actions/deleteItemFileType";
 import { useRouter } from "next/navigation";
+import DeletionErrorAlert from "./shared/DeletionErrorAlert";
 
 const FileTypes = ({ fileTypes }: { fileTypes: ItemFileType[] }) => {
 
   const [isAdd, setIsAdd] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteItemFileType(id);
+    if (!result.success) {
+      setDeleteError(result.error);
+      return;
+    }
+    router.refresh();
+  };
   const form = useAppForm({
     defaultValues: {
       fileTypes,
@@ -27,7 +39,7 @@ const FileTypes = ({ fileTypes }: { fileTypes: ItemFileType[] }) => {
   })
 
   return (
-    <div className="flex flex-col gap-4  col-span-3">
+    <div className="flex flex-col gap-4  col-span-1">
       <div className="flex justify-between items-center">
         <SectionTitle>Item File Types</SectionTitle>
 
@@ -57,7 +69,7 @@ const FileTypes = ({ fileTypes }: { fileTypes: ItemFileType[] }) => {
                           key={`itemTypes[${i}].id`}
                           className="flex flex-col gap-1">
                           <label className="font-medium text-xl text-base-content">{_.name}</label>
-                          <div className='flex justify-between gap-2'>
+                          <div className='flex items-end justify-between gap-2'>
                             <form.AppField
                               name={`fileTypes[${i}].name`} >
                               {(subField) => (
@@ -90,6 +102,15 @@ const FileTypes = ({ fileTypes }: { fileTypes: ItemFileType[] }) => {
                               )}
                             </form.AppField>
 
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(_.id)}
+                              className="btn btn-error btn-soft"
+                              aria-label={`Delete ${_.name}`}
+                            >
+                              <TbTrash className="size-4" />
+                            </button>
+
                           </div>
                         </div>
 
@@ -114,6 +135,12 @@ const FileTypes = ({ fileTypes }: { fileTypes: ItemFileType[] }) => {
         )}
 
       </Card.Root>
+
+      <DeletionErrorAlert
+        identifier="fileTypeDeletionError"
+        error={deleteError}
+        onClose={() => setDeleteError(null)}
+      />
 
     </div>
 
