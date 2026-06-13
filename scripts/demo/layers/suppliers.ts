@@ -10,6 +10,7 @@ export interface DemoSupplier {
 }
 
 export const seedSuppliers = async (): Promise<DemoSupplier[]> => {
+
   const suppliers: DemoSupplier[] = SUPPLIERS.map((s) => ({ id: uuid(), name: s.name }));
 
   await insert(

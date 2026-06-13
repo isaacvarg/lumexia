@@ -16,5 +16,7 @@ export const seedDemo = async (): Promise<void> => {
   const suppliers = await seedSuppliers();
 
 
+
+
   console.log('✅ Demo data seeded.');
 };
