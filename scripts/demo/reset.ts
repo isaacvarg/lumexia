@@ -28,6 +28,7 @@ const WIPE_ORDER: string[] = [
   'masterBatchProductionRecord',
   'item',
   'supplier',
+  'itemType'
 ];
 
 const wipe = async (): Promise<void> => {

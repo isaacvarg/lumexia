@@ -4,8 +4,8 @@ export const data = {
   staticRecordKeyName: null,
   seed: [
     {
-      "name": "case",
-      "abbreviation": "case"
+      "name": "cases",
+      "abbreviation": "cases"
     },
     {
       "name": "units",
@@ -18,6 +18,10 @@ export const data = {
     {
       "name": "kilograms",
       "abbreviation": "kg"
+    },
+    {
+      "name": "grams",
+      "abbreviation": "g"
     },
     {
       "name": "pallet",
