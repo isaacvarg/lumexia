@@ -11,7 +11,14 @@ const prismaClient = prisma as any;
 const generatedRecords: { [key: string]: any } = {};
 
 const processFileData = async (fileName: string, data: any) => {
-  const { modelName, staticRecordName, staticRecordKeyName } = data;
+  const { modelName, staticRecordName, staticRecordKeyName, generateStaticRecord } = data;
+
+  // Skip config/settings tables that are never referenced by static name
+  // (mirrors the same guard in scripts/initialization/main.ts).
+  if (generateStaticRecord === false) {
+    console.log(`⏭️  Skipping static record generation for ${fileName}.`);
+    return;
+  }
 
   // Ensure model exists on the prisma client
   if (!prismaClient[modelName]) {

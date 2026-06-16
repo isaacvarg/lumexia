@@ -17,6 +17,9 @@
     "seed:demo": "tsx --env-file=.env ./scripts/demo/main.ts",
     "seed:demo:reset": "tsx --env-file=.env ./scripts/demo/reset.ts",
     "reset": "npx prisma migrate reset",
+    "db:start": "./scripts/db/start.sh",
+    "db:dev:start": "./scripts/db/dev-start.sh",
+    "db:demo:start": "./scripts/db/demo-start.sh",
     "import-staging": "tsx --env-file=.env ./utils/importer/modules/staging/main.ts",
     "docker:update": "./scripts/update/update.sh"
   },
