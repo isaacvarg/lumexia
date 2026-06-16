@@ -18,6 +18,7 @@ import { DemoSupplier } from './suppliers';
 import { DemoItem } from './items';
 import { DemoUser } from './users';
 import { DemoPaymentMethod } from './paymentMethods';
+import { PackInfo } from './uomConversions';
 
 // A PO surfaced for downstream layers (purchasing requests link to these and
 // mirror their progress).
@@ -70,6 +71,8 @@ export const seedPurchaseOrders = async (
   purchasedItems: DemoItem[],
   purchasingUsers: DemoUser[],
   paymentMethods: DemoPaymentMethod[],
+  paymentMethodIdsBySupplier: Map<string, string[]>,
+  packMap: Map<string, PackInfo>,
 ): Promise<PurchaseOrderResult> => {
   // PurchaseOrderNoteType is not a static record, so seed a small themed set first.
   const noteTypes = PO_NOTE_TYPES.map((t) => ({ id: uuid(), ...t }));
@@ -92,6 +95,10 @@ export const seedPurchaseOrders = async (
   const resultPos: DemoPO[] = [];
   const resultLots: DemoLot[] = [];
 
+  // (item, supplier) pairs that bought in a non-standard pack unit → need a discrete
+  // conversion. Keyed "itemId|supplierId" to dedupe.
+  const discretePairs = new Map<string, { itemId: string; supplierId: string; pack: PackInfo }>();
+
   for (let i = 0; i < count; i++) {
     const poId = uuid();
     const createdAt = randomPastDate(2, 120);
@@ -100,8 +107,12 @@ export const seedPurchaseOrders = async (
     const statusKey = FLOW[reachedIndex];
     const user = pick(purchasingUsers);
     const supplier = pick(suppliers);
-    // most POs carry a payment method
-    const paymentMethodId = chance(0.85) ? pick(paymentMethods).id : null;
+    // most POs carry a payment method — preferentially one of the supplier's own
+    // methods, falling back to any method if the supplier has none linked
+    const supplierMethodIds = paymentMethodIdsBySupplier.get(supplier.id) ?? [];
+    const paymentMethodId = chance(0.85)
+      ? (supplierMethodIds.length ? pick(supplierMethodIds) : pick(paymentMethods).id)
+      : null;
 
     // transition timestamps from creation up to "now-ish"; last one is updatedAt
     const lastActivity = clampPast(addDays(createdAt, Math.min(ageDays - 0.2, randFloat(1, 25))));
@@ -135,7 +146,16 @@ export const seedPurchaseOrders = async (
     const itemIds: string[] = [];
     lineItems.forEach((item, lineIdx) => {
       const poItemId = uuid();
-      const quantity = randInt(5, 200);
+      // pack-purchased items buy in a non-standard pack unit; the lot stays in the
+      // item's inventory unit (quantity * factor), and the (item, supplier) pair needs
+      // a discrete conversion.
+      const pack = packMap.get(item.id);
+      const quantity = pack ? randInt(2, 30) : randInt(5, 200);
+      const lineUomId = pack ? pack.packUomId : item.uomId;
+      const inventoryQuantity = pack ? quantity * pack.factor : quantity;
+      if (pack) {
+        discretePairs.set(`${item.id}|${supplier.id}`, { itemId: item.id, supplierId: supplier.id, pack });
+      }
       itemIds.push(item.id);
       let lotId: string | null = null;
 
@@ -148,7 +168,7 @@ export const seedPurchaseOrders = async (
           id: lotId,
           itemId: item.id,
           lotNumber: generateLotNumber(item.referenceCode, receivedAt),
-          initialQuantity: quantity,
+          initialQuantity: inventoryQuantity,
           uomId: item.uomId,
           ...stamp(receivedAt),
         });
@@ -166,12 +186,12 @@ export const seedPurchaseOrders = async (
           transactionTypeId: refs.transactionTypes.procurement,
           userId: user.id,
           uomId: item.uomId,
-          amount: quantity,
+          amount: inventoryQuantity,
           systemNote: 'Procurement — received against purchase order.',
           userNote: '',
           ...stamp(receivedAt),
         });
-        resultLots.push({ id: lotId, itemId: item.id, uomId: item.uomId, initialQuantity: quantity, createdAt: receivedAt });
+        resultLots.push({ id: lotId, itemId: item.id, uomId: item.uomId, initialQuantity: inventoryQuantity, createdAt: receivedAt });
       }
 
       poItemRows.push({
@@ -181,7 +201,7 @@ export const seedPurchaseOrders = async (
         lotId,
         quantity,
         pricePerUnit: randFloat(3, 80),
-        uomId: item.uomId,
+        uomId: lineUomId,
         purchaseOrderStatusId: poStatusId(lineReceived ? 'received' : statusKey),
         ...stamp(createdAt, updatedAt),
       });
@@ -269,6 +289,18 @@ export const seedPurchaseOrders = async (
   await insert('poAccountingDetail', accountingRows);
   await insert('poAccountingNote', accountingNoteRows);
   await insert('poAccountingAuditLog', auditRows);
+
+  // one discrete conversion per (item, supplier) that purchased in a pack unit, so the
+  // converter can turn pack-priced lines into the item's inventory unit (and on to lb).
+  const discreteRows = Array.from(discretePairs.values()).map(({ itemId, supplierId, pack }) => ({
+    id: uuid(),
+    itemId,
+    supplierId,
+    uomAId: pack.packUomId,
+    uomBId: pack.inventoryUomId,
+    conversionFactor: pack.factor,
+  }));
+  await insert('discreteUnitOfMeasurementConversion', discreteRows);
 
   return { pos: resultPos, lots: resultLots };
 };

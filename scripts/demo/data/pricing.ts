@@ -16,28 +16,31 @@ export interface PaymentMethodData {
 }
 
 export const PAYMENT_METHODS: ReadonlyArray<PaymentMethodData> = [
+  // paymentType MUST be one of the values PaymentMethodDisplay renders:
+  // 'visa' | 'mastercard' | 'amex' (card), 'bankTransfer', or 'check' — anything else
+  // renders nothing.
   {
-    methodName: 'Gilded Coffer Charge Card', associatedName: 'Portals & Paws LLC', paymentType: 'credit',
+    methodName: 'Gilded Coffer Charge Card', associatedName: 'Portals & Paws LLC', paymentType: 'amex',
     identifier: 'GILDED-COFFER', accountEndingIn: '0666', expiry: '11/28', limit: 25000,
     bgColorA: '#7c5e10', bgColorB: '#3d2f17', circleColorA: '#f6d365', circleColorB: '#c79a2e',
   },
   {
-    methodName: 'Sigil Bank Draft', associatedName: 'Portals & Paws LLC', paymentType: 'transfer',
+    methodName: 'Sigil Bank Draft', associatedName: 'Portals & Paws LLC', paymentType: 'bankTransfer',
     identifier: 'SIGIL-DRAFT', accountEndingIn: '1042', limit: 100000,
     bgColorA: '#1e3a5f', bgColorB: '#0f1f33', circleColorA: '#7fb2e5', circleColorB: '#3f6f9f',
   },
   {
-    methodName: 'Petty Cash Pouch', associatedName: 'Front of House', paymentType: 'cash',
-    identifier: 'PETTY-CASH', limit: 1500,
+    methodName: 'Counting-House Check', associatedName: 'Front of House', paymentType: 'check',
+    identifier: 'PETTY-CASH', accountEndingIn: '0001', limit: 1500,
     bgColorA: '#14422f', bgColorB: '#0a2419', circleColorA: '#9fe0b8', circleColorB: '#4caf7d',
   },
   {
-    methodName: 'Planar Trade Ledger', associatedName: 'Morgra Hearthbreaker', paymentType: 'transfer',
+    methodName: 'Planar Trade Ledger', associatedName: 'Morgra Hearthbreaker', paymentType: 'bankTransfer',
     identifier: 'PLANAR-LEDGER', accountEndingIn: '7777', limit: 50000,
     bgColorA: '#3f2d56', bgColorB: '#231933', circleColorA: '#c9b3ed', circleColorB: '#8a6fc0',
   },
   {
-    methodName: 'Lower Ward Debit Chit', associatedName: 'Portals & Paws LLC', paymentType: 'debit',
+    methodName: 'Lower Ward Debit Chit', associatedName: 'Portals & Paws LLC', paymentType: 'visa',
     identifier: 'LW-DEBIT', accountEndingIn: '3120', expiry: '04/27', limit: 8000,
     bgColorA: '#5c1a1a', bgColorB: '#2e0d0d', circleColorA: '#f0a3a3', circleColorB: '#c25b5b',
   },

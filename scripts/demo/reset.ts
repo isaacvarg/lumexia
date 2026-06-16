@@ -69,6 +69,7 @@ const WIPE_ORDER: string[] = [
   'equipment',
   'equipmentType',
   'mbprNoteType',
+  'discreteUnitOfMeasurementConversion',
   'itemNote',
   'supplierAlias',
   'alias',
@@ -90,6 +91,11 @@ const wipe = async (): Promise<void> => {
       throw new Error(`💔 Failed clearing "${model}": ${(error as Error).message}`, { cause: error });
     }
   }
+
+  // demo-only pack UOMs are the non-standard ones (init seeds all uoms as standard).
+  // The standard SI UnitOfMeasurementConversion rows are init/reference data — kept.
+  const packUoms = await db.unitOfMeasurement.deleteMany({ where: { isStandardUom: false } });
+  console.log(`  - ${packUoms.count.toString().padStart(4)} unitOfMeasurement (pack)`);
 
   // demo users + their role assignments only — spare init's system user.
   const roleAssignments = await db.userRoleAssignment.deleteMany({

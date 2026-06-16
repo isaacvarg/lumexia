@@ -14,6 +14,7 @@ import { seedBprs } from './layers/bprs';
 import { seedPaymentMethods } from './layers/paymentMethods';
 import { seedPricingTemplates } from './layers/pricingTemplates';
 import { seedPricing } from './layers/pricing';
+import { seedPackUoms } from './layers/uomConversions';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -36,7 +37,7 @@ export const seedDemo = async (): Promise<void> => {
   const itemTypes = await seedItemTypes();
 
   console.log('✨ Payment Methods');
-  const paymentMethods = await seedPaymentMethods(suppliers);
+  const { methods: paymentMethods, idsBySupplier: paymentMethodIdsBySupplier } = await seedPaymentMethods(suppliers);
 
   // ┌────────────┐
   // │ ＩＴＥＭＳ │
@@ -56,8 +57,11 @@ export const seedDemo = async (): Promise<void> => {
   // ┌──────────────────────────────────────────────┐
   // │ ＰＵＲＣＨＡＳＩＮＧ  ＆  ＩＮＶＥＮＴＯＲＹ │
   // └──────────────────────────────────────────────┘
+  console.log('✨ Pack UOMs & Discrete Conversions');
+  const packMap = await seedPackUoms(items.ingredients);
+
   console.log('✨ Purchase Orders');
-  const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers, paymentMethods);
+  const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers, paymentMethods, paymentMethodIdsBySupplier, packMap);
 
   console.log('✨ Purchasing Requests');
   await seedPurchasingRequests(pos, items.purchased, purchasingUsers);
