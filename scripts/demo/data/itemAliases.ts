@@ -1,0 +1,125 @@
+export interface ItemAliasData {
+  itemName: string; // must exactly match a name in data/items.ts
+  aliasTypeKey: 'common' | 'supplier' | 'inciName';
+  name: string; // the alias / nickname / vendor catalog name
+  supplierName?: string; // required for `supplier` aliases — must match a name in data/suppliers.ts
+}
+
+// Aliases make the catalog feel real: `common` = the café nickname the staff
+// actually use, `supplier` = the (often more boring or more pompous) name the
+// vendor invoices it under (which links to a real supplier). Grouped to mirror
+// data/items.ts.
+export const DEMO_ITEM_ALIASES: ReadonlyArray<ItemAliasData> = [
+  // ── Ingredients ──────────────────────────────────────────────────────────
+  { itemName: 'Astral Espresso Beans', aliasTypeKey: 'common', name: 'Star Beans' },
+  { itemName: 'Astral Espresso Beans', aliasTypeKey: 'supplier', name: 'Planar Roasters Co. — Grade A Whole Bean', supplierName: 'Astral Drift Coffee Roasters' },
+  { itemName: 'Brimstone Spice Blend', aliasTypeKey: 'common', name: 'The Hot Stuff' },
+  { itemName: 'Brimstone Spice Blend', aliasTypeKey: 'supplier', name: 'Avernus Trading — Infernal Spice Mix #4', supplierName: 'Brimstone & Bean Spice Co.' },
+  { itemName: 'Crushed Goodberry Syrup Extract', aliasTypeKey: 'common', name: 'Goodberry Goo' },
+  { itemName: 'Powdered Underdark Flour', aliasTypeKey: 'common', name: 'Deep Flour' },
+  { itemName: 'Powdered Underdark Flour', aliasTypeKey: 'supplier', name: 'Mycelia Mills — Cavern-Milled All Purpose', supplierName: 'Deep-Earth Flour & Milling' },
+  { itemName: 'Feywild Honey Crystals', aliasTypeKey: 'common', name: 'Giggle Sugar' },
+  { itemName: 'Feywild Honey Crystals', aliasTypeKey: 'supplier', name: 'Seelie Apiary — Crystalline Honey (Trade Sealed)', supplierName: "The Hive's Honeycomb & Syrups" },
+  { itemName: 'Moon-Grazed Whole Milk', aliasTypeKey: 'common', name: 'Moo-Moon' },
+  { itemName: 'Starlight Cane Sugar', aliasTypeKey: 'common', name: 'Sparkle Sugar' },
+  { itemName: 'Fire Elementalist Chili Flakes', aliasTypeKey: 'common', name: 'The Hazard' },
+  { itemName: 'Chionthar Coarse Sea Salt', aliasTypeKey: 'supplier', name: 'Chionthar Saltworks — Coarse Grind', supplierName: 'Chionthar Fresh Catch & Fin' },
+  { itemName: 'Chult Vanilla Pods', aliasTypeKey: 'common', name: 'Jungle Vanilla' },
+  { itemName: 'Chult Vanilla Pods', aliasTypeKey: 'supplier', name: 'Port Nyanzaru Exports — Whole Vanilla (count varies)', supplierName: 'Goodberry Grocers & Gatherers' },
+  { itemName: 'Mimic Jam Fruit Base', aliasTypeKey: 'common', name: 'Bitey Jam' },
+  { itemName: 'Waterdeep Medium-Roast Coffee', aliasTypeKey: 'common', name: 'House Brew' },
+  { itemName: 'Waterdeep Medium-Roast Coffee', aliasTypeKey: 'supplier', name: 'City of Splendors Coffee — Medium Roast', supplierName: 'Astral Drift Coffee Roasters' },
+  { itemName: 'Dried Flumph Meringue Powder', aliasTypeKey: 'common', name: 'Cloud Powder' },
+  { itemName: 'Yggdrasil Sap Concentrate', aliasTypeKey: 'common', name: 'World-Tree Syrup' },
+  { itemName: 'Yggdrasil Sap Concentrate', aliasTypeKey: 'supplier', name: 'Norse Root Traders — Sap Concentrate (per dram)', supplierName: "The Hive's Honeycomb & Syrups" },
+  { itemName: 'Pandemonium Peppermint Leaves', aliasTypeKey: 'common', name: 'Whispermint' },
+
+  // ── Cafe Supplies ────────────────────────────────────────────────────────
+  { itemName: 'Smelt & Shard Ceramic Mugs', aliasTypeKey: 'common', name: 'The House Mugs' },
+  { itemName: 'Smelt & Shard Ceramic Mugs', aliasTypeKey: 'supplier', name: 'Smelt & Shard Pottery — Stoneware Mug 12oz', supplierName: 'Smelt & Shard Ceramic Mugs' },
+  { itemName: 'Portal-Insulated Takeout Cups', aliasTypeKey: 'common', name: 'To-Go Cups' },
+  { itemName: 'Anti-Spill Enchanted Cup Lids', aliasTypeKey: 'common', name: 'No-Slosh Lids' },
+  { itemName: 'Recycled Hemp Napkins', aliasTypeKey: 'common', name: 'Naps' },
+  { itemName: 'Birchwood Pastry Forks', aliasTypeKey: 'common', name: 'Compost Forks' },
+  { itemName: 'Prestidigitation Cleaning Fluid', aliasTypeKey: 'common', name: 'Magic Spray' },
+  { itemName: 'Prestidigitation Cleaning Fluid', aliasTypeKey: 'supplier', name: "Cantrip & Co. — Prestidigitation Surface Cleaner", supplierName: 'Prestidigitation Purity Co.' },
+  { itemName: 'Brown Kraft Pastry Bags', aliasTypeKey: 'common', name: 'Pastry Bags' },
+  { itemName: 'Coarse Scouring Grime Pumice', aliasTypeKey: 'common', name: 'The Scrubby Stone' },
+  { itemName: 'Clockwork Countercloths', aliasTypeKey: 'common', name: 'Self-Wringers' },
+  { itemName: 'Wax-Lined Espresso Straws', aliasTypeKey: 'common', name: 'Little Straws' },
+  { itemName: 'Lower Ward Leather Aprons', aliasTypeKey: 'supplier', name: 'Lower Ward Tannery — Bib Apron (full grain)', supplierName: 'Weave & Warp Cozy Textiles' },
+  { itemName: 'Alchemical Degreaser Soap', aliasTypeKey: 'common', name: 'The Strong Stuff' },
+  { itemName: 'Brass Table Menu Holders', aliasTypeKey: 'common', name: 'Menu Stands' },
+  { itemName: 'Dragon-Scale Heat Mitts', aliasTypeKey: 'common', name: 'The Dragon Mitts' },
+  { itemName: 'Spell-Scrolled Receipt Rolls', aliasTypeKey: 'common', name: 'Register Rolls' },
+
+  // ── Cat Supplies ─────────────────────────────────────────────────────────
+  { itemName: 'Elemental Earth Odorless Litter', aliasTypeKey: 'common', name: 'The Good Litter' },
+  { itemName: 'Elemental Earth Odorless Litter', aliasTypeKey: 'supplier', name: 'Terran Plane Supply — Odor-Null Clay', supplierName: 'Goodberry Grocers & Gatherers' },
+  { itemName: 'Catnip-Infused Goodberry Kibble', aliasTypeKey: 'common', name: 'Happy Kibble' },
+  { itemName: 'Dehydrated Astral Salmon Flakes', aliasTypeKey: 'common', name: 'Barnaby Bait' },
+  { itemName: 'Displacer Beast Neutralizing Spray', aliasTypeKey: 'common', name: 'Stay-Put Spray' },
+  { itemName: 'Sisal Rope Scratch Post Wraps', aliasTypeKey: 'common', name: 'Post Wraps' },
+  { itemName: 'Velvet Pocket-Dimension Cat Beds', aliasTypeKey: 'common', name: 'The Bottomless Beds' },
+  { itemName: 'Velvet Pocket-Dimension Cat Beds', aliasTypeKey: 'supplier', name: 'Bag of Holding Bedding — Pocket Nest (S)', supplierName: 'Weave & Warp Cozy Textiles' },
+  { itemName: 'Clockwork Mouse Windup Toys', aliasTypeKey: 'common', name: 'Windup Mice' },
+  { itemName: 'Flumph Plush Nip Toys', aliasTypeKey: 'common', name: 'The Stealable Flumphs' },
+  { itemName: 'Blessed Flea-Be-Gone Powder', aliasTypeKey: 'common', name: 'Holy Flea Dust' },
+  { itemName: 'Ceramic Heavy-Bottom Food Bowls', aliasTypeKey: 'common', name: 'The Un-Tippable Bowls' },
+  { itemName: 'Stainless-Steel Grooming Combs', aliasTypeKey: 'common', name: 'The Combs' },
+  { itemName: 'Chult Feather Wand Teasers', aliasTypeKey: 'common', name: 'Feather Wands' },
+  { itemName: 'Hairball Dissolving Paste', aliasTypeKey: 'common', name: 'Goop Paste' },
+  { itemName: 'Portal-Shielded Waste Scoops', aliasTypeKey: 'common', name: 'The Smell-Proof Scoops' },
+  { itemName: 'Calming Fey-Herb Aroma Mist', aliasTypeKey: 'common', name: 'Chill Mist' },
+
+  // ── Tabletop ─────────────────────────────────────────────────────────────
+  { itemName: 'Ticket to Ride: The Blood War', aliasTypeKey: 'common', name: 'Blood War Trains' },
+  { itemName: 'Lords of Waterdeep Board Game', aliasTypeKey: 'common', name: 'Lords' },
+  { itemName: 'The Great Modron March Puzzle', aliasTypeKey: 'common', name: 'The Cog Nightmare' },
+  { itemName: "Betrayal at House on Baldur's Gate", aliasTypeKey: 'common', name: 'The Haunt Game' },
+  { itemName: 'Munchkin: Undermountain Card Game', aliasTypeKey: 'common', name: 'Undermountain Munchkin' },
+  { itemName: 'Heavy Obsidian Polyhedral d20s', aliasTypeKey: 'common', name: 'The House d20s' },
+  { itemName: 'Acid-Resistant Matte Card Sleeves', aliasTypeKey: 'common', name: 'Sleeves' },
+  { itemName: 'Velvet Drawstring Dice Pouches', aliasTypeKey: 'common', name: 'Dice Bags' },
+  { itemName: 'Sand-Timer of the Chronomancer', aliasTypeKey: 'common', name: 'The Slow Timer' },
+  { itemName: 'Wooden Meeple Replacement Packs', aliasTypeKey: 'common', name: 'Spare Meeples' },
+  { itemName: 'Spell-Slot Metal Tracking Tokens', aliasTypeKey: 'common', name: 'The Clicky Tokens' },
+  { itemName: 'Leather-Bound Modular Map Boards', aliasTypeKey: 'common', name: 'Map Tiles' },
+  { itemName: 'Neoprene Planar Table Mats', aliasTypeKey: 'common', name: 'Roll Mats' },
+  { itemName: 'Rules Lawyering Reference Manuals', aliasTypeKey: 'common', name: 'The Chained Books' },
+  { itemName: 'Dice Tower of the High Mage', aliasTypeKey: 'common', name: 'The Fair Tower' },
+
+  // ── Recipes (produced) ───────────────────────────────────────────────────
+  { itemName: 'Freshly Brewed Astral Espresso', aliasTypeKey: 'common', name: 'The Usual' },
+  { itemName: 'Steaming Cup of Brimstone Chai', aliasTypeKey: 'common', name: 'Brimstone Chai' },
+  { itemName: 'Goodberry Matcha Latte', aliasTypeKey: 'common', name: 'Green Goodberry' },
+  { itemName: 'The Mimic Macaron', aliasTypeKey: 'common', name: 'Chatter Cookies' },
+  { itemName: 'Flumph Meringue Kiss', aliasTypeKey: 'common', name: 'Cloud Kisses' },
+  { itemName: 'Beholder Jelly Donut', aliasTypeKey: 'common', name: 'Eyeball Donut' },
+  { itemName: 'Honey-Drizzled Feywild Scone', aliasTypeKey: 'common', name: 'Fey Scone' },
+  { itemName: 'Deep-Earth Brioche Bun', aliasTypeKey: 'common', name: 'Deep Bun' },
+  { itemName: 'Chionthar Salted Caramel Tart', aliasTypeKey: 'common', name: 'Salt Tart' },
+  { itemName: 'Chult Spiced Iced Tea', aliasTypeKey: 'common', name: 'Jungle Iced Tea' },
+  { itemName: 'Owlbear Claws Pastry', aliasTypeKey: 'common', name: 'Claws' },
+  { itemName: 'Mind Flayer Mocha Blend', aliasTypeKey: 'common', name: 'Brain Mocha' },
+  { itemName: 'Pixie Dust Shortbread Cookie', aliasTypeKey: 'common', name: 'Sparkle Cookies' },
+  { itemName: 'Underdark Mushroom Quiche', aliasTypeKey: 'common', name: 'The Savory One' },
+  { itemName: 'Githzerai Clear-Mind Herbal Tea', aliasTypeKey: 'common', name: 'Calm Corner Tea' },
+
+  // ── Merchandise ──────────────────────────────────────────────────────────
+  { itemName: 'Portals & Paws Screenprinted Hoodie', aliasTypeKey: 'common', name: 'The Hoodie' },
+  { itemName: 'Lady Pain Enamel Lapel Pin', aliasTypeKey: 'common', name: 'The Pain Pin' },
+  { itemName: 'Barnaby the Displacer Beast Sticker', aliasTypeKey: 'common', name: 'Barnaby Sticker' },
+  { itemName: 'Portals & Paws Canvas Tote Bag', aliasTypeKey: 'common', name: 'The Tote' },
+  { itemName: 'Modron Square Loaf Plushie', aliasTypeKey: 'common', name: 'Square Cat Plush' },
+  { itemName: 'Embroidered Faction Slouch Beanie', aliasTypeKey: 'common', name: 'Faction Beanies' },
+  { itemName: 'Portals & Paws Insulated Tumbler', aliasTypeKey: 'common', name: 'The Tumbler' },
+  { itemName: 'Collectible Cafe Interior Art Print', aliasTypeKey: 'common', name: 'The Art Print' },
+  { itemName: 'Absorbent Sandstone Coaster Set', aliasTypeKey: 'common', name: 'The Magic Coasters' },
+  { itemName: 'Woven Sigil Faction Iron-On Patch', aliasTypeKey: 'common', name: 'Faction Patches' },
+  { itemName: 'Branded Tooled-Leather Bookmark', aliasTypeKey: 'common', name: 'Leather Bookmark' },
+  { itemName: 'Portals & Paws Stylized Playing Cards', aliasTypeKey: 'common', name: 'The Card Deck' },
+  { itemName: 'Stainless the Warforged Kitchen Magnet', aliasTypeKey: 'common', name: 'Stainless Magnet' },
+  { itemName: 'Cozy Cache Logo Fitted T-Shirt', aliasTypeKey: 'common', name: 'The Tee' },
+  { itemName: 'Branded Mahogany Dice Rolling Cup', aliasTypeKey: 'common', name: 'Roll Cup' },
+];

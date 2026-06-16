@@ -26,7 +26,11 @@ const WIPE_ORDER: string[] = [
   'billOfMaterial',
   'batchStep',
   'masterBatchProductionRecord',
+  'itemNote',
+  'supplierAlias',
+  'alias',
   'item',
+  'itemNoteType',
   'supplier',
   'itemType'
 ];

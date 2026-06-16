@@ -15,8 +15,9 @@ import { getUomId } from '../utils/getUomId';
 import { DemoItemType } from './itemTypes';
 
 
-interface DemoItem {
+export interface DemoItem {
   id: string;
+  name: string;
   uomId: string;
   procurement: 'purchased' | 'produced';
   type: string;
@@ -76,6 +77,7 @@ export const seedItems = async (itemTypes: DemoItemType[]): Promise<DemoItems> =
     for (const data of group.data) {
       const item: DemoItem = {
         id: uuid(),
+        name: data.name,
         uomId: getUomId(data.uomKey),
         procurement: data.procurement,
         type: group.typeName,

@@ -18,6 +18,7 @@ import { procurementTypes } from '@/configs/staticRecords/procurementTypes';
 import { inventoryTypes } from '@/configs/staticRecords/inventoryTypes';
 import { uom } from '@/configs/staticRecords/unitsOfMeasurement';
 import { userRoles } from '@/configs/staticRecords/userRoles';
+import { aliasTypes } from '@/configs/staticRecords/aliasTypes';
 
 export const refs = {
   recordStatuses,
@@ -35,4 +36,5 @@ export const refs = {
   inventoryTypes,
   uom,
   userRoles,
+  aliasTypes,
 };
