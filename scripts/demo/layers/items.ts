@@ -18,6 +18,7 @@ import { DemoItemType } from './itemTypes';
 export interface DemoItem {
   id: string;
   name: string;
+  referenceCode: string;
   uomId: string;
   procurement: 'purchased' | 'produced';
   type: string;
@@ -75,9 +76,11 @@ export const seedItems = async (itemTypes: DemoItemType[]): Promise<DemoItems> =
     let seq = group.seqStart;
 
     for (const data of group.data) {
+      const referenceCode = `${group.prefix}-${++seq}`;
       const item: DemoItem = {
         id: uuid(),
         name: data.name,
+        referenceCode,
         uomId: getUomId(data.uomKey),
         procurement: data.procurement,
         type: group.typeName,
@@ -99,7 +102,7 @@ export const seedItems = async (itemTypes: DemoItemType[]): Promise<DemoItems> =
       // payload array
       rows.push({
         id: item.id,
-        referenceCode: `${group.prefix}-${++seq}`,
+        referenceCode,
         name: data.name,
         recordStatusId: refs.recordStatuses.active,
         itemTypeId,

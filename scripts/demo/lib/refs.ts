@@ -19,6 +19,11 @@ import { inventoryTypes } from '@/configs/staticRecords/inventoryTypes';
 import { uom } from '@/configs/staticRecords/unitsOfMeasurement';
 import { userRoles } from '@/configs/staticRecords/userRoles';
 import { aliasTypes } from '@/configs/staticRecords/aliasTypes';
+import { auditRequestStatuses } from '@/configs/staticRecords/auditRequestStatuses';
+import { auditRequestNoteTypes } from '@/configs/staticRecords/auditRequestNoteTypes';
+import { discrepancyAuditStatuses } from '@/configs/staticRecords/discrepancyAuditStatuses';
+import { discrepancyAuditItemStatuses } from '@/configs/staticRecords/discrepancyAuditItemStatuses';
+import { discrepancyAuditItemNoteTypes } from '@/configs/staticRecords/discrepancyAuditItemNoteTypes';
 
 export const refs = {
   recordStatuses,
@@ -37,4 +42,9 @@ export const refs = {
   uom,
   userRoles,
   aliasTypes,
+  auditRequestStatuses,
+  auditRequestNoteTypes,
+  discrepancyAuditStatuses,
+  discrepancyAuditItemStatuses,
+  discrepancyAuditItemNoteTypes,
 };

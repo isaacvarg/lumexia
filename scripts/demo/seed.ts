@@ -5,6 +5,9 @@ import { seedItems } from './layers/items';
 import { seedItemNoteTypes } from './layers/itemNoteTypes';
 import { seedItemNotes } from './layers/itemNotes';
 import { seedItemAliases } from './layers/itemAliases';
+import { seedPurchaseOrders } from './layers/purchaseOrders';
+import { seedPurchasingRequests } from './layers/purchasingRequests';
+import { seedAudits } from './layers/audits';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -40,6 +43,18 @@ export const seedDemo = async (): Promise<void> => {
 
   console.log('✨ Item Aliases');
   await seedItemAliases(items.all, suppliers);
+
+  // ┌──────────────────────────────────────────────┐
+  // │ ＰＵＲＣＨＡＳＩＮＧ  ＆  ＩＮＶＥＮＴＯＲＹ │
+  // └──────────────────────────────────────────────┘
+  console.log('✨ Purchase Orders');
+  const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers);
+
+  console.log('✨ Purchasing Requests');
+  await seedPurchasingRequests(pos, items.purchased, purchasingUsers);
+
+  console.log('✨ Audits');
+  await seedAudits(items.purchased, lots, users);
 
 
   // finally
