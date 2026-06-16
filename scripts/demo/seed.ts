@@ -8,6 +8,12 @@ import { seedItemAliases } from './layers/itemAliases';
 import { seedPurchaseOrders } from './layers/purchaseOrders';
 import { seedPurchasingRequests } from './layers/purchasingRequests';
 import { seedAudits } from './layers/audits';
+import { seedEquipment } from './layers/equipment';
+import { seedMbprs } from './layers/mbprs';
+import { seedBprs } from './layers/bprs';
+import { seedPaymentMethods } from './layers/paymentMethods';
+import { seedPricingTemplates } from './layers/pricingTemplates';
+import { seedPricing } from './layers/pricing';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -29,6 +35,9 @@ export const seedDemo = async (): Promise<void> => {
   console.log('✨ Item Types');
   const itemTypes = await seedItemTypes();
 
+  console.log('✨ Payment Methods');
+  const paymentMethods = await seedPaymentMethods(suppliers);
+
   // ┌────────────┐
   // │ ＩＴＥＭＳ │
   // └────────────┘
@@ -48,13 +57,36 @@ export const seedDemo = async (): Promise<void> => {
   // │ ＰＵＲＣＨＡＳＩＮＧ  ＆  ＩＮＶＥＮＴＯＲＹ │
   // └──────────────────────────────────────────────┘
   console.log('✨ Purchase Orders');
-  const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers);
+  const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers, paymentMethods);
 
   console.log('✨ Purchasing Requests');
   await seedPurchasingRequests(pos, items.purchased, purchasingUsers);
 
   console.log('✨ Audits');
   await seedAudits(items.purchased, lots, users);
+
+  // ┌──────────────────────────────────┐
+  // │ ＰＲＯＤＵＣＴＩＯＮ  (ＭＢＰＲ) │
+  // └──────────────────────────────────┘
+  console.log('✨ Equipment & Vessels');
+  const equipment = await seedEquipment();
+
+  console.log('✨ MBPRs');
+  const mbprs = await seedMbprs(items.produced, items.ingredients, equipment, productionUsers);
+
+  console.log('✨ BPRs');
+  await seedBprs(40, mbprs, lots, productionUsers);
+
+  // ┌──────────────────────────────────────────┐
+  // │ ＡＣＣＯＵＮＴＩＮＧ  /  ＰＲＩＣＩＮＧ │
+  // └──────────────────────────────────────────┘
+  const packagingItems = items.purchased.filter((i) => i.type === 'Cafe Supplies');
+
+  console.log('✨ Pricing Templates');
+  await seedPricingTemplates(itemTypes, packagingItems);
+
+  console.log('✨ Pricing Examinations');
+  await seedPricing(items.purchased, items.produced, mbprs, equipment, packagingItems, users);
 
 
   // finally

@@ -24,6 +24,14 @@ import { auditRequestNoteTypes } from '@/configs/staticRecords/auditRequestNoteT
 import { discrepancyAuditStatuses } from '@/configs/staticRecords/discrepancyAuditStatuses';
 import { discrepancyAuditItemStatuses } from '@/configs/staticRecords/discrepancyAuditItemStatuses';
 import { discrepancyAuditItemNoteTypes } from '@/configs/staticRecords/discrepancyAuditItemNoteTypes';
+import { bprBatchStepStatuses } from '@/configs/staticRecords/bprBatchStepStatuses';
+import { bprBomLineStatuses } from '@/configs/staticRecords/bprBomLineStatuses';
+import { bprStagingStatuses } from '@/configs/staticRecords/bprStagingStatuses';
+import { bprStepActionableStatuses } from '@/configs/staticRecords/bprStepActionableStatuses';
+import { stepActionableTypes } from '@/configs/staticRecords/stepActionableTypes';
+import { stepAddendumTypes } from '@/configs/staticRecords/stepAddendumTypes';
+import { pricingExaminationStatuses } from '@/configs/staticRecords/pricingExaminationStatuses';
+import { pricingExaminationNoteTypes } from '@/configs/staticRecords/pricingExaminationNoteTypes';
 
 export const refs = {
   recordStatuses,
@@ -47,4 +55,12 @@ export const refs = {
   discrepancyAuditStatuses,
   discrepancyAuditItemStatuses,
   discrepancyAuditItemNoteTypes,
+  bprBatchStepStatuses,
+  bprBomLineStatuses,
+  bprStagingStatuses,
+  bprStepActionableStatuses,
+  stepActionableTypes,
+  stepAddendumTypes,
+  pricingExaminationStatuses,
+  pricingExaminationNoteTypes,
 };

@@ -17,6 +17,7 @@ import { PO_ACCOUNTING_ACTIONS, PO_ACCOUNTING_NOTES, PO_NOTES, PO_NOTE_TYPES } f
 import { DemoSupplier } from './suppliers';
 import { DemoItem } from './items';
 import { DemoUser } from './users';
+import { DemoPaymentMethod } from './paymentMethods';
 
 // A PO surfaced for downstream layers (purchasing requests link to these and
 // mirror their progress).
@@ -68,6 +69,7 @@ export const seedPurchaseOrders = async (
   suppliers: DemoSupplier[],
   purchasedItems: DemoItem[],
   purchasingUsers: DemoUser[],
+  paymentMethods: DemoPaymentMethod[],
 ): Promise<PurchaseOrderResult> => {
   // PurchaseOrderNoteType is not a static record, so seed a small themed set first.
   const noteTypes = PO_NOTE_TYPES.map((t) => ({ id: uuid(), ...t }));
@@ -98,6 +100,8 @@ export const seedPurchaseOrders = async (
     const statusKey = FLOW[reachedIndex];
     const user = pick(purchasingUsers);
     const supplier = pick(suppliers);
+    // most POs carry a payment method
+    const paymentMethodId = chance(0.85) ? pick(paymentMethods).id : null;
 
     // transition timestamps from creation up to "now-ish"; last one is updatedAt
     const lastActivity = clampPast(addDays(createdAt, Math.min(ageDays - 0.2, randFloat(1, 25))));
@@ -109,6 +113,7 @@ export const seedPurchaseOrders = async (
       submittingUserId: user.id,
       supplierId: supplier.id,
       statusId: poStatusId(statusKey),
+      paymentMethodId,
       recordStatusId: refs.recordStatuses.active,
       ...stamp(createdAt, updatedAt),
     });
@@ -190,7 +195,7 @@ export const seedPurchaseOrders = async (
         statusId: refs.poAccountingStatuses.notStarted,
         purchaseOrderId: poId,
         paid: false,
-        paymentMethodId: null,
+        paymentMethodId: null, // not started yet — no payment recorded
         packingSlipReceived: false,
         paperworkGivenToAdmin: false,
         ...stamp(createdAt, updatedAt),
@@ -211,7 +216,7 @@ export const seedPurchaseOrders = async (
         statusId: completed ? refs.poAccountingStatuses.completed : refs.poAccountingStatuses.inProgress,
         purchaseOrderId: poId,
         paid: accountingReached >= 3,
-        paymentMethodId: null,
+        paymentMethodId: accountingReached >= 3 ? paymentMethodId : null,
         packingSlipReceived: accountingReached >= 2,
         paperworkGivenToAdmin: accountingReached >= 4,
         ...stamp(accountingDates[0], completedAt),
