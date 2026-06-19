@@ -48,7 +48,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
   const { setSelectedBomItem } = usePlanningDashboardActions()
   const { user } = useAppSelection()
 
-  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.notTracked;
+  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.consumable;
   const available = isConsumable ? 'Consumable' : toFracitonalDigits.weight(material.totalQuantityAvailable);
 
   const isAvailableSufficient = material.totalQuantityAvailable >= material.quantity;

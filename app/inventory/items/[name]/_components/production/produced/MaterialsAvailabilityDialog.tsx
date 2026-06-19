@@ -9,7 +9,7 @@ import { LuCheck, LuAlertTriangle, LuX } from "react-icons/lu"
 export const MATERIALS_AVAILABILITY_DIALOG = 'materialsAvailability'
 
 const Row = ({ line }: { line: MbprBomItemInventory }) => {
-  const isConsumable = line.item.inventoryTypeId === inventoryTypes.notTracked
+  const isConsumable = line.item.inventoryTypeId === inventoryTypes.consumable
   const isSufficient = isConsumable || line.totalQuantityAvailable >= line.requiredQuantity
   const isSoftSufficient = isConsumable || line.totalQuantitySoftAvailability >= line.requiredQuantity
   const rowClass = !isSufficient ? 'bg-red-300' : !isSoftSufficient ? 'bg-yellow-200' : ''
