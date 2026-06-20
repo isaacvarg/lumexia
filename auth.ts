@@ -1,15 +1,37 @@
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "./lib/prisma";
 import { userRoles } from "@/configs/staticRecords/userRoles";
 
+const isDemo = process.env.DEMO_SEED === "true";
+
+const demoCredentials = Credentials({
+  name: "Demo",
+  credentials: {
+    username: { label: "Username", type: "text" },
+    password: { label: "Password", type: "password" },
+  },
+  authorize: async (credentials) => {
+    if (credentials?.username !== "demo" || credentials?.password !== "demo") {
+      return null;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: "demo@demo.lumexia" },
+      select: { id: true, email: true, name: true },
+    });
+
+    return user ?? null;
+  },
+});
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: [Discord],
+  providers: isDemo ? [Discord, demoCredentials] : [Discord],
+  ...(isDemo ? { session: { strategy: "jwt" as const } } : {}),
   callbacks: {
-    // Block disabled users from signing in. Existing users have a DB row with an
-    // id; brand-new users (first signup) won't, so allow those through.
     async signIn({ user }) {
       if (!user.id) return true;
 
@@ -22,9 +44,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   events: {
-    // Bootstrap an administrator: the first user to ever sign up (when no
-    // systemAdmin exists yet) is granted the systemAdmin role so there is
-    // always someone who can administer roles.
     async createUser({ user }) {
       if (!user.id) return;
 
