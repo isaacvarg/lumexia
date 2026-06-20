@@ -10,8 +10,8 @@ const isDemo = process.env.DEMO_SEED === "true";
 const demoCredentials = Credentials({
   name: "Demo",
   credentials: {
-    username: { label: "Username", type: "text" },
-    password: { label: "Password", type: "password" },
+    username: { label: "Username", type: "text", value: "demo" },
+    password: { label: "Password", type: "password", value: "demo" },
   },
   authorize: async (credentials) => {
     if (credentials?.username !== "demo" || credentials?.password !== "demo") {
