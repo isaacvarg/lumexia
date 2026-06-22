@@ -10,6 +10,7 @@ import { getUserConfig } from "@/actions/users/getUserConfig";
 import { AuthProvider } from "./_components/state/AuthProvider";
 import QueryProvider from "./_components/state/QueryProvider";
 import TopBar from "./_components/topbar/TopBar";
+import Helper from "@/components/Helper";
 
 // fonts
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -53,6 +54,7 @@ export default async function RootLayout({
                   {children}
                 </div>
                 <Toast.Toast />
+                <Helper />
               </div>
             </QueryProvider>
           </AuthProvider>
