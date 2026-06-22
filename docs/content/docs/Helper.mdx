@@ -36,13 +36,17 @@ section lives in its own folder with an `index.ts` that exports a `GuideSection`
 
 ```ts
 import { GuideSection } from "../types";
+import AddingItem from "./AddingItem";
 
 export const itemsSection: GuideSection = {
   id: "items", // unique key referenced by setters
   title: "Learn how items work", // shown in the bar
   guides: [
-    { title: "Creating an item" },
-    { title: "Item types explained" },
+    {
+      title: "Creating an item",
+      description: "Register a new material, component, or product.",
+      content: AddingItem, // a .tsx guide component (see below)
+    },
   ],
 };
 ```
@@ -60,6 +64,33 @@ export const guideSections: GuideSection[] = [
 ```
 
 The book icon's count is derived automatically from the number of `guides`.
+
+## Add a guide
+
+Each guide's body is a `.tsx` component, co-located in the section folder and
+imported into that section's `index.ts` barrel.
+
+1. Create the component, e.g. `components/Helper/guides/items/AddingItem.tsx`:
+
+```tsx
+import SectionTitle from "@/components/Text/SectionTitle";
+
+const AddingItem = () => (
+  <div className="flex flex-col gap-4 font-poppins text-base-content">
+    <p className="text-lg">Items are the building blocks of inventory…</p>
+    <SectionTitle size="small">Steps</SectionTitle>
+    {/* …prose… */}
+  </div>
+);
+
+export default AddingItem;
+```
+
+2. Import it in the section's `index.ts` and reference it as the guide's
+   `content` (with a `title` and an optional `description` shown on the card).
+
+Clicking the guides button in the bar opens a large dialog showing these guides
+as a card grid; clicking a card opens that guide's `content` in the same dialog.
 
 ## Show a section on a page
 
