@@ -93,13 +93,14 @@ export const seedMbprs = async (
 
     // batch sizes + vessel links
     const batchSizes = recipe.batchSizes.map((quantity) => ({ id: uuid(), quantity }));
-    for (const bs of batchSizes) {
+    batchSizes.forEach((bs, bsIdx) => {
       batchSizeRows.push({
         id: bs.id,
         mbprId,
         quantity: bs.quantity,
         uomId: poundsUom(),
-        recordStatusId: recordActive(),
+        // an MBPR can have multiple batch sizes, but only one may be active at a time
+        recordStatusId: bsIdx === 0 ? recordActive() : refs.recordStatuses.inactive,
         ...stamp(createdAt),
       });
       const fitting = vessels.filter(
@@ -115,7 +116,7 @@ export const seedMbprs = async (
           ...stamp(createdAt),
         });
       }
-    }
+    });
 
     // steps + their children
     const steps: { id: string; actionableIds: string[] }[] = [];
