@@ -1,6 +1,7 @@
 import { assertDemoEnv } from './lib/guard';
 import { db, prisma } from './lib/db';
 import { seedDemo } from './seed';
+import { appConfigGroups } from '@/configs/staticRecords/appConfigGroups';
 
 const DEMO_EMAIL = '@demo.lumexia';
 
@@ -104,6 +105,13 @@ const wipe = async (): Promise<void> => {
   console.log(`  - ${roleAssignments.count.toString().padStart(4)} userRoleAssignment`);
   const usersDeleted = await db.user.deleteMany({ where: { email: { contains: DEMO_EMAIL } } });
   console.log(`  - ${usersDeleted.count.toString().padStart(4)} user`);
+
+  // demo-owned config groups only (seedConfigs reseeds these). init's general /
+  // inventoryaudits groups are reference data — kept.
+  const configsDeleted = await db.config.deleteMany({
+    where: { configGroupId: { in: [appConfigGroups.microform, appConfigGroups.company] } },
+  });
+  console.log(`  - ${configsDeleted.count.toString().padStart(4)} config (demo groups)`);
 };
 
 assertDemoEnv();

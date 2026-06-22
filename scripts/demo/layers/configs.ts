@@ -13,18 +13,47 @@ const MICROFORM_CONFIGS = [
   { key: 'sendResultsToEmail', value: 'qc@demo.lumexia' },
 ];
 
+// company group key/value rows. Keys must match companyFieldKeys (the company
+// settings form) so the values flow through to the PO / Certificate of Analysis
+// PDF headers. Themed for the Portals & Paws cat cafe at the crossroads of
+// Baldur's Gate and Sigil.
+const COMPANY_CONFIGS = [
+  { key: 'name', value: 'Portals & Paws' },
+  { key: 'phone', value: '(555) 042-7710' },
+  { key: 'email', value: 'hello@demo.lumexia' },
+  { key: 'addressStreet1', value: '7 Hound Gate Stair' },
+  { key: 'addressStreet2', value: 'The Sign of the Purring Portal' },
+  { key: 'addressCity', value: 'Sigil' },
+  { key: 'addressState', value: 'The Outlands' },
+  { key: 'addressZipcode', value: 'SIG-777' },
+  { key: 'purchasingContactFirstName', value: 'Valen' },
+  { key: 'purchasingContactLastName', value: 'Duskwalker' },
+  { key: 'purchasingContactEmail', value: 'purchasing@demo.lumexia' },
+];
+
 export const seedConfigs = async (): Promise<void> => {
   const createdAt = daysAgo(200);
   await insert(
     'config',
-    MICROFORM_CONFIGS.map((c) => ({
-      id: uuid(),
-      key: c.key,
-      value: c.value,
-      dataType: 'string',
-      description: '',
-      configGroupId: appConfigGroups.microform,
-      ...stamp(createdAt),
-    })),
+    [
+      ...MICROFORM_CONFIGS.map((c) => ({
+        id: uuid(),
+        key: c.key,
+        value: c.value,
+        dataType: 'string',
+        description: '',
+        configGroupId: appConfigGroups.microform,
+        ...stamp(createdAt),
+      })),
+      ...COMPANY_CONFIGS.map((c) => ({
+        id: uuid(),
+        key: c.key,
+        value: c.value,
+        dataType: 'string',
+        description: '',
+        configGroupId: appConfigGroups.company,
+        ...stamp(createdAt),
+      })),
+    ],
   );
 };
