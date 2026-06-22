@@ -1,0 +1,131 @@
+---
+title: Helper
+description: How the Helper bar works and how to extend it
+---
+
+The Helper bar is the floating pill anchored near the bottom of every page. It
+shows a section title, a book icon with a count of the available guides, and a
+set of external links.
+
+## Overview
+
+The bar is a global component (`components/Helper/Helper.tsx`) mounted once in
+`app/layout.tsx`, so it appears on every route. Its content is **not** derived
+from the URL — it is driven by a Zustand store (`store/helperSlice.ts`). Any
+component can set the bar's content imperatively, which lets the same route show
+different content per page state or per active tab.
+
+When nothing sets content, the bar falls back to a generic default.
+
+## Architecture
+
+| File | Responsibility |
+| --- | --- |
+| `components/Helper/Helper.tsx` | The bar UI. Reads `current` from the store. |
+| `components/Helper/guides/` | Keyed content library — each section's title and guides. |
+| `store/helperSlice.ts` | Store: `current`, `setHelper(id)`, `clearHelper()`. |
+| `components/Helper/HelperSetter.tsx` | Declarative setter — sets on mount, clears on unmount. |
+| `components/Helper/helper.links.tsx` | The external links on the right side. |
+
+## Add a new guide section
+
+Guides are organized as keyed sections under `components/Helper/guides/`. Each
+section lives in its own folder with an `index.ts` that exports a `GuideSection`.
+
+1. Create `components/Helper/guides/<name>/index.ts`:
+
+```ts
+import { GuideSection } from "../types";
+
+export const itemsSection: GuideSection = {
+  id: "items", // unique key referenced by setters
+  title: "Learn how items work", // shown in the bar
+  guides: [
+    { title: "Creating an item" },
+    { title: "Item types explained" },
+  ],
+};
+```
+
+2. Register it in `components/Helper/guides/index.ts` by adding it to the
+   `guideSections` array:
+
+```ts
+import { itemsSection } from "./items";
+
+export const guideSections: GuideSection[] = [
+  itemsSection,
+  // ...add new sections here
+];
+```
+
+The book icon's count is derived automatically from the number of `guides`.
+
+## Show a section on a page
+
+Render `<HelperSetter>` with the section `id`. It sets the bar on mount and
+clears it on unmount, so leaving the page resets the bar to its default. It works
+inside server components.
+
+```tsx
+import HelperSetter from "@/components/Helper/HelperSetter";
+
+const ItemsPage = async () => {
+  return (
+    <div>
+      <HelperSetter section="items" />
+      {/* page content */}
+    </div>
+  );
+};
+```
+
+<Callout>
+  Because content is reset on unmount, a nested route (e.g.
+  `/inventory/items/[name]`) does **not** inherit the parent list page's helper.
+  Add a `HelperSetter` to each page that needs content.
+</Callout>
+
+## Per-tab / imperative updates
+
+For content that changes with UI state — such as the active tab — set the bar
+imperatively with `useHelperActions().setHelper(id)` inside an effect. Read the
+active tab from `store/tabSlice.ts`:
+
+```tsx
+"use client";
+import { useEffect } from "react";
+import { useHelperActions } from "@/store/helperSlice";
+import { useTabSelection } from "@/store/tabSlice";
+
+const ItemHelper = () => {
+  const { setHelper } = useHelperActions();
+  const { activeTab } = useTabSelection();
+
+  useEffect(() => {
+    setHelper(`item-${activeTab.itemDetails}`); // one section id per tab
+  }, [activeTab.itemDetails, setHelper]);
+
+  return null;
+};
+```
+
+This requires a matching section in `guides/` for each tab id (for example
+`item-basics`, `item-purchasing`).
+
+## Edit the links
+
+The links on the right side of the bar are defined in
+`components/Helper/helper.links.tsx`. Each entry has a `label` (shown as a
+tooltip), an `href`, and an `icon` from `react-icons/tb`:
+
+```tsx
+export const helperLinks: HelperLink[] = [
+  {
+    label: "Lumexia GitHub Repo",
+    href: "https://github.com/isaacvarg/lumexia",
+    icon: <TbBrandGithub />,
+  },
+  // ...
+];
+```

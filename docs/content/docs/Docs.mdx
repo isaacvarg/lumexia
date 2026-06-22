@@ -1,0 +1,76 @@
+---
+title: Docs
+description: How to write and organize documentation pages
+---
+
+This documentation site is built with [Fumadocs](https://fumadocs.dev). Content
+lives as MDX files under `docs/content/docs/` and uses file-based routing — the
+file path becomes the page URL.
+
+## Create a page
+
+Add an `.mdx` file under `docs/content/docs/`. Start it with frontmatter:
+
+```mdx
+---
+title: My Page
+description: A short summary shown in search and metadata
+---
+
+Your content goes here. Standard Markdown works, plus the components below.
+```
+
+## Add it to the sidebar
+
+Pages only appear in the sidebar once they are listed in
+`docs/content/docs/meta.json`. Reference each page by its slug (the filename
+without `.mdx`). Entries wrapped in `---` render as section separators:
+
+```json
+{
+  "title": "Documentation",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "---Modules---",
+    "inventory",
+    "---Developer---",
+    "Docs",
+    "Helper"
+  ]
+}
+```
+
+## Nested sections
+
+Group related pages in a subfolder with its own `meta.json` to control ordering
+within that group. For example, `getting-started/installation/meta.json`:
+
+```json
+{
+  "pages": ["prerequisites", "docker", "manual"]
+}
+```
+
+Reference the folder from the parent `meta.json` (e.g.
+`"getting-started/installation"`).
+
+## Available components
+
+Standard Markdown, fenced code blocks (add a language for syntax highlighting),
+tables, and `<Callout>` are available globally — registered in
+`docs/components/mdx.tsx`.
+
+<Callout>This is a Callout. Use it for tips, warnings, and notes.</Callout>
+
+Any other Fumadocs component (Steps, Cards, Tabs, etc.) must be imported at the
+top of the MDX file before use, since only the defaults are registered globally.
+
+## Run locally
+
+From the `docs/` directory:
+
+```bash
+npm run dev          # start the docs site
+npm run types:check  # compile MDX and type-check
+```
