@@ -26,11 +26,11 @@ export const generateMicroSubmissionForm = async (bpr: IBprForSSF, samples: IMic
     const microFormResponsesLookup = createConfigLookup(microFormData);
 
     const microFormResponses = {
-        submittedBy: microFormResponsesLookup['submittedBy'],
+        submittedBy: microFormResponsesLookup['submittedBy'] ?? '',
         sendResultsTo: {
-            name: microFormResponsesLookup['submittedBy'],
-            telephone: microFormResponsesLookup['submittedBy'],
-            email: microFormResponsesLookup['submittedBy'],
+            name: microFormResponsesLookup['sendResultsToName'] ?? '',
+            telephone: microFormResponsesLookup['sendResultsToTelephone'] ?? '',
+            email: microFormResponsesLookup['sendResultsToEmail'] ?? '',
         },
         testRequested: ['Total Plate Count (TPC)', 'Yeast and Mold'],
         servingSize: '~ 60 g',

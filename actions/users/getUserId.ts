@@ -15,5 +15,11 @@ export const getUserId = async () => {
     email: session.user.email,
   });
 
-return user.id;
+  // session can outlive the user record (e.g. after a reseed); treat a missing
+  // user as a stale session and send them back through sign-in.
+  if (!user) {
+    redirect('/api/auth/signin')
+  }
+
+  return user.id;
 };

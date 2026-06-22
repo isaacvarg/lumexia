@@ -15,6 +15,7 @@ import { seedPaymentMethods } from './layers/paymentMethods';
 import { seedPricingTemplates } from './layers/pricingTemplates';
 import { seedPricing } from './layers/pricing';
 import { seedPackUoms } from './layers/uomConversions';
+import { seedConfigs } from './layers/configs';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -30,6 +31,9 @@ export const seedDemo = async (): Promise<void> => {
   // ┌────────────────────────────────────┐
   // │ ＩＮＤＥＰＥＮＤＥＮＴ  ＳＴＵＦＦ │
   // └────────────────────────────────────┘
+  console.log('✨ App Configs');
+  await seedConfigs();
+
   console.log('✨ Suppliers');
   const suppliers = await seedSuppliers();
 

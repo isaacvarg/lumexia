@@ -10,7 +10,6 @@ import { MicroFormResponses } from "../generateMicroSubmissionForm";
 
 export const createMicroSubmissionPDF = async (group: string[], index: number, bpr: IBprForSSF, submissionNumber: number, pdf: jsPDF, microFormResponses: MicroFormResponses, microFormTemplate: string | null, signature: string | null) => {
 
-    console.log('fixed me', submissionNumber)
     const currentDate = DateTime.now().toFormat("dd MMM yyyy");
     const { submittedBy, sendResultsTo, servingSize, testRequested, includeSignature } = microFormResponses
     const reasonForSubmission = `QC, ${bpr.producedItemName}`
