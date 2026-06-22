@@ -34,7 +34,7 @@ recreate_database() {
   export PGPASSWORD="$(env_get POSTGRES_PASSWORD)"
 
   if [ "${ASSUME_YES:-}" != "1" ]; then
-    echo "🔥 WARNING: About to DROP and recreate database \"$dbname\" on $PGHOST"
+    echo "🔥 WARNING: About to DROP and recreate database \"$dbname\" on $PGHOST:$PGPORT"
     read -r -p "   Type 'y' to continue: " ans
     if [ "$ans" != "y" ]; then
       echo "Aborted."
