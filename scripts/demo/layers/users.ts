@@ -3,6 +3,7 @@ import { insert } from '../lib/db';
 import { refs } from '../lib/refs';
 import { daysAgo, stamp } from '../lib/timeline';
 import { DEMO_USERS } from '../data/users';
+import { slugify } from '@/utils/slug';
 
 export interface DemoUser {
   id: string;
@@ -29,7 +30,7 @@ export const seedUsers = async (): Promise<DemoUser[]> => {
       id: u.id,
       name: u.name,
       email: u.email,
-      image: null,
+      image: `https://picsum.photos/seed/${slugify(u.name)}/64`,
       ...stamp(createdAt),
     })),
   );

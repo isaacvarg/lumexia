@@ -6,7 +6,7 @@ export const data = {
     {
       name: 'Lumexia',
       email: '',
-      image: null,
+      image: 'https://picsum.photos/seed/lumexia/64',
     }
   ],
 };
