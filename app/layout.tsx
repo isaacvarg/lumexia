@@ -39,7 +39,7 @@ export default async function RootLayout({
   const theme = await getUserConfig('theme');
 
   return (
-    <html lang="en" data-theme={theme?.value || 'light'}>
+    <html lang="en" data-theme={theme?.value || 'latte'}>
       <body className={`${inter.variable} ${poppins.variable} ${roboto.variable}`}>
         <Providers>
           <AuthProvider session={session}>
