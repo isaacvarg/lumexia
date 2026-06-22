@@ -25,7 +25,7 @@ const PageBreadcrumbs = () => {
             <span><TbSlash className="text-2xl" /></span>
             {isLast ? (
               <span className="font-poppins items-center text-xl font-medium text-cararra-600">
-                {segment}
+                {decodeURIComponent(segment).replace(/\s+/g, "-")}
               </span>
             ) : (
               <a
