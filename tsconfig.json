@@ -24,3 +24,4 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "utils/pdf/assets/fonts/Lato-Black-normal.js", "utils/pdf/assets/fonts/Lato-Bold-normal.js", "utils/pdf/assets/fonts/Lato-Regular-normal.js", "globals.d.ts"],
   "exclude": ["node_modules", "docs"]
 }
+

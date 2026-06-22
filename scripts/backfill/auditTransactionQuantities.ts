@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
+
+
 const prisma = new PrismaClient()
 
 async function computeQuantityBefore(lotId: string, transactionCreatedAt: Date, transactionId: string) {

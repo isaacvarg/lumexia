@@ -8,7 +8,6 @@
 ///// CHANGE ONLY BELOW THIS LINE.                                               ////////       
 /////////////////////////////////////////////////////////////////////////////////////////                                         
 
-//
 //generator client {
 //  provider = "prisma-client-js"
 //}

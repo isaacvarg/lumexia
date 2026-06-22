@@ -14,7 +14,7 @@ interface DialogProps extends DialogState {
 export const DialogContext = createContext<DialogProps>({
   isDialogOpen: false,
   activeDialogIdentifier: null,
-  setDialogState: () => {},
+  setDialogState: () => { },
 });
 
 type DialogContextProps = {
@@ -43,3 +43,5 @@ export const DialogContextProvider = ({
 };
 
 export default DialogContextProvider;
+
+

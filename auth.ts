@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "./lib/prisma";
 import { userRoles } from "@/configs/staticRecords/userRoles";
 
+
 const isDemo = process.env.DEMO_SEED === "true";
 
 const demoCredentials = Credentials({
