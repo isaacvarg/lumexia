@@ -1,5 +1,3 @@
-import Image from "next/image";
-import logo from "@/configs/assets/logo.png";
 import { TbLayoutSidebarLeftExpand, TbLayoutSidebarRightExpand } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { useAppActions } from "@/store/appSlice";
@@ -19,15 +17,11 @@ const SidebarHeader = ({ isSidebarCollapsed }: SidebarHeaderProps) => {
             <div className="w-full flex justify-center items-center">
                 <div
                     onClick={() => router.push("/")}
-                    className="flex gap-x-2 items-center hover:bg-base-200 px-2 rounded-xl hover:cursor-pointer"
+                    className="flex items-baseline hover:bg-base-200 px-2 rounded-xl hover:cursor-pointer"
                 >
-                    <Image
-                        src={logo}
-                        alt="Lumexia Logo"
-                        width={60}
-                        height={60}
-                        className="rounded-full hover:cursor-pointer"
-                    />
+                    <h1 className="font-poppins text-4xl text-base-content tracking-wide font-bold leading-none">
+                        L
+                    </h1>
                     <AnimatePresence>
                         {!isSidebarCollapsed && (
                             <motion.h1
@@ -35,9 +29,9 @@ const SidebarHeader = ({ isSidebarCollapsed }: SidebarHeaderProps) => {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.2 }}
-                                className="font-poppins text-2xl text-base-content capitalize tracking-wide font-semibold overflow-hidden whitespace-nowrap"
+                                className="font-poppins text-4xl text-base-content tracking-wide font-bold leading-none overflow-hidden whitespace-nowrap"
                             >
-                                lumexia
+                                umexia
                             </motion.h1>
                         )}
                     </AnimatePresence>
