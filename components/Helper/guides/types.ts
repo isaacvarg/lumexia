@@ -9,5 +9,7 @@ export type Guide = {
 export type GuideSection = {
   id: string;
   title: string;
+  // Starting view shown below the tiles when no guide is selected.
+  overview?: ComponentType;
   guides: Guide[];
 };

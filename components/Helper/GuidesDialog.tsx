@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { TbArrowLeft, TbX } from "react-icons/tb";
 import Dialog from "@/components/Dialog";
 import SectionTitle from "@/components/Text/SectionTitle";
@@ -14,7 +15,17 @@ const GuidesDialog = () => {
 
   const guides = current?.guides ?? [];
   const activeGuide = selected !== null ? guides[selected] : null;
-  const GuideContent = activeGuide?.content;
+
+  // The view rendered below the tiles: the selected guide's content, or the
+  // section's own overview when nothing is selected.
+  const ActiveContent = activeGuide?.content ?? current?.overview ?? null;
+  const activeKey = selected ?? "overview";
+
+  // Reset to the section overview whenever the active section changes, so
+  // reopening on a different section starts at that section's starting view.
+  useEffect(() => {
+    setSelected(null);
+  }, [current?.id]);
 
   return (
     <Dialog.Root
@@ -47,33 +58,54 @@ const GuidesDialog = () => {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto">
-          {activeGuide && GuideContent ? (
-            <div className="max-w-3xl">
-              <GuideContent />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {guides.map((guide, index) => (
-                <button
-                  key={guide.title}
-                  type="button"
-                  onClick={() => setSelected(index)}
-                  className="flex flex-col gap-2 text-left bg-base-200 rounded-xl p-5 hover:bg-base-300 transition-colors hover:cursor-pointer"
-                >
-                  <span className="font-poppins text-lg font-semibold text-base-content">
-                    {guide.title}
+        {/* Tiles — always visible; clicking one swaps the content below. */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 shrink-0">
+          {guides.map((guide, index) => {
+            const isActive = selected === index;
+            return (
+              <button
+                key={guide.title}
+                type="button"
+                onClick={() => setSelected(index)}
+                className={`flex flex-col gap-2 text-left rounded-xl p-5 transition-colors hover:cursor-pointer ${
+                  isActive
+                    ? "bg-base-300 ring-2 ring-accent"
+                    : "bg-base-200 hover:bg-base-300"
+                }`}
+              >
+                <span className="font-poppins text-lg font-semibold text-base-content">
+                  {guide.title}
+                </span>
+                {guide.description && (
+                  <span className="font-poppins text-sm text-base-content/70">
+                    {guide.description}
                   </span>
-                  {guide.description && (
-                    <span className="font-poppins text-sm text-base-content/70">
-                      {guide.description}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content — section overview, or the selected guide, with a swap animation. */}
+        <div className="mt-6 pt-6 border-t border-base-content/10 flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeKey}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="max-w-3xl"
+            >
+              {ActiveContent ? (
+                <ActiveContent />
+              ) : (
+                <p className="font-poppins text-base-content/70">
+                  Select a guide above to get started.
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </Dialog.Root>
