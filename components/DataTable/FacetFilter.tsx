@@ -26,7 +26,15 @@ export default function FacetedFilter<TData, TValue>({
   const selectedValues = new Set(column?.getFilterValue() as string[]);
   const tableFacets = useTableFacets()
 
+  const [query, setQuery] = React.useState("");
+
   const sortedOptions = sortByProperty(options, "label");
+
+  const filteredOptions = query
+    ? sortedOptions.filter((option) =>
+        option.label.toLowerCase().includes(query.toLowerCase())
+      )
+    : sortedOptions;
 
 
   const handleClick = (isSelected: boolean, option: FacetOptions) => {
@@ -93,15 +101,23 @@ export default function FacetedFilter<TData, TValue>({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="rounded-xl bg-base-200"
+          className="flex flex-col rounded-xl bg-base-100 border border-base-300 shadow-lg z-50 p-1"
+          collisionPadding={8}
         >
-          <div className="flex flex-col gap-y-1 max-h-60 overflow-auto">
-            {sortedOptions.map((option) => {
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${title ?? ""}`.trim()}
+            className="input input-sm input-bordered w-full mb-1"
+          />
+          <div className="flex flex-col gap-y-1 max-h-[var(--radix-popover-content-available-height)] overflow-auto">
+            {filteredOptions.map((option) => {
               const isSelected = selectedValues.has(option.value);
               return (
                 <button
-                  className="font-inter text-lg text-accent-content px-2 py-1 bg-accent/25 rounded-lg"
-                  key={Math.random()}
+                  className="font-inter text-lg text-base-content px-2 py-1 bg-base-200 hover:bg-base-300 rounded-lg"
+                  key={option.value}
                   onClick={() => handleClick(isSelected, option)}
                 >
                   <div className="flex flex-row items-center ">
