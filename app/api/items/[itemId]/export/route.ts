@@ -203,9 +203,12 @@ export async function GET(
     })
   );
 
-  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  const zipBuffer = await zip.generateAsync({ type: "uint8array" });
 
-  return new Response(zipBuffer, {
+  // JSZip types the result as Uint8Array<ArrayBufferLike>; the Response/BlobPart
+  // types require a concrete ArrayBuffer-backed view. The buffer is never a
+  // SharedArrayBuffer at runtime, so this narrowing cast is safe.
+  return new Response(zipBuffer as Uint8Array<ArrayBuffer>, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="data-verification-package-${itemId}.zip"`,

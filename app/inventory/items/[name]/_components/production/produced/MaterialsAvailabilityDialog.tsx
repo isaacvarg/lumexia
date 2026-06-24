@@ -4,7 +4,7 @@ import { useItemSelection } from "@/store/itemSlice"
 import { toFracitonalDigits } from "@/utils/data/toFractionalDigits"
 import { inventoryTypes } from "@/configs/staticRecords/inventoryTypes"
 import { MbprBomItemInventory } from "@/actions/inventory/inventory/getAllByMbprBom"
-import { LuCheck, LuAlertTriangle, LuX } from "react-icons/lu"
+import { LuCheck, LuTriangleAlert, LuX } from "react-icons/lu"
 
 export const MATERIALS_AVAILABILITY_DIALOG = 'materialsAvailability'
 
@@ -28,7 +28,7 @@ const Row = ({ line }: { line: MbprBomItemInventory }) => {
         {!isSufficient
           ? <LuX className="text-red-700 w-6 h-6" />
           : !isSoftSufficient
-            ? <LuAlertTriangle className="text-yellow-700 w-6 h-6" />
+            ? <LuTriangleAlert className="text-yellow-700 w-6 h-6" />
             : <LuCheck className="text-green-700 w-6 h-6" />
         }
       </td>

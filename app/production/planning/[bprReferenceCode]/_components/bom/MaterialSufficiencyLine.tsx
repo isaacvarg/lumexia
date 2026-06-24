@@ -4,7 +4,7 @@ import { toFracitonalDigits } from '@/utils/data/toFractionalDigits'
 import useDialog from '@/hooks/useDialog'
 import { BprBomItemInventory } from '@/actions/inventory/inventory/getAllByBom'
 import { TbX } from 'react-icons/tb'
-import { LuCheck, LuAlertTriangle, LuX } from 'react-icons/lu'
+import { LuCheck, LuTriangleAlert, LuX } from 'react-icons/lu'
 import Image from 'next/image'
 import { useBprDetailsActions } from '@/store/bprDetailsSlice'
 import { inventoryTypes } from '@/configs/staticRecords/inventoryTypes'
@@ -81,7 +81,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
         {!isAvailableSufficient && !isConsumable
           ? <LuX className="text-error w-6 h-6" />
           : !isSoftSufficient
-            ? <LuAlertTriangle className="text-warning w-6 h-6" />
+            ? <LuTriangleAlert className="text-warning w-6 h-6" />
             : <LuCheck className="text-success w-6 h-6" />
         }
       </td>
