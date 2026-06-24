@@ -38,6 +38,7 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   const theme = await getUserConfig('theme');
+  const showHelperBar = process.env.SHOW_HELPER_BAR === 'true';
 
   return (
     <html lang="en" data-theme={theme?.value || 'latte'}>
@@ -54,7 +55,7 @@ export default async function RootLayout({
                   {children}
                 </div>
                 <Toast.Toast />
-                <Helper />
+                {showHelperBar && <Helper />}
               </div>
             </QueryProvider>
           </AuthProvider>
