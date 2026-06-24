@@ -2,3 +2,10 @@ docs
 node_modules
 .next
 .git
+
+# Static records map DB row IDs to names and are generated per-environment.
+# Never bake a developer's locally-generated (dev DB) copies into the image —
+# they are scaffolded with placeholders at build time and regenerated against
+# the real DB after deploy. See scripts/generate/scaffold.ts.
+configs/staticRecords/*
+!configs/staticRecords/.gitkeep

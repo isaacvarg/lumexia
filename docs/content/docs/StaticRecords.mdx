@@ -1,0 +1,117 @@
+---
+title: Static Records
+description: What static records are, why they must not be baked into the image, and how to refresh them after deploy
+---
+
+Static records map a human-readable name to a **database row ID**. They live as
+generated TypeScript files under `configs/staticRecords/` — one file per model —
+and let application code reference rows by name instead of hardcoding IDs:
+
+```ts
+import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
+
+// resolves to that environment's actual row ID
+where: { statusId: { not: recordStatuses.archived } }
+```
+
+A generated file looks like this:
+
+```ts
+// configs/staticRecords/recordStatuses.ts
+export const recordStatuses = {
+  "archived": "cd5f3f81-493b-4bc0-9637-a36f7157e150",
+  "active":   "d7b0a804-52c6-4586-b4f4-0fe49895f794",
+  "inactive": "b674f2fc-6559-421d-9b72-88ee0cba2fa2",
+} as const;
+```
+
+<Callout type="warn">
+  The IDs are **per-environment**. The IDs in your dev database are not the IDs
+  in production. Static records must be regenerated against the database they
+  will actually run against.
+</Callout>
+
+## How they are generated
+
+`npm run generate-static-records` (`scripts/generate/main.ts`) queries the
+connected database for each model and writes the name → ID map. Because the
+output depends on the database, the files are **gitignored** (only
+`configs/staticRecords/.gitkeep` is tracked) — they are an environment artifact,
+not source.
+
+## Why they must not be baked into the image
+
+This is the subtle part, and the cause of a class of bug where filters silently
+return nothing and data appears to be missing:
+
+1. The files are statically imported throughout the app, so `next build`
+   **compiles their values directly into the `.next` bundle**.
+2. `npm run start` serves that pre-built bundle. Regenerating the `.ts` files
+   afterward has **no effect** — the IDs are already baked in.
+
+So if a developer's local (dev-DB) files are copied into the image and built,
+the production container runs with **dev IDs**. Those IDs don't exist in the
+production database, every ID-based filter matches nothing, and records that
+plainly exist stop showing up.
+
+Two guards prevent this:
+
+| Guard | File | Effect |
+| --- | --- | --- |
+| Dev files excluded from the image | `.dockerignore` | `configs/staticRecords/*` is never copied in (only `.gitkeep`). |
+| Placeholders scaffolded at build | `Dockerfile` → `scripts/generate/scaffold.ts` | The build compiles and the container boots with obviously-fake IDs, never real ones. |
+
+### Build-time scaffolding
+
+Because the files are excluded but the code imports them, the build would fail
+to compile. `npm run scaffold-static-records` solves this: it reads the seed
+definitions in `scripts/initialization/data/*` and writes **placeholder** files
+(every real key present, each value set to `"__SCAFFOLD__"`) without touching a
+database. The `Dockerfile` runs it right before the build:
+
+```dockerfile
+RUN npm run scaffold-static-records
+RUN npm run build
+```
+
+The resulting image compiles and boots, serving placeholder IDs that match
+nothing. That is intentional — real IDs are filled in after deploy.
+
+## Refresh after deploy
+
+Once the container is running with a database reachable, swap the placeholders
+for real IDs. `npm run refresh-static-records` runs generation then rebuilds:
+
+```bash
+# refresh-static-records = generate-static-records && build
+docker exec <app> npm run refresh-static-records
+docker restart <app>
+```
+
+<Callout>
+  The rebuild is required, not optional — generation only rewrites the `.ts`
+  files; `next build` is what bakes the new IDs into the served bundle.
+</Callout>
+
+### Live instance (image update)
+
+```bash
+npm run docker:update          # build + push (placeholder IDs only)
+# then, on the instance, against the running container:
+docker exec <app> npm run refresh-static-records
+docker restart <app>
+```
+
+### Compose stack (new instance)
+
+The database runs alongside the app in the stack. After bringing it up and
+seeding (`npm run db:start`, `npm run db:demo:start`, …), run the same refresh
+inside the Lumexia container and restart the service.
+
+## Quick reference
+
+| Script | When | What it does |
+| --- | --- | --- |
+| `scaffold-static-records` | Image build only | Writes placeholder files so the build compiles. No DB needed. |
+| `generate-static-records` | Local dev; part of refresh | Queries the DB and writes real ID maps. |
+| `refresh-static-records` | After every deploy | `generate-static-records` then `build`. |

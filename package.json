@@ -13,6 +13,8 @@
     "init:model": "tsx ./scripts/initialization/model.ts",
     "init-data": "tsx ./scripts/initialization/actions/createDataFile.ts",
     "generate-static-records": "tsx ./scripts/generate/main.ts",
+    "scaffold-static-records": "tsx ./scripts/generate/scaffold.ts",
+    "refresh-static-records": "npm run generate-static-records && npm run build",
     "seed": "npx prisma db seed",
     "seed:demo": "tsx ./scripts/demo/main.ts",
     "seed:demo:reset": "tsx ./scripts/demo/reset.ts",
