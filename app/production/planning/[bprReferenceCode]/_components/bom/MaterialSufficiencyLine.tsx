@@ -46,9 +46,9 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
   const { showDialog } = useDialog()
   const { setSelectedBomItem } = useBprDetailsActions()
 
-  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.consumable;
-  const available = isConsumable ? 'Consumable' : toFracitonalDigits.weight(material.totalQuantityAvailable);
-  const softAvailability = isConsumable ? 'Consumable' : toFracitonalDigits.weight(material.totalQuantitySoftAvailability);
+  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.notTracked;
+  const available = isConsumable ? 'Not Tracked' : toFracitonalDigits.weight(material.totalQuantityAvailable);
+  const softAvailability = isConsumable ? 'Not Tracked' : toFracitonalDigits.weight(material.totalQuantitySoftAvailability);
 
   const isAvailableSufficient = material.totalQuantityAvailable >= material.quantity;
   const isSoftSufficient = isConsumable || material.totalQuantitySoftAvailability >= material.quantity;
@@ -74,7 +74,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
       <td>{toFracitonalDigits.weight(material.quantity)}</td>
 
-      <td>{isConsumable ? 'Consumable' : available}</td>
+      <td>{isConsumable ? 'Not Tracked' : available}</td>
       <td>{toFracitonalDigits.weight(material.totalQuantitySoftAllocated)}</td>
       <td>{softAvailability}</td>
       <td>

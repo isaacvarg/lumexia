@@ -16,7 +16,9 @@ const Buttons = () => {
 
   const router = useRouter()
   const { user } = useAppSelection()
+  console.log(user)
   const isSystemAdmin = user?.roles.isSystemAdmin
+  console.log(isSystemAdmin)
 
   const cards: SettingCard[] = [
     { label: "Inventory", description: "Configure inventory settings", href: "settings/inventory", icon: TbBox },

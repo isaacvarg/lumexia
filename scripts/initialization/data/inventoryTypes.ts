@@ -4,7 +4,7 @@ export const data = {
   staticRecordKeyName: null,
   seed: [
     {
-      name: 'Consumable',
+      name: 'Not Tracked',
       isTracked: false,
     },
     {

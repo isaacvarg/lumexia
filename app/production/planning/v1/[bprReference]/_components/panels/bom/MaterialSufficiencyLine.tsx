@@ -48,8 +48,8 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
   const { setSelectedBomItem } = usePlanningDashboardActions()
   const { user } = useAppSelection()
 
-  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.consumable;
-  const available = isConsumable ? 'Consumable' : toFracitonalDigits.weight(material.totalQuantityAvailable);
+  const isConsumable = material.bom.item.inventoryTypeId === inventoryTypes.notTracked;
+  const available = isConsumable ? 'Not Tracked' : toFracitonalDigits.weight(material.totalQuantityAvailable);
 
   const isAvailableSufficient = material.totalQuantityAvailable >= material.quantity;
   const bgClasses: keyof typeof classes.bg = user?.roles.isPurchasing ? ((isAvailableSufficient || isConsumable) ? 'sufficient' : 'insufficient') : 'sufficient'
@@ -70,7 +70,7 @@ const MaterialSufficiencyLine = ({ material, isDraft }: { material: BprBomItemIn
 
       <td>{toFracitonalDigits.weight(material.quantity)}</td>
 
-      {isDraft ? <td>{isConsumable ? 'Consumable' : available}</td> : (user?.roles.isPurchasing ? <td>{isConsumable ? 'Consumable' : available}</td> : null)}
+      {isDraft ? <td>{isConsumable ? 'Not Tracked' : available}</td> : (user?.roles.isPurchasing ? <td>{isConsumable ? 'Not Tracked' : available}</td> : null)}
       {isDraft && <td>{isConsumable ? <progress className='progress ' value={100} max={100} /> : <progress className='progress' value={material.totalQuantityAvailable} max={material.quantity}></progress>}</td>}
       {!isDraft && (stagings?.pulledByUser ? <td><UserIcon image={stagings.pulledByUser.image || ''} name={stagings.pulledByUser.name || ''} /></td> : <td><RedX /></td>)}
       {!isDraft && (primaryVerification ? <td><UserIcon image={primaryVerification.user.image || ''} name={primaryVerification.user.name || ''} /></td> : <td><RedX /></td>)}

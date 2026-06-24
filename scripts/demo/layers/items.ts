@@ -46,8 +46,8 @@ interface GroupConfig {
 
 const GROUPS: ReadonlyArray<GroupConfig> = [
   { data: DEMO_INGREDIENTS_ITEMS, typeName: 'Ingredients', prefix: 'ING', seqStart: 1000, inventoryType: 'tracked', isIngredient: true },
-  { data: DEMO_CAFE_SUPPLIES_ITEMS, typeName: 'Cafe Supplies', prefix: 'CAF', seqStart: 2000, inventoryType: 'consumable' },
-  { data: DEMO_CAT_SUPPLIES_ITEMS, typeName: 'Cat Supplies', prefix: 'CAT', seqStart: 3000, inventoryType: 'consumable' },
+  { data: DEMO_CAFE_SUPPLIES_ITEMS, typeName: 'Cafe Supplies', prefix: 'CAF', seqStart: 2000, inventoryType: 'notTracked' },
+  { data: DEMO_CAT_SUPPLIES_ITEMS, typeName: 'Cat Supplies', prefix: 'CAT', seqStart: 3000, inventoryType: 'notTracked' },
   { data: DEMO_TABLETOP_ITEMS, typeName: 'Tabletop', prefix: 'TAB', seqStart: 4000, inventoryType: 'tracked' },
   { data: DEMO_RECIPES_ITEMS, typeName: 'Recipes', prefix: 'RCP', seqStart: 5000, inventoryType: 'tracked' },
   { data: DEMO_MERCHANDISE_ITEMS, typeName: 'Merchandise', prefix: 'MER', seqStart: 6000, inventoryType: 'tracked' },
