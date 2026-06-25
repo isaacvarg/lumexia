@@ -1,5 +1,4 @@
 import { qualityActions } from "@/actions/quality";
-import CardTitle from "@/app/purchasing/suppliers/[name]/_components/supplierInfo/CardTitle";
 import PageBreadcrumbs from "@/components/App/PageBreadcrumbs";
 import Card from "@/components/Card";
 import PageTitle from "@/components/Text/PageTitle";

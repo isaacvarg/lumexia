@@ -27,7 +27,7 @@ const PaymentMethodForm = ({
 
   const restructureAs = [
     { key: "id", rename: "value" },
-    { key: "name", rename: "label" },
+    { key: "methodName", rename: "label" },
   ];
 
   const handleSubmit = async (data: Inputs) => {   

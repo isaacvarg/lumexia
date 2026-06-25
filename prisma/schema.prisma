@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Wed Jun 10 2026 11:32:14 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Thu Jun 25 2026 10:12:48 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -2483,12 +2483,13 @@ model SupplierPaymentMethod {
 model Supplier {
   id                                   String                                @id @default(uuid())
   name                                 String
-  addressStreet1                       String                                @map("address_street1")
+  addressStreet1                       String?                               @map("address_street1")
   addressStreet2                       String?                               @map("address_street2")
-  addressCity                          String                                @map("address_city")
-  addressState                         String                                @map("address_state")
-  addressZip                           String                                @map("address_zip")
-  phone                                String
+  addressCity                          String?                               @map("address_city")
+  addressState                         String?                               @map("address_state")
+  addressZip                           String?                               @map("address_zip")
+  phone                                String?
+  showAddressOnPo                      Boolean                               @default(false) @map("show_address_on_po")
   recordStatusId                       String                                @map("record_status_id")
   recordStatus                         RecordStatus                          @relation(fields: [recordStatusId], references: [id])
   purchaseOrders                       PurchaseOrder[]

@@ -43,10 +43,10 @@ const purchaseColumns = [
       return value.includes(row.getValue(id));
     },
   }),
-  columnHelper.accessor((row) => row.purchaseOrders?.paymentMethod?.id, {
+  columnHelper.accessor((row) => row.purchaseOrders?.poAccountingDetail?.paymentMethod?.id, {
     id: "paymentMethod",
     header: SortableHeaderType("Payment Method"),
-    cell: (row) => row.row.original.purchaseOrders?.paymentMethod?.name ?? "—",
+    cell: (row) => row.row.original.purchaseOrders?.poAccountingDetail?.paymentMethod?.methodName ?? "—",
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },

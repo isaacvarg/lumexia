@@ -33,9 +33,9 @@ const PurchasesTab = () => {
       columnName: "paymentMethod",
       filterLabel: "Payment Method",
       options: toFacetFilter(
-        purchases.filter((p: any) => p.paymentMethod),
-        "paymentMethod.id",
-        "paymentMethod.name",
+        purchases.filter((p: any) => p.poAccountingDetail?.paymentMethod),
+        "poAccountingDetail.paymentMethod.id",
+        "poAccountingDetail.paymentMethod.methodName",
       ),
     },
   ];

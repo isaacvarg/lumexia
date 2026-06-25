@@ -2,7 +2,6 @@ import supplierActions from "@/actions/purchasing/supplierActions";
 import supplierNoteActions from "@/actions/purchasing/supplierNoteActions";
 import PageTitle from "@/components/Text/PageTitle";
 import React from "react";
-import SupplierInfoPanel from "./_components/supplierInfo/SupplierInfoPanel";
 import supplierContactActions from "@/actions/purchasing/supplierContactActions";
 import TabsMain from "./_components/tabs/TabsMain";
 import StateSetter from "./_components/state/StateSetter";

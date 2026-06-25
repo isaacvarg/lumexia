@@ -46,7 +46,7 @@ export const getFilteredItems = async (itemId: string, supplierId: string, mode:
             purchaseOrders: {
                 include: {
                     status: true,
-                    paymentMethod: true,
+                    poAccountingDetail: { include: { paymentMethod: true } },
                 },
             },
             uom: true,

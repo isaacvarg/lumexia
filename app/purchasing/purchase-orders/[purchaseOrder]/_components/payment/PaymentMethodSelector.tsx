@@ -32,7 +32,7 @@ const PaymentMethodSelector = ({
       <span className="flex items-center text-xl font-poppins font-semibold gap-x-4" onClick={() => handleChangePaymentMethod()}>
         <TbCreditCard className="text-4xl" />
         <div className="flex flex-row gap-x-4">
-          <h1>{method.paymentMethod.name }</h1>
+          <h1>{method.paymentMethod.methodName }</h1>
           <h1 className="text-slate-600">{method.paymentMethod.identifier}</h1>
         </div>
       </span>

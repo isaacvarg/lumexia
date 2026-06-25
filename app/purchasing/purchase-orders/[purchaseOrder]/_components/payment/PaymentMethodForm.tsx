@@ -32,7 +32,7 @@ const PaymentMethodForm = ({
       paymentMethodId: data.paymentMethodId
     })
   
-    await createActivityLog('selectPaymentMethod', "purchaseOrder", purchaseOrderId, {context: `Attached ${method.paymentMethod.name} <${method.paymentMethod.identifier}> to purchase order`})
+    await createActivityLog('selectPaymentMethod', "purchaseOrder", purchaseOrderId, {context: `Attached ${method.paymentMethod.methodName} <${method.paymentMethod.identifier}> to purchase order`})
 
     resetDialogContext()
     revalidatePage('/purchasing/purchase-orders/[purchaseOrder]')
@@ -41,7 +41,7 @@ const PaymentMethodForm = ({
  const options = methods.map(method => {
   return {
     value: method.paymentMethod.id,
-    label: method.paymentMethod.name,
+    label: method.paymentMethod.methodName,
   }
  })
 

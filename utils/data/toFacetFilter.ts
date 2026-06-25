@@ -22,5 +22,9 @@ export const toFacetFilter = (array: any[], value: string, label: string) => {
     ];
   
     const data = restructureData(array, structure) as FacetOptions[]
-    return data
+
+    // Drop options missing a value or label — restructureData omits a key when the
+    // source field is null/undefined, which would otherwise crash consumers that
+    // read option.label (e.g. FacetFilter).
+    return data.filter((option) => option.value != null && option.label != null)
   }

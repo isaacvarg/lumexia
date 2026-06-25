@@ -25,10 +25,10 @@ export const purchasesColumns = [
             return value.includes(row.getValue(id));
         },
     }),
-    columnHelper.accessor((row) => row.paymentMethod?.id, {
+    columnHelper.accessor((row) => row.poAccountingDetail?.paymentMethod?.id, {
         id: "paymentMethod",
         header: SortableHeaderType("Payment Method"),
-        cell: (row) => row.row.original.paymentMethod?.name ?? "—",
+        cell: (row) => row.row.original.poAccountingDetail?.paymentMethod?.methodName ?? "—",
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id));
         },

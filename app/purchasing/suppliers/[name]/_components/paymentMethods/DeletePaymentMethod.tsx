@@ -10,7 +10,7 @@ const DeletePaymentMethod = ({method} : {method: SupplierPaymentMethod}) => {
     const handleClick = async () => {
         await supplierPaymentMethodActions.deleteOne({id: method.id}); 
         await createActivityLog('deleteSupplierPaymentMethod', 'supplier', method.supplierId, {
-            context: `Payment Method ${method.paymentMethod.name} - ${method.paymentMethod.identifier} was removed from supplier`
+            context: `Payment Method ${method.paymentMethod.methodName} - ${method.paymentMethod.identifier} was removed from supplier`
         })
         revalidatePage('/purchasing/suppliers/[name]')
     } 

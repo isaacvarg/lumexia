@@ -136,7 +136,24 @@ export const createPurchaseOrder = async (
     .setTextColor("#434343");
   pdf.text("Submitted To", 265, 140);
   pdf.setFont("Lato-Regular", "normal", "normal").setFontSize(10);
-  pdf.text(["Sales", supplier.name], 265, 152);
+
+  const submittedToLines = ["Sales", supplier.name];
+  if (supplier.showAddressOnPo) {
+    const streetLine = [supplier.addressStreet1, supplier.addressStreet2]
+      .filter(Boolean)
+      .join(" ");
+    const cityLine = [
+      [supplier.addressCity, supplier.addressState].filter(Boolean).join(", "),
+      supplier.addressZip,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    if (streetLine) submittedToLines.push(streetLine);
+    if (cityLine) submittedToLines.push(cityLine);
+    if (supplier.phone) submittedToLines.push(supplier.phone);
+  }
+  pdf.text(submittedToLines, 265, 152);
 
   // items table
   autoTable(pdf, {
