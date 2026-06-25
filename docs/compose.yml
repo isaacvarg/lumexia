@@ -1,0 +1,14 @@
+services:
+  docs:
+    image: ${DOCS_DOCKER_REGISTRY}/${DOCS_DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}
+    pull_policy: always
+    container_name: lumexia-docs
+    restart: unless-stopped
+    expose:
+      - "3001"
+    networks:
+      - edge
+
+networks:
+  edge:
+    external: true
