@@ -1,6 +1,190 @@
 ---
-title: Docker 
+title: Docker
 description: How to install Lumexia using Docker
 ---
 
-Documentation has not yet been written.
+## Overview
+
+The Docker deployment runs Lumexia as three containers wired together by `compose.yml`:
+
+- **`lumexia`** — the application itself, listening on port `3000`. The image is **pulled from a container registry** (it is not built by the compose file).
+- **`postgres`** — a PostgreSQL 18 database, on an internal network only.
+- **`rustfs`** — an S3-compatible object store for file uploads.
+
+Make sure Docker (with the Compose plugin) is installed first — see the [prerequisites](/docs/getting-started/installation/prerequisites).
+
+## Create the compose file
+
+In an empty directory, create a `compose.yml` with the following contents:
+
+```yaml
+services:
+  lumexia:
+    image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}
+    pull_policy: always
+    container_name: lumexia
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+    networks:
+      - edge
+      - backend
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: lumexia-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: lumexia-rustfs
+    restart: unless-stopped
+    environment:
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_ACCESS_KEY=${S3_ACCESS_KEY}
+      - RUSTFS_SECRET_KEY=${S3_SECRET_KEY}
+    volumes:
+      - rustfs_data:/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  rustfs_data:
+
+networks:
+  edge:
+    external: true
+  backend:
+    internal: true
+```
+
+## Configure the environment
+
+Alongside `compose.yml`, create a `.env` file. Use `openssl rand ...` to generate the secrets and set at least the following:
+
+```bash
+# PostgreSQL
+POSTGRES_USER="appuser"
+POSTGRES_PASSWORD=""          # openssl rand -base64 24
+POSTGRES_DB="appdb"
+# host the db:* scripts connect to. Inside the container this MUST be the
+# compose service name, not localhost.
+POSTGRES_HOST="postgres"
+POSTGRES_PORT="5432"
+DATABASE_URL="postgres://appuser:<password>@postgres:5432/appdb"
+
+# Auth
+AUTH_SECRET=""                # openssl rand -base64 32
+
+# S3 / RustFS
+S3_END_POINT="rustfs"
+S3_PORT=9000
+S3_ACCESS_KEY=""              # openssl rand -hex 16
+S3_SECRET_KEY=""              # openssl rand -hex 32
+S3_BUCKET_NAME="lumexia"
+
+# Image to pull
+DOCKER_REGISTRY=""
+DOCKER_IMAGE_NAME="lumexia"
+IMAGE_TAG="latest"
+```
+
+> The containers talk to each other by **service name**, which is why `DATABASE_URL` points at `postgres` and `S3_END_POINT` is `rustfs`. Leave those hostnames as-is and only change the credentials. In particular, set `POSTGRES_HOST="postgres"` — the database is not published to the host, and the setup commands below run from *inside* the `lumexia` container, where `postgres` is the correct hostname.
+
+## Create the edge network
+
+The `lumexia` service attaches to an external network named `edge` (typically shared with a reverse proxy). Create it once before starting the stack:
+
+```bash
+docker network create edge
+```
+
+## Start the stack
+
+```bash
+# pull images and start in the background
+docker compose up -d
+```
+
+The `lumexia` container waits for `postgres` to pass its health check before it starts. You can watch progress with:
+
+```bash
+# check container status
+docker compose ps
+
+# follow the app logs
+docker compose logs -f lumexia
+```
+
+## Initialize the database
+
+On a fresh deployment the database is empty. Run the (non-destructive) init pipeline **inside** the running app container:
+
+```bash
+docker compose exec lumexia npm run db:start
+```
+
+This deploys Prisma migrations, generates the Prisma client, seeds the required reference data (`npm run init`), and generates the static records. It runs against the existing database without dropping anything, so it is safe to re-run.
+
+> ⚠️ Do **not** use `db:dev:start` or `db:demo:start` on a real instance — both **drop and recreate** the database. They are guarded behind `DEMO_SEED="true"` precisely so they can't wipe a production database by accident.
+
+## Seed a demo instance (optional)
+
+To stand up a public **demo** instance — populated with suppliers, products, MBPRs, purchase orders, batch production records, inventory and purchasing requests — use the demo seed instead of `db:start`. It is destructive (it drops and recreates the database) and is gated behind `DEMO_SEED`, so set it only on the demo deployment:
+
+```bash
+# in the demo deployment's .env
+DEMO_SEED="true"
+```
+
+```bash
+# drop/recreate, run the init pipeline, then layer on transactional demo data
+docker compose exec lumexia npm run db:demo:start
+
+# later: wipe only the demo/transactional data and re-seed to a fresh start state
+docker compose exec lumexia npm run seed:demo:reset
+```
+
+All demo records are backdated relative to when you run the seed, so the instance always looks recently active. `seed:demo:reset` leaves reference data and the system user untouched, making it safe to run on a schedule. See the [manual install's demo section](/docs/getting-started/installation/manual) for more detail.
+
+> A normal production install should **not** run the demo seed. Omitting it is the entire separation between a demo instance and a fresh one.
+
+## First user login
+
+The first user to log in is created with the `System Admin` role. This allows that user to edit company settings, images, and user roles.
+
+## Updating
+
+Because the `lumexia` service uses `pull_policy: always`, updating to a newer image is just:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+If the new release ships database migrations, re-run the non-destructive init pipeline afterwards:
+
+```bash
+docker compose exec lumexia npm run db:start
+```
