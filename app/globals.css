@@ -3,6 +3,7 @@
     themes: all;
 }
 
+@plugin "@tailwindcss/typography";
 @plugin "../configs/themes/catppuccin/latte.ts";
 @plugin "../configs/themes/catppuccin/frappe.ts";
 @plugin "../configs/themes/catppuccin/macchiato.ts";

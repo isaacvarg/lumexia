@@ -103,6 +103,7 @@
   "devDependencies": {
     "@catppuccin/daisyui": "^2.1.1",
     "@prisma/client": "^5.20.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@tanstack/eslint-plugin-query": "^5.73.3",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20",

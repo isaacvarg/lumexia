@@ -1,8 +1,9 @@
 import SectionTitle from "@/components/Text/SectionTitle";
+import { GuideTypo } from "../../typography";
 
 const Overview = () => {
   return (
-    <div className="flex flex-col gap-4 font-poppins text-base-content">
+    <GuideTypo.Wrapper>
       <p className="text-lg">
         Items are the foundation of inventory — every material, component, and
         product the system tracks starts here. These guides walk through how
@@ -18,7 +19,7 @@ const Overview = () => {
       <p className="text-base-content/70">
         Pick a guide above to dive in.
       </p>
-    </div>
+    </GuideTypo.Wrapper>
   );
 };
 
