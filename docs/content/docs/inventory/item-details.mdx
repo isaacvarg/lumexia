@@ -1,0 +1,114 @@
+---
+title: Item Details
+description: The item details page and each of its tabs
+---
+
+Opening an item from the [items list](/docs/inventory/items#the-items-list) takes
+you to its details page — the hub for everything about that item. The page is
+organized into tabs, with a few key actions always available in the title row.
+
+## Title row actions
+
+At the top of every item you'll find:
+
+- **Investigate** — open a focused investigation view for the item.
+- **Inventory Audit** — start a physical count to reconcile recorded stock
+  against what's actually on the shelf.
+- **Request Purchase** — raise a purchasing request for the item, carrying you
+  into the purchasing workflow with the item pre-selected.
+
+If an item has been archived, an **Archived Item** marker appears next to its
+name.
+
+## Tabs
+
+The tabs shown depend on the item's procurement type. **Purchased** items show a
+**Purchasing** tab; **produced** items do not. The full order is **Basics →
+Inventory → Purchasing (purchased only) → Pricing → Production → Quality →
+Files**, with a separate **Danger zone** reached from a button at the bottom of
+the page.
+
+### Basics
+
+The Basics tab holds the item's identity and history:
+
+- **Item properties** — the core fields (name, reference code, item type,
+  procurement type, inventory type, inventory UOM). Use **Edit** to change them.
+  See [Item properties](/docs/inventory/items#item-properties) for what each one
+  means.
+- **Aliases** — create, edit, and delete the item's
+  [aliases](/docs/inventory/items#aliases), including supplier-specific ones.
+- **Notes** — add timestamped notes to the item, organized by note type.
+- **Activity** — a change history for the item, filterable by action and user.
+
+### Inventory
+
+The Inventory tab is the stock control center for the item.
+
+- **Quantity cards** — six figures summarize the item's stock position: **On
+  Hand**, **On Order**, **Allocated**, **Soft Allocated**, **Available**, and
+  **Soft Availability**. Each is explained, with its formula, on the
+  [Inventory Quantities](/docs/inventory/quantities) page.
+- **Lots** — the table of stock lots for the item. Create a new lot here, and
+  click a lot to view its details. Depleted lots can be filtered out.
+- **Audits** — the history of inventory audits performed on the item.
+- **Discrete conversions** — supplier-specific unit conversions (for example
+  "1 case = 24 units" for a particular supplier), so quantities translate
+  correctly between how a supplier sells the item and how you stock it.
+- **Reordering rule** — automatic restocking configuration for the item:
+  - **Threshold quantity** — the stock level that triggers the rule.
+  - **Buffer percent** — a safety margin above the threshold.
+  - **Create audit request** — automatically raise an audit when stock is low.
+  - **Create purchasing request** — automatically raise a purchasing request
+    when stock is low.
+  - **Enabled** — turn the rule on or off.
+
+### Purchasing
+
+<Callout>Shown for **purchased** items only.</Callout>
+
+A summary of the item's buying history: purchasing **trends** (counts, totals,
+and a frequency chart) and a table of the item's **purchase orders**. See the
+[Purchasing](/docs/purchasing) module for the full purchase workflow.
+
+### Pricing
+
+The item's cost and pricing examinations, including the most recent examination
+and a table of past examinations. New examinations are created from here. See the
+[Accounting](/docs/accounting) module for how pricing and examinations work.
+
+### Production
+
+How the item relates to manufacturing. For **produced** items, this shows the
+active master batch record and its bill of materials, plus the batches produced.
+For **purchased** items, it shows how the item is consumed and used across
+production. See the [Production](/docs/production) module for details.
+
+### Quality
+
+The item's quality program: its quality **parameters** and specifications, the
+**examinations** recorded against its lots, and the resulting **measurements**.
+See the [Quality](/docs/quality) module for how quality control works.
+
+### Files
+
+Document management for the item — specifications, safety data sheets, images,
+and certifications. Upload one or more files, assign a file type, and apply tags
+(with custom colors) so documents can be filtered and found later.
+
+### Danger zone
+
+Reached from a button at the bottom of the page, the Danger zone holds
+irreversible or high-impact actions:
+
+- **Archive item** — hide the item from normal views and exclude it from stock
+  calculations, while preserving its history.
+- **Change inventory UOM** — change the unit all of the item's stock is counted
+  in. This also clears the item's discrete conversions.
+- **Export data verification package** — download a ZIP containing the item's
+  records and attachments.
+
+<Callout type="warn">
+  Actions in the Danger zone affect the item's data broadly. Read each
+  confirmation dialog carefully before proceeding.
+</Callout>

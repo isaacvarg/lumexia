@@ -1,0 +1,74 @@
+---
+title: Inventory Quantities
+description: On hand, on order, allocated, available — what each quantity means and how it's calculated
+---
+
+Lumexia describes an item's stock with several distinct quantities. They sound
+similar but mean different things, and confusing them is the most common source
+of inventory misunderstanding. This page defines each one precisely.
+
+<Callout>
+  **On-hand stock is not a stored number.** Lumexia never keeps a single
+  "quantity" field that gets edited up and down. Instead, every lot remembers the
+  quantity it started with, and every change is recorded as a **transaction**.
+  On-hand is recomputed from that ledger whenever it's needed. This gives a
+  complete, auditable history of every movement.
+</Callout>
+
+## The six quantities
+
+These are the figures shown on the **Inventory** tab of the
+[item details page](/docs/inventory/item-details#inventory).
+
+| Quantity | Meaning | How it's calculated |
+| --- | --- | --- |
+| **On Hand** | Physical quantity currently in stock across all lots of the item. | For each lot, its starting quantity plus or minus every transaction; summed over all of the item's lots. |
+| **On Order** | Quantity from open purchase orders that has not yet been received. | The sum of purchase order line quantities for the item, excluding lines on orders already fully received. |
+| **Allocated** | Quantity committed to confirmed batches that have not yet consumed their materials. | The sum of bill-of-material quantities on batch records in a confirmed state (queued, staging materials, compounding, awaiting materials, or completed). |
+| **Soft Allocated** | Quantity committed to **draft** batches not yet confirmed. Becomes Allocated once the batch is confirmed. | The sum of bill-of-material quantities on batch records still in draft. |
+| **Available** | The quantity free to be allocated right now. | On Hand − Allocated |
+| **Soft Availability** | The quantity that would remain free if every current draft batch were confirmed. | On Hand − Allocated − Soft Allocated |
+
+### Why two kinds of allocation
+
+A batch starts life as a **draft** — a plan that might still change or be
+cancelled. Material claimed by a draft is **soft allocated**: it warns you the
+stock is spoken for tentatively, but it doesn't yet hold the stock back from
+"real" availability. Once the batch is **confirmed**, its material becomes
+**allocated** (hard), and `Available` drops accordingly. Tracking both lets you
+see your firm commitments (`Available`) and your planned commitments
+(`Soft Availability`) side by side.
+
+## How stock changes
+
+Every movement of stock is a transaction against a lot. Each transaction type
+either **adds to** or **deducts from** on-hand:
+
+| Transaction | Effect on On Hand |
+| --- | --- |
+| Procurement (a lot received from a purchase order) | Increase |
+| Adjustment — addition (manual correction or gain) | Increase |
+| Batch consumption (material used in production) | Decrease |
+| Adjustment — removal (manual correction or loss) | Decrease |
+| Order fulfillment removal (stock shipped out) | Decrease |
+
+Because on-hand is the running total of a lot's starting quantity plus all of
+these transactions, it can always be reconstructed and explained.
+
+## A worked example
+
+Suppose an item is counted in kilograms and has:
+
+- Two lots on the shelf totaling **100 kg** → **On Hand = 100**
+- An open purchase order line for **50 kg** not yet received → **On Order = 50**
+- A confirmed batch needing **30 kg** → **Allocated = 30**
+- A draft batch tentatively needing **20 kg** → **Soft Allocated = 20**
+
+From those:
+
+- **Available** = 100 − 30 = **70 kg** — free to commit right now.
+- **Soft Availability** = 100 − 30 − 20 = **50 kg** — what would be left if the
+  draft batch were confirmed.
+
+The 50 kg on order doesn't change availability until it's received, at which
+point it becomes a new lot and raises On Hand.

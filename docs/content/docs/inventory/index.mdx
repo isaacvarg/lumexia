@@ -1,0 +1,57 @@
+---
+title: Inventory
+description: Items are the core of Lumexia — what an item is, and where it shows up across the system
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+The inventory module tracks every material and product in the facility. Each one
+— a raw material, a piece of packaging, or a finished product — is represented by
+a single record called an **Item**. Almost everything else in Lumexia hangs off
+of items: a lot of stock is a lot _of an item_, a purchase order line buys _an
+item_, a formula is built _from items_, and a quality test measures _an item_.
+
+Because of this, the inventory module is the natural starting point for learning
+the system. Once you understand what an item is and how its stock is counted, the
+other modules mostly describe things you can _do_ with items.
+
+## An item at a glance
+
+Every item carries a small set of core properties:
+
+- **Name** — the human-readable name (e.g. "Glycerin USP").
+- **Reference code** — a unique code used to identify the item across reports and
+  external systems.
+- **Item type** — the category of the item (raw material, packaging, finished
+  good, and so on).
+- **Procurement type** — whether the item is **purchased** from a supplier or
+  **produced** in-house. This also changes which tabs appear on the item.
+- **Inventory type** — whether the item's quantity is tracked.
+- **Inventory unit of measurement (UOM)** — the unit all of the item's stock is
+  counted in (kg, L, each, …).
+
+These are covered in full on the [Items](/docs/inventory/items) page.
+
+## Items are the core of Lumexia
+
+A single item is referenced throughout the application. Understanding this map
+makes the rest of the documentation easier to follow:
+
+| Where the item appears | What it represents |
+| --- | --- |
+| **Lots & stock** | Physical inventory is stored as lots, each belonging to one item. Stock quantities are computed from those lots. |
+| **Purchasing** | Purchase order lines and purchasing requests reference the item being bought. |
+| **Production** | Bills of material list the items that go into a batch; a master batch record names the item it produces. |
+| **Quality** | Quality parameters and specifications are defined per item, and examinations record results against them. |
+| **Pricing & cost** | Each item carries pricing data and a cost that feed the cost of produced formulations. |
+
+Each of these areas has its own module documentation; the inventory docs focus on
+the item itself and how its stock is counted.
+
+## In this section
+
+<Cards>
+  <Card title="Items" href="/docs/inventory/items" description="Item properties, aliases, and the items list." />
+  <Card title="Item Details" href="/docs/inventory/item-details" description="The item details page and each of its tabs." />
+  <Card title="Inventory Quantities" href="/docs/inventory/quantities" description="On hand, on order, allocated, available, and how each is calculated." />
+</Cards>
