@@ -39,7 +39,7 @@ const Table = ({ items }: TableProps) => {
 
   return (
     <DataTable.Default
-      actionButtonTitle="New Item"
+      actionButtonTitle="Create Item"
       data={tableData}
       columns={columns}
       filters={filters}
