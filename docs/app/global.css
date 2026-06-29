@@ -10,3 +10,27 @@ html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
 }
+
+/* Increase per-level indentation in the "On this page" TOC so heading
+   groupings are easier to distinguish. The ID selectors out-specify the
+   ps-3/ps-6/ps-8 utility classes Fumadocs sets per heading depth. */
+#nd-toc a.ps-6,
+[data-toc-popover-content] a.ps-6 {
+  padding-inline-start: 1.75rem; /* depth 3 (h3) */
+}
+
+#nd-toc a.ps-8,
+[data-toc-popover-content] a.ps-8 {
+  padding-inline-start: 2.75rem; /* depth 4+ (h4) */
+}
+
+/* Make nested doc list levels visually distinct from their parent */
+.prose ul ul {
+  padding-inline-start: 3rem;
+  list-style-type: circle; /* 2nd level: hollow circle */
+}
+
+.prose ul ul ul {
+  list-style-type: square; /* 3rd level: filled square */
+}
+
