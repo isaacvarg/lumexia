@@ -3,7 +3,7 @@ title: Items
 description: Item properties, aliases, and the items list
 ---
 
-An **item** is the master record for a single material or product. This page
+An **item** is the main record for a single material or product. This page
 describes the properties every item carries, the aliases that let it be found
 under other names, and how to browse and create items.
 
@@ -16,30 +16,40 @@ under other names, and how to browse and create items.
 | **Item type** | The category of the item — raw material, packaging, finished good, etc. Item types can carry their own configuration, such as whether a pricing change triggers an examination. | Selected from a list |
 | **Procurement type** | Whether the item is **purchased** from a supplier or **produced** in-house. This is more than a label — produced and purchased items show different tabs and behavior on the [item details page](/docs/inventory/item-details). | Selected from a list |
 | **Inventory type** | Determines whether the item's quantity is tracked. Tracked items participate in stock counts and audits. | Selected from a list |
-| **Inventory UOM** | The unit of measurement all of the item's stock is counted in (kg, L, each, …). Every lot and quantity for the item is expressed in this unit. | Selected from a list |
+| **Inventory UOM** | The unit of measurement all of the item's stock is converted and counted in (kg, lb, unit, …). Every lot and quantity for the item is expressed in this unit. | Selected from a list |
 | **Record status** | Active, inactive, or archived. Archived items are hidden from normal views and excluded from stock calculations, but their history is preserved. | Set via actions |
 
 <Callout>
-  The inventory UOM is central — once stock exists in an item's UOM, changing it
-  is a deliberate action handled on the item's Danger zone, because it affects
+  The inventory UOM is quantities are of the item are typically referred to; for example, if you always think about glycerin in terms of pounds then the inventory UOM for that item would be lbs. 
+  Once stock exists in an item's UOM, changing it
+  is a deliberate action handled on the item's Danger zone because it affects
   every quantity recorded against the item.
 </Callout>
+
+### Configuration
+
+Some item properties can be modified, added or removed by going to the `/settings/inventory` page and clicking on the configuration tab.
+
+![Item property configuration](/modules/inventory/item-config.png)
+
 
 ## Aliases
 
 An **alias** is an alternate name or code for the same item. Suppliers,
 catalogues, and older records often refer to a material by a different name, and
-aliases let all of those resolve back to one item.
+aliases let all of those resolve back to one item. 
 
 - Each alias has a **name** and an **alias type** that describes what kind of
-  alternate name it is (for example an internal code or a product name).
-- An alias can be tied to a specific **supplier**. This means a supplier's own
-  code for a material is recognized as referring to your item — useful when
-  receiving deliveries or matching purchase orders.
+  alternate name it is (for example an internal code, internal name, INCI nomenclature, product name).
+- An alias can be tied to a specific **supplier**.
+  - This means a supplier's name for the material is recognized as referring to your item
+  - When purchasing from a supplier with a matching supplier alias, the purchase order will use the supplier's name for the item yet retain the internal name. This is useful when
+  receiving deliveries for warehouse staff or matching purchase orders.
 
 Aliases are created and managed from the **Basics** tab of the
 [item details page](/docs/inventory/item-details#basics).
 
+Different types of aliases can be added by visiting the [property configuration](/docs/inventory/items#configuration).
 ## The items list
 
 The items list at `/inventory/items` is where you browse every item. It shows:
@@ -51,11 +61,11 @@ The items list at `/inventory/items` is where you browse every item. It shows:
 | **Item type** | The item's category. The list can be filtered by item type. |
 | **Aliases** | The item's aliases (collapsed to a count when there are several). |
 
-Click any row to open that item's details.
+The filters can be used to view only certain item types and the global search can be used to fuzzily search item name, aliases and SKU. Click any row to open that item's details.
 
 ### Creating an item
 
-Use **Create Item** to add a new item. The dialog asks for the core properties:
+Use **Create Item** button to add a new item. The dialog asks for the core properties:
 
 - Name
 - Reference code

@@ -22,11 +22,11 @@ name.
 
 ## Tabs
 
-The tabs shown depend on the item's procurement type. **Purchased** items show a
+The tabs shown (and their content) depend  on the item's procurement type. **Purchased** items show a
 **Purchasing** tab; **produced** items do not. The full order is **Basics →
 Inventory → Purchasing (purchased only) → Pricing → Production → Quality →
 Files**, with a separate **Danger zone** reached from a button at the bottom of
-the page.
+the page. 
 
 ### Basics
 
@@ -38,43 +38,115 @@ The Basics tab holds the item's identity and history:
   means.
 - **Aliases** — create, edit, and delete the item's
   [aliases](/docs/inventory/items#aliases), including supplier-specific ones.
-- **Notes** — add timestamped notes to the item, organized by note type.
+- **Notes** — add timestamped notes to the item. Notes can be added to other modules related to the item as well (e.g., purchase orders).
 - **Activity** — a change history for the item, filterable by action and user.
 
 ### Inventory
 
 The Inventory tab is the stock control center for the item.
 
-- **Quantity cards** — six figures summarize the item's stock position: **On
-  Hand**, **On Order**, **Allocated**, **Soft Allocated**, **Available**, and
-  **Soft Availability**. Each is explained, with its formula, on the
-  [Inventory Quantities](/docs/inventory/quantities) page.
-- **Lots** — the table of stock lots for the item. Create a new lot here, and
-  click a lot to view its details. Depleted lots can be filtered out.
-- **Audits** — the history of inventory audits performed on the item.
-- **Discrete conversions** — supplier-specific unit conversions (for example
-  "1 case = 24 units" for a particular supplier), so quantities translate
-  correctly between how a supplier sells the item and how you stock it.
-- **Reordering rule** — automatic restocking configuration for the item:
+#### Quantity Cards
+Six figures summarize the item's stock position: 
+- **On Hand**
+- **On Order**
+- **Allocated**
+- **Soft Allocated**
+- **Available**
+- **Soft Availability**. 
+
+Each is explained, with its formula, on the [Inventory Quantities](/docs/inventory/quantities) page. 
+
+Clicking on the **On Order** card will display the corresponding purchase orders (example pictured below).
+![On order example](/modules/inventory/on-order.png)
+
+#### Lots
+The table of lots for the item. 
+
+- Create a new lot by clicking the `+` button
+- Depleted lots can be filtered out.
+- **Lot Details** -- Click a lot to view its details: 
+  - Buttons
+      - Print Label: Prints a label that can be placed on the physical lot/item for tracking. Features the lot number, name of corresponding item, scannable qr code for the lot uuid, and the timestamp the label was generated.
+      - Generate COA: If an `QC Examination` has been conducted for this lot, then a certificate of analysis featuring the results can be generated.
+      - Create Transaction: Deplete, Add/Subtract or set the available quantity of this lot
+  - Cards
+      - Lot Info: Shows basic information including the origin (purchase order or batch production record that generated the lot), creation timestamp, and initial quantity.
+      - Lot Notes: Notes that are associated only with the selected lot. Lot notes have their own note types.
+      - Transactions: A table detailing transactions made against the selected lot.
+
+![Example of lot details](/modules/inventory/lot-details.png)
+![Example of a lot label](/modules/inventory/label-example.png)
+![Example of lot transaction](/modules/inventory/transaction-example.png)
+
+#### Audits
+The history of inventory audits performed on the item.
+
+Clicking on an audit in the table shows the audit details.
+
+#### Discrete Conversions
+
+<Callout>
+Learn more about how Lumexia handles [unit of measurement conversions](/docs/inventory/uom-conversions).
+</Callout>
+
+Supplier-specific unit conversions. This helps aleviate some of the headache from a supplier selling a item in different units of measurement than how you stock it.
+
+For example, if an item is sold by a particular supplier as a case and you keep quantity as units. Then a discrete conversion could be made, e..g, 1 case is 25 untis. When 2 cases are ordered from that specific supplier and the order goes through the receiving workflow, then 50 units are added to that items stock.
+
+#### Reordering Rule
+
+![Reording rule](/modules/inventory/reordering-rule.png)
+
+A configuration for how an item triggers a `Audit Request` to verify the quantity on hand and a `Purchasing Request` to alert purchasing department to begin procurement of the item.
+
+Reordering rules are tested against every day at 6:00 AM server time.
+
+An item can only have a single reordering rule and it contains the following properties:
   - **Threshold quantity** — the stock level that triggers the rule.
-  - **Buffer percent** — a safety margin above the threshold.
+  - **Buffer percent** — a safety margin above and below the threshold.
   - **Create audit request** — automatically raise an audit when stock is low.
-  - **Create purchasing request** — automatically raise a purchasing request
-    when stock is low.
+  - **Create purchasing request** — automatically raise a purchasing request when stock is low.
   - **Enabled** — turn the rule on or off.
 
 ### Purchasing
 
+![Purchasing Tab](/modules/inventory/purchasing-tab.png)
+
 <Callout>Shown for **purchased** items only.</Callout>
 
-A summary of the item's buying history: purchasing **trends** (counts, totals,
-and a frequency chart) and a table of the item's **purchase orders**. See the
-[Purchasing](/docs/purchasing) module for the full purchase workflow.
+#### Trends
+
+- Using the `All`, `This Year`, `Last Year`, or `Select Year` filters changes the data supplied to all the trend cards.
+- **Purchases Count:** Counts the POs per supplier with an overall summation.
+- **Quantity:**: Sums the quantity ordered (convered to `inventory uom`) per supplier with an overall summation.
+- **Spent:**: Sums the amount spend on this particular item per supplier with an overall summation.
+- **Pricing Stats:** Lists the last, lowest, highest and average price per supplier and shows the global highest and lowest prices.
+- **Frequency Trends:** Chart of quantity vs Month & Year. 
+
+#### Purchase Order
+
+A table of the purchase orders for the item. 
+
+- Can be filtered by `Supplier` and `Purchase Order Status`
+- Shows: supplier, status, quantity ordered, total dollar amount for the line item for the corresponding item, price in $/uom for the item, updated timestamp
+
 
 ### Pricing
 
-The item's cost and pricing examinations, including the most recent examination
-and a table of past examinations. New examinations are created from here. See the
+![Pricing tab](/modules/inventory/pricing-tab.png)
+
+- **Last Examination:** Overview of the last `pricing examination` conducted for the item including finished products retail and total. 
+- **Examinations:** A table that is filterable by `Conducted by` property. Clicking on a row goes to the pricing examination details.
+- **Item Properties:**: Parameters that affect pricing for that item as an individual good (as a purchased and resold good) and downstream usage in bill of materials (as an item in the bill of materials of a produced item).
+  - Arrival Cost: Adjustments for how much it costs for the item to arrive at facility (freight, etc)
+  - Production Usage Cost: Adjustment that applies when the item is used in a bill of materials
+  - Unforeseen Difficulties Cost: Adjustment to account for natural disasters, processing diffuclties, laborous workup, etc
+  - Auxiliary Usage Cost: Adjustment for when item is used as an auxiliary item in finished product pricing
+  - Upcoming Price: Overrides the last purchase price for pricing examinations if `is upcoming price active` is true
+  - Is Upcoming Price Active: (See above) Enables `upcoming price override`
+  - Upcoming Price UOM: Unit of measurement for the upcoming price
+
+New examinations for the item can be created from here via the `New Examination` button. See the
 [Accounting](/docs/accounting) module for how pricing and examinations work.
 
 ### Production
@@ -83,6 +155,12 @@ How the item relates to manufacturing. For **produced** items, this shows the
 active master batch record and its bill of materials, plus the batches produced.
 For **purchased** items, it shows how the item is consumed and used across
 production. See the [Production](/docs/production) module for details.
+
+**Brimstone Spiced Blend** demo example of _purchased item_
+![Purchased example](/modules/inventory/production-tab-purchased.png)
+
+**Underdark Mushroom Quiche** demo example of _produced item_
+![Produced example](/modules/inventory/production-tab-produced.png)
 
 ### Quality
 
