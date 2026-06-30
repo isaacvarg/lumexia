@@ -34,13 +34,15 @@ export interface DemoPO {
   received: boolean; // partially or fully received
 }
 
-// A lot created from a received PO line, surfaced so audits can adjust against it.
+// A lot created from a received PO line, surfaced so audits can adjust against it and
+// QC can examine it (linked back to the PO line via poItemId).
 export interface DemoLot {
   id: string;
   itemId: string;
   uomId: string;
   initialQuantity: number;
   createdAt: Date;
+  poItemId: string;
 }
 
 export interface PurchaseOrderResult {
@@ -191,7 +193,7 @@ export const seedPurchaseOrders = async (
           userNote: '',
           ...stamp(receivedAt),
         });
-        resultLots.push({ id: lotId, itemId: item.id, uomId: item.uomId, initialQuantity: inventoryQuantity, createdAt: receivedAt });
+        resultLots.push({ id: lotId, itemId: item.id, uomId: item.uomId, initialQuantity: inventoryQuantity, createdAt: receivedAt, poItemId });
       }
 
       poItemRows.push({

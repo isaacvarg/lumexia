@@ -8,6 +8,18 @@ import { DemoUser } from './users';
 import { DemoLot } from './purchaseOrders';
 import { DemoMbpr } from './mbprs';
 
+// An output lot produced by a BPR, surfaced so QC can examine recipe lots and link
+// back to the originating batch. `isDone` marks lots from completed/awaitingQc batches
+// (the ones that actually carry quantity and are worth examining).
+export interface DemoBprLot {
+  id: string;
+  itemId: string;
+  bprId: string;
+  createdAt: Date;
+  completedAt: Date | null;
+  isDone: boolean;
+}
+
 // the BPR statuses the demo populates (the planning board ones)
 const ALL_STATUSES = [
   'draft', 'queued', 'awaitingMaterials', 'knownMaterialArrival', 'allocatingMaterials',
@@ -55,7 +67,7 @@ export const seedBprs = async (
   mbprs: DemoMbpr[],
   ingredientLots: DemoLot[],
   productionUsers: DemoUser[],
-): Promise<void> => {
+): Promise<DemoBprLot[]> => {
   const lotsByItem = new Map<string, DemoLot[]>();
   for (const lot of ingredientLots) {
     const list = lotsByItem.get(lot.itemId) ?? [];
@@ -74,6 +86,7 @@ export const seedBprs = async (
   const consumptionRows: any[] = [];
   const transitionRows: any[] = [];
   const noteRows: any[] = [];
+  const outputLots: DemoBprLot[] = [];
 
   for (let i = 0; i < count; i++) {
     // first pass guarantees one of every status; the rest are weighted
@@ -124,6 +137,14 @@ export const seedBprs = async (
       bprId,
       originType: 'batchProduction',
       ...stamp(createdAt),
+    });
+    outputLots.push({
+      id: outputLotId,
+      itemId: mbpr.producesItem.id,
+      bprId,
+      createdAt,
+      completedAt,
+      isDone: donePlus,
     });
 
     // copy the recipe BOM into instance lines (qty = batch * concentration%)
@@ -251,4 +272,6 @@ export const seedBprs = async (
   await insert('bprStagingConsumption', consumptionRows);
   await insert('bprStatusTransition', transitionRows);
   await insert('bprNote', noteRows);
+
+  return outputLots;
 };

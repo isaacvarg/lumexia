@@ -16,6 +16,7 @@ import { seedPricingTemplates } from './layers/pricingTemplates';
 import { seedPricing } from './layers/pricing';
 import { seedPackUoms } from './layers/uomConversions';
 import { seedConfigs } from './layers/configs';
+import { seedQc } from './layers/qc';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -83,7 +84,7 @@ export const seedDemo = async (): Promise<void> => {
   const mbprs = await seedMbprs(items.produced, items.ingredients, equipment, productionUsers);
 
   console.log('✨ BPRs');
-  await seedBprs(40, mbprs, lots, productionUsers);
+  const bprLots = await seedBprs(40, mbprs, lots, productionUsers);
 
   // ┌──────────────────────────────────────────┐
   // │ ＡＣＣＯＵＮＴＩＮＧ  /  ＰＲＩＣＩＮＧ │
@@ -95,6 +96,12 @@ export const seedDemo = async (): Promise<void> => {
 
   console.log('✨ Pricing Examinations');
   await seedPricing(items.purchased, items.produced, mbprs, equipment, packagingItems, users);
+
+  // ┌──────────────────────────┐
+  // │ ＱＵＡＬＩＴＹ  (ＱＣ) │
+  // └──────────────────────────┘
+  console.log('✨ Quality Examinations');
+  await seedQc(items.all, lots, bprLots, users);
 
 
   // finally

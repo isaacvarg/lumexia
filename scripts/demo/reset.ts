@@ -6,6 +6,22 @@ import { appConfigGroups } from '@/configs/staticRecords/appConfigGroups';
 const DEMO_EMAIL = '@demo.lumexia';
 
 const WIPE_ORDER: string[] = [
+  // quality / QC (children first; must precede purchaseOrderItem, lot, batchProductionRecord, item)
+  'qcParameterInputResult',
+  'qcParameterResult',
+  'qcRecordNote',
+  'qcAuditLog',
+  'qcRecordFile',
+  'qcRecord',
+  'qcItemSpecificationInput',
+  'qcItemSpecification',
+  'qcItemParameter',
+  'qcTemplateParameter',
+  'qcGroupParameter',
+  'qcTemplate',
+  'qcParameterGroup',
+  'qcParameterInputDefinition',
+  'qcParameter',
   'requestNote',
   'requestBpr',
   'requestPurchaseOrder',
@@ -98,11 +114,15 @@ const wipe = async (): Promise<void> => {
   const packUoms = await db.unitOfMeasurement.deleteMany({ where: { isStandardUom: false } });
   console.log(`  - ${packUoms.count.toString().padStart(4)} unitOfMeasurement (pack)`);
 
-  // demo users + their role assignments only — spare init's system user.
+  // demo users + their role assignments / per-user configs only — spare init's system user.
   const roleAssignments = await db.userRoleAssignment.deleteMany({
     where: { user: { email: { contains: DEMO_EMAIL } } },
   });
   console.log(`  - ${roleAssignments.count.toString().padStart(4)} userRoleAssignment`);
+  const userConfigs = await db.userConfig.deleteMany({
+    where: { user: { email: { contains: DEMO_EMAIL } } },
+  });
+  console.log(`  - ${userConfigs.count.toString().padStart(4)} userConfig`);
   const usersDeleted = await db.user.deleteMany({ where: { email: { contains: DEMO_EMAIL } } });
   console.log(`  - ${usersDeleted.count.toString().padStart(4)} user`);
 

@@ -32,6 +32,10 @@ import { stepActionableTypes } from '@/configs/staticRecords/stepActionableTypes
 import { stepAddendumTypes } from '@/configs/staticRecords/stepAddendumTypes';
 import { pricingExaminationStatuses } from '@/configs/staticRecords/pricingExaminationStatuses';
 import { pricingExaminationNoteTypes } from '@/configs/staticRecords/pricingExaminationNoteTypes';
+import { qcDataTypes } from '@/configs/staticRecords/qcDataTypes';
+import { qcExaminationTypes } from '@/configs/staticRecords/qcExaminationTypes';
+import { qcRecordStatuses } from '@/configs/staticRecords/qcRecordStatuses';
+import { qcRecordNoteTypes } from '@/configs/staticRecords/qcRecordNoteTypes';
 
 export const refs = {
   recordStatuses,
@@ -63,4 +67,8 @@ export const refs = {
   stepAddendumTypes,
   pricingExaminationStatuses,
   pricingExaminationNoteTypes,
+  qcDataTypes,
+  qcExaminationTypes,
+  qcRecordStatuses,
+  qcRecordNoteTypes,
 };
