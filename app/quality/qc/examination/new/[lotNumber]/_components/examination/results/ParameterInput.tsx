@@ -87,13 +87,13 @@ const ParameterInput = ({ run, runLabel, specs = [] }: Props) => {
             <span className="badge badge-sm badge-ghost">no matching spec</span>
           )}
           {verdict?.kind === 'evaluated' && verdict.evaluation === 'pass' && (
-            <span className="badge badge-sm badge-success">PASS · {formatSpecification(verdict.spec)}</span>
+            <span className="badge badge-sm badge-success">PASS · {formatSpecification(verdict.spec, selectedItemParameter?.parameter.dataTypeId)}</span>
           )}
           {verdict?.kind === 'evaluated' && verdict.evaluation === 'fail' && (
-            <span className="badge badge-sm badge-error">FAIL · {formatSpecification(verdict.spec)}</span>
+            <span className="badge badge-sm badge-error">FAIL · {formatSpecification(verdict.spec, selectedItemParameter?.parameter.dataTypeId)}</span>
           )}
           {verdict?.kind === 'evaluated' && verdict.evaluation === 'unknown' && (
-            <span className="badge badge-sm badge-warning">UNKNOWN · {formatSpecification(verdict.spec)}</span>
+            <span className="badge badge-sm badge-warning">UNKNOWN · {formatSpecification(verdict.spec, selectedItemParameter?.parameter.dataTypeId)}</span>
           )}
         </div>
         {run && (

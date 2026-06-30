@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { DateTime } from "luxon";
 import { dateFormatString } from "@/configs/data/dateFormatString";
 import { QcMeasurementRow } from "../../_actions/quality/getMeasurements";
+import { formatParameterValue, isBooleanDataType } from "@/utils/qc/formatParameterValue";
 
 const columnHelper = createColumnHelper<QcMeasurementRow>();
 
@@ -30,8 +31,10 @@ export const measurementsColumns = [
     header: 'Value',
     cell: (row) => {
       const { value } = row.row.original;
-      const uom = row.row.original.qcItemParameter.parameter.uom;
-      return uom ? `${value} ${uom}` : value;
+      const { uom, dataTypeId } = row.row.original.qcItemParameter.parameter;
+      const display = formatParameterValue(value, dataTypeId);
+      // boolean values render as Pass/Fail and carry no unit of measurement
+      return uom && !isBooleanDataType(dataTypeId) ? `${display} ${uom}` : display;
     },
   }),
   columnHelper.display({

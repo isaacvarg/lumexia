@@ -6,6 +6,7 @@ import Card from "@/components/Card";
 import SectionTitle from "@/components/Text/SectionTitle";
 import { evaluateSpecification, findMatchingSpec } from "@/utils/qc/evaluateSpecification";
 import { formatSpecification } from "@/utils/qc/formatSpecification";
+import { formatParameterValue } from "@/utils/qc/formatParameterValue";
 import { useState } from "react";
 
 type Props = {
@@ -78,7 +79,7 @@ const ResultsView = ({ itemParameters, results, examinationTypeId }: Props) => {
                       <div className="flex-1 flex flex-col">
                         <div className="font-medium text-base-content">{spec.name || "(unnamed)"}</div>
                         <div className="text-sm text-base-content/60">
-                          {formatSpecification(spec)}
+                          {formatSpecification(spec, selected?.parameter.dataTypeId)}
                           {conditions && <span className="ml-2">· {conditions}</span>}
                         </div>
                       </div>
@@ -112,13 +113,13 @@ const ResultsView = ({ itemParameters, results, examinationTypeId }: Props) => {
                           <span className="badge badge-sm badge-ghost">no matching spec</span>
                         )}
                         {evalResult === "pass" && (
-                          <span className="badge badge-sm badge-success">PASS · {formatSpecification(matchingSpec!)}</span>
+                          <span className="badge badge-sm badge-success">PASS · {formatSpecification(matchingSpec!, selected!.parameter.dataTypeId)}</span>
                         )}
                         {evalResult === "fail" && (
-                          <span className="badge badge-sm badge-error">FAIL · {formatSpecification(matchingSpec!)}</span>
+                          <span className="badge badge-sm badge-error">FAIL · {formatSpecification(matchingSpec!, selected!.parameter.dataTypeId)}</span>
                         )}
                         {evalResult === "unknown" && (
-                          <span className="badge badge-sm badge-warning">UNKNOWN · {formatSpecification(matchingSpec!)}</span>
+                          <span className="badge badge-sm badge-warning">UNKNOWN · {formatSpecification(matchingSpec!, selected!.parameter.dataTypeId)}</span>
                         )}
                       </div>
                       <div className="flex flex-col gap-1">
@@ -126,7 +127,7 @@ const ResultsView = ({ itemParameters, results, examinationTypeId }: Props) => {
                           {selected?.parameter.name} ({selected?.parameter.uom})
                         </label>
                         <p className="font-poppins text-xl font-medium bg-base-200/40 rounded-xl px-4 py-3">
-                          {run.value}
+                          {formatParameterValue(run.value, selected!.parameter.dataTypeId)}
                         </p>
                       </div>
 

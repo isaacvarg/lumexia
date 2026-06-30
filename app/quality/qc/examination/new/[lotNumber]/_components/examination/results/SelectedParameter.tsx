@@ -54,7 +54,7 @@ const SelectedParameter = () => {
                     <div className="flex-1 flex flex-col">
                       <div className="font-medium text-base-content">{spec.name || '(unnamed)'}</div>
                       <div className="text-sm text-base-content/60">
-                        {formatSpecification(spec)}
+                        {formatSpecification(spec, selectedItemParameter?.parameter.dataTypeId)}
                         {conditions && <span className="ml-2">· {conditions}</span>}
                       </div>
                     </div>

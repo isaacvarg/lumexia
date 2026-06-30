@@ -12,6 +12,7 @@ import { createConfigLookup } from "@/utils/data/createConfigLookup";
 import { Config } from "@prisma/client";
 import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItemAndQcRecord";
 import { formatSpecification } from "@/utils/qc/formatSpecification";
+import { formatParameterValue, isBooleanDataType } from "@/utils/qc/formatParameterValue";
 import { findMatchingSpec } from "@/utils/qc/evaluateSpecification";
 
 const formatSpecConditions = (
@@ -127,7 +128,14 @@ export const createCertificateOfAnalysis = async (
 
   // Results table — one row per displayable spec (or one fallback row if none).
   const tableRows = parameters.flatMap((param) => {
-    const uom = param.parameter.uom && param.parameter.uom !== "" ? param.parameter.uom : "Not Applicable";
+    const dataTypeId = param.parameter.dataTypeId;
+    const isBoolean = isBooleanDataType(dataTypeId);
+    // boolean parameters report Pass/Fail and carry no unit of measurement
+    const uom = isBoolean
+      ? "Not Applicable"
+      : param.parameter.uom && param.parameter.uom !== ""
+        ? param.parameter.uom
+        : "Not Applicable";
     const visibleSpecs = param.specifications.filter(
       (s) => s.displayOnCoa && s.examinationTypeId === examinationTypeId,
     );
@@ -137,7 +145,7 @@ export const createCertificateOfAnalysis = async (
       return [[
         param.parameter.name,
         "Not Specified",
-        fallbackResult?.value ?? "N/A",
+        fallbackResult ? formatParameterValue(fallbackResult.value, dataTypeId) : "N/A",
         uom,
         statusName,
       ]];
@@ -156,8 +164,8 @@ export const createCertificateOfAnalysis = async (
           : param.parameter.name;
       return [
         label,
-        formatSpecification(spec),
-        matchingRun?.value ?? "—",
+        formatSpecification(spec, dataTypeId),
+        matchingRun ? formatParameterValue(matchingRun.value, dataTypeId) : "—",
         uom,
         statusName,
       ];
