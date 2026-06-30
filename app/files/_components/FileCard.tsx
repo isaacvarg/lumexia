@@ -23,10 +23,10 @@ const FileCard = ({ entry }: { entry: UnifiedFileEntry }) => {
 
   return (
     <Link href={`/files/${entry.id}`} className="card card-side bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-      <figure className="w-32 shrink-0">
+      <figure className="relative w-32 shrink-0">
         {entry.thumbnailUrl ? (
           <Image
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             src={entry.thumbnailUrl}
             alt={entry.name}
             width={128}

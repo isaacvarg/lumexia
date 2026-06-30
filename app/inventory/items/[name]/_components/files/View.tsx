@@ -132,10 +132,10 @@ const View = () => {
                 <ContextMenu.Trigger asChild>
                   <a href={file.url} target="_blank" rel="noopener noreferrer">
                     <div className="card card-side bg-base-100 shadow-sm hover:shadow-md hover:cursor-pointer transition-shadow">
-                      <figure className="w-32 shrink-0">
+                      <figure className="relative w-32 shrink-0">
                         {file.thumbnailUrl ? (
                           <Image
-                            className="h-full w-full object-cover"
+                            className="absolute inset-0 h-full w-full object-cover"
                             src={file.thumbnailUrl}
                             alt={file.file.name}
                             width={128}
