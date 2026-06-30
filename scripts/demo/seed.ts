@@ -3,6 +3,7 @@ import { seedSuppliers } from './layers/suppliers';
 import { seedItemTypes } from './layers/itemTypes';
 import { seedItems } from './layers/items';
 import { seedItemNoteTypes } from './layers/itemNoteTypes';
+import { seedItemFileTypes } from './layers/itemFileTypes';
 import { seedItemNotes } from './layers/itemNotes';
 import { seedItemAliases } from './layers/itemAliases';
 import { seedPurchaseOrders } from './layers/purchaseOrders';
@@ -52,6 +53,9 @@ export const seedDemo = async (): Promise<void> => {
 
   console.log('✨ Item Note Types');
   const noteTypes = await seedItemNoteTypes();
+
+  console.log('✨ Item File Types');
+  await seedItemFileTypes();
 
   console.log('✨ Item Notes');
   await seedItemNotes(items.all, users, noteTypes);
