@@ -1,4 +1,5 @@
 import Card from "@/components/Card"
+import CircleBadge from "@/components/UI/CircleBadge"
 import ButtonApproveAll from "./ButtonApproveAll"
 import ButtonCompleteVerification from "./ButtonCompleteVerification"
 import { useProductionActions, useProductionSelection } from "@/store/productionSlice"
@@ -28,9 +29,7 @@ const QualityActions = () => {
             {t(translations, 'notesButton')}
 
           </div>
-          <div className="bg-primary/50 rounded-full h-8 w-8 p-1 flex items-center justify-center">
-            {bprNotes.length}
-          </div>
+          <CircleBadge className="bg-primary/50">{bprNotes.length}</CircleBadge>
         </button>
 
       </div>

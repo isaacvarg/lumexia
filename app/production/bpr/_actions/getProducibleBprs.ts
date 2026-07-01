@@ -1,3 +1,4 @@
+import { getBprOverviews } from "@/lib/bpr/bprOverview";
 import prisma from "@/lib/prisma";
 import { DateTime } from "luxon"
 
@@ -41,7 +42,12 @@ export const getProducibleBprs = async () => {
     }
   })
 
-  return bprs
+  const overviews = await getBprOverviews(bprs.map(b => ({ id: b.id, bprStatusId: b.bprStatusId })))
+
+  return bprs.map(bpr => ({
+    ...bpr,
+    overview: overviews[bpr.id] ?? null,
+  }))
 }
 
 export type ProducibleBpr = Awaited<ReturnType<typeof getProducibleBprs>>[number]

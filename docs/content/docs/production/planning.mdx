@@ -11,7 +11,7 @@ moving it through its lifecycle.
 
 The planning dashboard lives at `/production/planning`.
 
-{/* ![Planning dashboard](/modules/production/planning.png) */}
+![Planning dashboard](/modules/production/production-planning.png)
 
 ## The planning dashboard
 
@@ -45,6 +45,8 @@ master recipe. From there, planning works its material sufficiency and schedules
 it.
 
 ## The BPR detail page
+
+![BPR Details](/modules/production/bpr-example.png)
 
 An open BPR is organized into tabs:
 
@@ -81,6 +83,8 @@ Each material line also carries its own status as it is staged: **Pending →
 Staged → Primary Verified → Secondary Verified → Consumed**.
 
 ### The material allocations dialog
+
+![Allocations dialog](/modules/production/allocations.png)
 
 Clicking a material row opens the material's **Material Allocations** dialog, which breaks
 down exactly where the item stands. Every amount is in pounds and carries a
@@ -131,6 +135,10 @@ Off the happy path are **Investigating / Corrective Actions**, **Failed**, and
 **Consumption Error**.
 
 ## Handling completed batches
+
+<Callout>
+A cron / automation to handle pushing the BPR through the workflow with validation is in-progress.
+</Callout>
 
 When a batch finishes compounding it becomes **Completed**, but its materials are
 not consumed from inventory until you run the completion step. **Handle Completed

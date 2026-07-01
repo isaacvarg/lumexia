@@ -1,5 +1,6 @@
 import React from 'react'
 import Title from '../../_components/Title';
+import CircleBadge from '@/components/UI/CircleBadge';
 import bprBatchStepActions from '@/actions/production/bprBatchSteps';
 import { getBpr } from '../../_functions/getBpr';
 import { ExBprBatchStep } from '@/types/bprBatchStep';
@@ -99,7 +100,7 @@ const StepPage = async ({ searchParams }: StepPageProps) => {
             <Card.Title><span className='flex gap-x-2 items-center'><MdOilBarrel /> <p>Equipment</p></span></Card.Title>
             {bom.map((item: any) => {
               return <div key={item.id} className='flex flex-col p-6 bg-bone-200 rounded-lg shadow-lg'>
-                <span className='flex gap-x-3 items-center font-inter text-lg text-neutral-900 font-semibold'><div className='flex items-center justify-center rounded-full text-swirl-100 w-8 h-8 bg-swirl-900 p-2'>{item.identifier}</div> <p>{`${item.item.name} ${item.aliasesAll.length < 1 ? "" : `(${item.aliasesAll})`}`}</p></span>
+                <span className='flex gap-x-3 items-center font-inter text-lg text-neutral-900 font-semibold'><CircleBadge className='text-swirl-100 bg-swirl-900'>{item.identifier}</CircleBadge> <p>{`${item.item.name} ${item.aliasesAll.length < 1 ? "" : `(${item.aliasesAll})`}`}</p></span>
               </div>
             })}
           </Card.Root>

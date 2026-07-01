@@ -2,15 +2,10 @@ import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
 import { BprBomItem } from "../../_actions/getBprBom";
 import { ProductionStep } from "../../_actions/compounding/getSteps";
 import { translations } from "../../_configs/translations";
+import { bomLineReached, getActiveStage, OverviewStage } from "@/lib/bpr/activeStage";
 
-type ViewStatuses = {
-  isStaging: boolean;
-  isPrimaryVerifcation: boolean;
-  isSecondaryVerification: boolean;
-  isCompounding: boolean;
-};
-
-export type OverviewStage = 'staging' | 'primary' | 'secondary' | 'compounding';
+export type { OverviewStage };
+export { getActiveStage };
 
 export type OverviewItemState = 'done' | 'current' | 'pending';
 
@@ -31,33 +26,12 @@ export type OverviewData = {
   items: OverviewItem[];
 };
 
-// The active/blocking stage in lifecycle order — the earliest stage that
-// still has outstanding work is what the batch record is waiting on.
-export const getActiveStage = (viewStatuses: ViewStatuses): OverviewStage => {
-  if (viewStatuses.isStaging) return 'staging';
-  if (viewStatuses.isPrimaryVerifcation) return 'primary';
-  if (viewStatuses.isSecondaryVerification) return 'secondary';
-  return 'compounding';
-};
-
 const STAGE_META: Record<OverviewStage, { teamKey: keyof typeof translations; progressLabelKey: keyof typeof translations }> = {
   staging: { teamKey: 'overviewTeamProduction', progressLabelKey: 'overviewProgressStaging' },
   primary: { teamKey: 'overviewTeamPrimaryQuality', progressLabelKey: 'overviewProgressPrimary' },
   secondary: { teamKey: 'overviewTeamSecondaryQuality', progressLabelKey: 'overviewProgressSecondary' },
   compounding: { teamKey: 'overviewTeamProduction', progressLabelKey: 'overviewProgressCompounding' },
 };
-
-// Order of BOM line statuses, used to decide whether a line has reached a stage.
-const BOM_STATUS_ORDER: string[] = [
-  bprBomLineStatuses.pending,
-  bprBomLineStatuses.staged,
-  bprBomLineStatuses.primaryVerified,
-  bprBomLineStatuses.secondaryVerified,
-  bprBomLineStatuses.consumed,
-];
-
-const bomLineReached = (statusId: string, target: string) =>
-  BOM_STATUS_ORDER.indexOf(statusId) >= BOM_STATUS_ORDER.indexOf(target);
 
 const bomItems = (bom: BprBomItem[], target: string): OverviewItem[] =>
   bom

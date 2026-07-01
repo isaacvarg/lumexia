@@ -33,6 +33,16 @@ const STATUS_POOL = [
   'compounding', 'compounding', 'compounding', 'completed', 'completed', 'awaitingQc',
 ] as const;
 
+// extra staging BPRs forced right after the first pass, so the staging board is
+// reliably populated with mid-staging batches regardless of the random pool draw
+const EXTRA_STAGING = 4;
+
+// weighted per-line staging state for a mid-staging BPR — mostly pulled, some still
+// outstanding, occasionally already primary-verified (see partial staging below)
+const STAGING_LINE_POOL = [
+  'pending', 'pending', 'staged', 'staged', 'staged', 'primaryVerified',
+] as const;
+
 // the linear path of statuses a batch passed through to reach each status
 const PATHS: Record<string, string[]> = {
   draft: ['draft'],
@@ -94,17 +104,33 @@ export const seedBprs = async (
   const outputLots: DemoBprLot[] = [];
 
   for (let i = 0; i < count; i++) {
-    // first pass guarantees one of every status; the rest are weighted
-    const statusKey = i < ALL_STATUSES.length ? ALL_STATUSES[i] : pick(STATUS_POOL);
+    // first pass guarantees one of every status; then a forced block of extra staging
+    // BPRs; the rest are weighted
+    const statusKey: string =
+      i < ALL_STATUSES.length ? ALL_STATUSES[i]
+        : i < ALL_STATUSES.length + EXTRA_STAGING ? 'stagingMaterials'
+          : pick(STATUS_POOL);
     const mbpr = mbprs[i % mbprs.length];
     const batchSize = pick(mbpr.batchSizes);
     const user = pick(productionUsers);
 
     const compoundingPlus = COMPOUNDING_PLUS.has(statusKey);
     const donePlus = DONE_PLUS.has(statusKey);
-    const bomLineStatus = bomLineStatusFor(statusKey);
-    const staged = bomLineStatus !== 'pending';
-    const consume = bomLineStatus === 'consumed';
+
+    // per-line staging state. non-staging BPRs share one deterministic value; a
+    // mid-staging BPR gets a realistic mix (some pulled, some outstanding), then we
+    // nudge the result so it never comes out all-pending or all-staged
+    const isStaging = statusKey === 'stagingMaterials';
+    const lineStatuses: string[] = mbpr.bomLines.map(() =>
+      isStaging ? pick(STAGING_LINE_POOL) : bomLineStatusFor(statusKey),
+    );
+    if (isStaging && lineStatuses.length > 0) {
+      const pulled = lineStatuses.filter((s) => s !== 'pending').length;
+      if (pulled === 0) lineStatuses[0] = 'staged';
+      else if (pulled === lineStatuses.length && lineStatuses.length > 1) {
+        lineStatuses[lineStatuses.length - 1] = 'pending';
+      }
+    }
 
     const createdAt = randomPastDate(1, 60);
     const completedAt = donePlus ? clampPast(addDays(createdAt, randFloat(1, 10))) : null;
@@ -177,7 +203,11 @@ export const seedBprs = async (
     );
 
     // copy the recipe BOM into instance lines (qty = batch * concentration%)
-    for (const line of mbpr.bomLines) {
+    for (let li = 0; li < mbpr.bomLines.length; li++) {
+      const line = mbpr.bomLines[li];
+      const bomLineStatus = lineStatuses[li];
+      const staged = bomLineStatus !== 'pending';
+      const consume = bomLineStatus === 'consumed';
       const bprBomId = uuid();
       const quantity = batchSize.quantity * (line.concentration * 0.01);
       bprBomRows.push({

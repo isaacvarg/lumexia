@@ -1,4 +1,5 @@
 import { BprStatus } from "@/actions/production/bprs/statuses/getAll"
+import CircleBadge from "@/components/UI/CircleBadge"
 import { useBprPlanningActions, useBprPlanningSelection } from "@/store/bprPlanningSlice"
 
 const StatusButton = ({ status }: { status: BprStatus }) => {
@@ -15,9 +16,7 @@ const StatusButton = ({ status }: { status: BprStatus }) => {
       onClick={() => setCurrentStatusId(status.id)}
     >
       <span>{status.name}</span>
-      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-info text-xs font-semibold text-info-content">
-        {count}
-      </div>
+      <CircleBadge size="sm" className="bg-info text-info-content">{count}</CircleBadge>
     </button>
   )
 }

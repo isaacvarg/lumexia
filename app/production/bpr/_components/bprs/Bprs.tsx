@@ -1,132 +1,79 @@
 'use client'
-import { BatchProductionRecord } from '@/types/batchProductionRecord'
-import React from 'react'
+import React, { useState } from 'react'
 import { DateTime } from 'luxon'
 import { useTranslation } from '@/hooks/useTranslation'
 import SectionTitle from '@/components/Text/SectionTitle'
 import { translationsBprProduction } from '../../_configs/translations'
 import DayPanel from './DayPanel'
+import TimelineWeek from './TimelineWeek'
+import SpanModeToggle from './SpanModeToggle'
 import { ProducibleBpr } from '../../_actions/getProducibleBprs'
+import { coversDate, DEFAULT_SPAN_DISPLAY, isSpanDisplay, isStartDate, SpanDisplay, WeekDay } from './spanUtils'
 
-const Bprs = ({ bprs }: { bprs: ProducibleBpr[] }) => {
+// The four production days, tinted progressively darker.
+const DAY_DEFS: { key: keyof typeof translationsBprProduction; bg: string; offset: number }[] = [
+  { key: 'monday', bg: 'bg-accent/20', offset: 0 },
+  { key: 'tuesday', bg: 'bg-accent/35', offset: 1 },
+  { key: 'wednesday', bg: 'bg-accent/50', offset: 2 },
+  { key: 'thursday', bg: 'bg-accent/65', offset: 3 },
+]
 
+const Bprs = ({ bprs, spanDisplay }: { bprs: ProducibleBpr[]; spanDisplay?: string }) => {
   const { t } = useTranslation();
-  const productionDaysOfWeek = [
-    {
-      day: t(translationsBprProduction, 'monday'),
-      bg: 'bg-accent/20',
-      date: getDate(0)
-    },
-    {
-      day: t(translationsBprProduction, 'tuesday'),
-      bg: 'bg-accent/35',
-      date: getDate(1),
-    },
-    {
-      day: t(translationsBprProduction, 'wednesday'),
-      bg: 'bg-accent/50',
-      date: getDate(2),
-    },
-    {
-      day: t(translationsBprProduction, 'thursday'),
-      bg: 'bg-accent/65',
-      date: getDate(3)
-    }
-  ];
+  const [mode, setMode] = useState<SpanDisplay>(
+    isSpanDisplay(spanDisplay) ? spanDisplay : DEFAULT_SPAN_DISPLAY
+  )
 
-  const nextProductionDaysOfWeek = [
-    {
-      day: t(translationsBprProduction, 'monday'),
-      bg: 'bg-accent/20',
-      date: getDate(0, 1)
-    },
-    {
-      day: t(translationsBprProduction, 'tuesday'),
-      bg: 'bg-accent/35',
-      date: getDate(1, 1),
-    },
-    {
-      day: t(translationsBprProduction, 'wednesday'),
-      bg: 'bg-accent/50',
-      date: getDate(2, 1),
-    },
-    {
-      day: t(translationsBprProduction, 'thursday'),
-      bg: 'bg-accent/65',
-      date: getDate(3, 1)
-    }
-  ];
+  const buildWeekDays = (weekOffset: number): WeekDay[] =>
+    DAY_DEFS.map(def => ({
+      day: t(translationsBprProduction, def.key),
+      bg: def.bg,
+      date: getDate(def.offset, weekOffset) as string,
+    }))
+
+  const thisWeek = buildWeekDays(0)
+  const nextWeek = buildWeekDays(1)
 
   return (
-
-
     <div className='flex flex-col gap-y-6'>
-      <SectionTitle>        {t(translationsBprProduction, 'titleThisWeek')}
-      </SectionTitle>
-
-      <div className='grid grid-cols-4 gap-4'>
-        {productionDaysOfWeek.map((day) => (
-          <DayPanel
-            key={day.day}
-            day={day}
-            bprs={bprs.filter((bpr) => {
-              if (!bpr.scheduledForStart) { return false; }
-              const panelDate = DateTime.fromISO(day.date);
-              const bprStart = DateTime.fromJSDate(bpr.scheduledForStart);
-
-              if (panelDate.startOf('day') < bprStart.startOf('day')) {
-                return false;
-              }
-
-              if (bpr.scheduledForEnd) {
-                const bprEnd = DateTime.fromJSDate(bpr.scheduledForEnd);
-                if (panelDate.startOf('day') > bprEnd.startOf('day')) {
-                  return false;
-                }
-              }
-
-              return true;
-            }) as any}
-          />
-        ))}
+      <div className='flex justify-end'>
+        <SpanModeToggle mode={mode} onChange={setMode} />
       </div>
 
-      <SectionTitle>        {t(translationsBprProduction, 'titleNextWeek')}
-      </SectionTitle>
-
-      <div className='grid grid-cols-4 gap-4'>
-        {nextProductionDaysOfWeek.map((day) => (
-          <DayPanel
-            key={day.day}
-            day={day}
-            bprs={bprs.filter((bpr) => {
-              if (!bpr.scheduledForStart) { return false; }
-              const panelDate = DateTime.fromISO(day.date);
-              const bprStart = DateTime.fromJSDate(bpr.scheduledForStart);
-
-              if (panelDate.startOf('day') < bprStart.startOf('day')) {
-                return false;
-              }
-
-              if (bpr.scheduledForEnd) {
-                const bprEnd = DateTime.fromJSDate(bpr.scheduledForEnd);
-                if (panelDate.startOf('day') > bprEnd.startOf('day')) {
-                  return false;
-                }
-              }
-
-              return true;
-            }) as any}
-          />
-        ))}
-      </div>
-
-
-
-
+      <WeekSection title={t(translationsBprProduction, 'titleThisWeek')} days={thisWeek} bprs={bprs} mode={mode} />
+      <WeekSection title={t(translationsBprProduction, 'titleNextWeek')} days={nextWeek} bprs={bprs} mode={mode} />
     </div>
   );
 }
+
+const WeekSection = ({
+  title,
+  days,
+  bprs,
+  mode,
+}: {
+  title: string
+  days: WeekDay[]
+  bprs: ProducibleBpr[]
+  mode: SpanDisplay
+}) => (
+  <div className='flex flex-col gap-y-6'>
+    <SectionTitle>{title}</SectionTitle>
+
+    {mode === 'timeline' ? (
+      <TimelineWeek days={days} bprs={bprs} />
+    ) : (
+      <div className='grid grid-cols-4 gap-4'>
+        {days.map(day => {
+          const entries = bprs
+            .filter(bpr => coversDate(bpr, day.date))
+            .map(bpr => ({ bpr, isStart: isStartDate(bpr, day.date) }))
+          return <DayPanel key={day.day} day={day} entries={entries} mode={mode} />
+        })}
+      </div>
+    )}
+  </div>
+)
 
 export const getDate = (dayOfWeek: number, weekOffset: number = 0) => {
   return DateTime.now().plus({ weeks: weekOffset }).startOf('week').plus({ days: dayOfWeek }).toISODate();

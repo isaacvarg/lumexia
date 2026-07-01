@@ -27,6 +27,11 @@ const TableTab = () => {
       filterLabel: 'Status',
       options: toFacetFilter(allBprs, 'bprStatusName', 'bprStatusName'),
     },
+    {
+      columnName: 'waitingOnTeam',
+      filterLabel: 'Waiting On',
+      options: toFacetFilter(allBprs, 'waitingOnTeam', 'waitingOnTeam'),
+    },
   ]
 
   return (

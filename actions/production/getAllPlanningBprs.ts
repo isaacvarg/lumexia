@@ -1,4 +1,5 @@
 'use server'
+import { getBprOverviews } from "@/lib/bpr/bprOverview";
 import prisma from "@/lib/prisma";
 
 export const getAllPlanningBprs = async () => {
@@ -21,13 +22,18 @@ export const getAllPlanningBprs = async () => {
     }
   })
 
-  const fixed = await Promise.all(bprs.map(async (bpr) => {
+  const overviews = await getBprOverviews(bprs.map(b => ({ id: b.id, bprStatusId: b.bprStatusId })))
+
+  const fixed = bprs.map((bpr) => {
+    const overview = overviews[bpr.id] ?? null
     return {
       ...bpr,
       producedItemName: bpr.mbpr.producesItem.name,
       bprStatusName: bpr.status.name,
+      overview,
+      waitingOnTeam: overview?.teamLabel ?? null,
     }
-  }));
+  });
 
   return fixed;
 }

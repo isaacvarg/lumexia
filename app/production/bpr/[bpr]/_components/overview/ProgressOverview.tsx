@@ -6,6 +6,7 @@ import { translations } from "../../_configs/translations"
 import Card from "@/components/Card"
 import SectionTitle from "@/components/Text/SectionTitle"
 import { getActiveStage, getOverviewData, OverviewItem, OverviewStage } from "./getOverviewData"
+import CircleBadge from "@/components/UI/CircleBadge"
 
 // Lifecycle order used for the daisy `steps` rail.
 const LIFECYCLE: { stage: OverviewStage; labelKey: keyof typeof translations }[] = [
@@ -117,9 +118,9 @@ const OverviewRow = ({ item, t }: RowProps) => {
       className={`flex gap-4 items-center justify-between rounded-lg px-4 py-3 ${item.state === 'current' ? 'bg-info/10 border border-info/40' : 'bg-base-200'}`}
     >
       <div className="flex gap-4 items-center min-w-0">
-        <div className="rounded-full bg-secondary text-center flex items-center justify-center text-secondary-content px-4 py-1.5 text-sm font-medium shrink-0">
+        <CircleBadge className="bg-secondary text-secondary-content">
           {item.sequence}
-        </div>
+        </CircleBadge>
         <span className={`truncate ${item.state === 'done' ? 'line-through text-base-content/60' : 'text-base-content'}`}>
           {item.label}
         </span>

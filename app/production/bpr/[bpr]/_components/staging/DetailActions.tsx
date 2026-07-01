@@ -1,4 +1,5 @@
 import Card from "@/components/Card"
+import CircleBadge from "@/components/UI/CircleBadge"
 import { useTranslation } from "@/hooks/useTranslation"
 import { translations } from "../../_configs/translations"
 import { TbPlus } from "react-icons/tb"
@@ -31,9 +32,7 @@ const DetailActions = () => {
             {t(translations, 'notesButton')}
 
           </div>
-          <div className="bg-primary/50 rounded-full h-8 w-8 p-1 flex items-center justify-center">
-            {bprNotes.length}
-          </div>
+          <CircleBadge className="bg-primary/50">{bprNotes.length}</CircleBadge>
         </button>
 
         <CompleteStagingButton />

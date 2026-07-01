@@ -1,8 +1,9 @@
 'use server'
 import { bprStatuses } from "@/configs/staticRecords/bprStatuses";
+import { getBprOverviews } from "@/lib/bpr/bprOverview";
 import prisma from "@/lib/prisma";
 
-const { failed, completed, released } = bprStatuses;
+const { failed, released } = bprStatuses;
 
 export const getPlanningBprs = async () => {
   const bprs = await prisma.batchProductionRecord.findMany({
@@ -31,14 +32,14 @@ export const getPlanningBprs = async () => {
     }
   })
 
-  const fixed = await Promise.all(bprs.map(async (bpr) => {
-    return {
-      ...bpr,
-      producedItemName: bpr.mbpr.producesItem.name,
-      bprStatusName: bpr.status.name,
-    }
-  }));
+  const overviews = await getBprOverviews(bprs.map(b => ({ id: b.id, bprStatusId: b.bprStatusId })))
 
+  const fixed = bprs.map((bpr) => ({
+    ...bpr,
+    producedItemName: bpr.mbpr.producesItem.name,
+    bprStatusName: bpr.status.name,
+    overview: overviews[bpr.id] ?? null,
+  }));
 
   return fixed;
 }

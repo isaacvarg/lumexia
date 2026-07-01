@@ -16,7 +16,7 @@ const MaterialButton = ({ material, isQuality = false }: { material: BprBomItem,
 
       <div className="flex gap-4 text-secondary-content ">
 
-        <div className="rounded-xl bg-accent/50 p-4 size-8 min-w-16 flex items-center justify-center">{material.bom.identifier}</div>
+        <div className="rounded-xl bg-accent/50 px-3 h-10 min-w-16 shrink-0 flex items-center justify-center whitespace-nowrap text-center">{material.bom.identifier}</div>
         <span> {material.bom.item.name}</span>
       </div>
     </button>
