@@ -166,6 +166,82 @@ export const translations = {
   compoundingAllCompleted: {
     en: 'All steps are completed!',
     es: 'Todos los pasos están completados!'
+  },
+  overviewWaitingOn: {
+    en: 'Waiting on',
+    es: 'Esperando a',
+  },
+  overviewWaitingOnHelp: {
+    en: 'This batch record cannot progress until the team below completes their part.',
+    es: 'Este registro de lote no puede avanzar hasta que el equipo indicado complete su parte.',
+  },
+  overviewTeamProduction: {
+    en: 'Production Team',
+    es: 'Equipo de Producción',
+  },
+  overviewTeamPrimaryQuality: {
+    en: 'Quality — Primary Verification',
+    es: 'Calidad — Verificación Primaria',
+  },
+  overviewTeamSecondaryQuality: {
+    en: 'Quality — Secondary Verification',
+    es: 'Calidad — Verificación Secundaria',
+  },
+  overviewStageStaging: {
+    en: 'Staging',
+    es: 'Preparación',
+  },
+  overviewStagePrimary: {
+    en: 'Primary Verification',
+    es: 'Verificación Primaria',
+  },
+  overviewStageSecondary: {
+    en: 'Secondary Verification',
+    es: 'Verificación Secundaria',
+  },
+  overviewStageCompounding: {
+    en: 'Compounding',
+    es: 'Formulación',
+  },
+  overviewProgressStaging: {
+    en: 'Materials Staged',
+    es: 'Materiales Preparados',
+  },
+  overviewProgressPrimary: {
+    en: 'Materials Primary Verified',
+    es: 'Materiales con Verificación Primaria',
+  },
+  overviewProgressSecondary: {
+    en: 'Materials Secondary Verified',
+    es: 'Materiales con Verificación Secundaria',
+  },
+  overviewProgressCompounding: {
+    en: 'Steps Completed',
+    es: 'Pasos Completados',
+  },
+  overviewCompleted: {
+    en: 'Completed',
+    es: 'Completado',
+  },
+  overviewRemaining: {
+    en: 'Remaining',
+    es: 'Faltante',
+  },
+  overviewCurrent: {
+    en: 'In Progress',
+    es: 'En Progreso',
+  },
+  overviewDone: {
+    en: 'Done',
+    es: 'Hecho',
+  },
+  overviewPending: {
+    en: 'Pending',
+    es: 'Pendiente',
+  },
+  overviewNothingRemaining: {
+    en: 'Nothing left in this stage.',
+    es: 'No queda nada en esta etapa.',
   }
 
 }
