@@ -6,6 +6,8 @@ import { appConfigGroups } from '@/configs/staticRecords/appConfigGroups';
 const DEMO_EMAIL = '@demo.lumexia';
 
 const WIPE_ORDER: string[] = [
+  // activity feed (entityId is a plain string, no FK — safe to wipe first)
+  'activityLog',
   // quality / QC (children first; must precede purchaseOrderItem, lot, batchProductionRecord, item)
   'qcParameterInputResult',
   'qcParameterResult',
@@ -94,6 +96,7 @@ const WIPE_ORDER: string[] = [
   'itemNoteType',
   'supplierPaymentMethod',
   'paymentMethod',
+  'supplierContact', // must precede supplier (supplier_contacts_supplier_id_fkey)
   'supplier',
   'itemType'
 ];

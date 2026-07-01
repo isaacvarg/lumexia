@@ -47,6 +47,24 @@ export const randomPastDate = (minDaysAgo: number, maxDaysAgo: number): Date =>
   daysAgo(randFloat(minDaysAgo, maxDaysAgo, 3));
 
 
+// Monday 00:00 of the current week (matches luxon startOf('week'))
+export const startOfWeek = (): Date => {
+  const d = new Date();
+  const day = d.getDay();                 // 0=Sun..6=Sat
+  const diff = day === 0 ? -6 : 1 - day;  // days back to Monday
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+};
+
+// a random production slot Mon–Thu, this week or next, during working hours
+export const productionSlot = (): Date => {
+  const slot = addDays(startOfWeek(), randInt(0, 1) * 7 + randInt(0, 3)); // week 0/1, Mon–Thu
+  slot.setHours(randInt(8, 14), pick([0, 15, 30, 45]), 0, 0);
+  return slot;
+};
+
 export const spreadDates = (start: Date, end: Date, count: number): Date[] => {
   if (count <= 0) return [];
   const span = end.getTime() - start.getTime();

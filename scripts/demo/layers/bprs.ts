@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { insert } from '../lib/db';
 import { refs } from '../lib/refs';
-import { addDays, chance, pick, randFloat, randInt, randomPastDate, spreadDates, stamp } from '../lib/timeline';
+import { addDays, chance, pick, productionSlot, randFloat, randInt, randomPastDate, spreadDates, stamp } from '../lib/timeline';
 import { generateLotNumber } from '@/utils/lot/generateLotNumber';
 import { BPR_NOTES, BPR_TRANSITION_REASONS } from '../data/production';
 import { DemoUser } from './users';
@@ -50,6 +50,10 @@ const PATHS: Record<string, string[]> = {
 const COMPOUNDING_PLUS = new Set(['compounding', 'completed', 'awaitingQc']);
 const DONE_PLUS = new Set(['completed', 'awaitingQc']);
 
+// actively-worked statuses that belong on the compounding weekly board — scheduled
+// into a production slot (Mon–Thu) of this week or next so they surface there
+const WINDOW_SCHEDULED = new Set(['compounding', 'stagingMaterials', 'verifyingBomFulfillment']);
+
 const bprStatusId = (key: string): string => (refs.bprStatuses as Record<string, string>)[key];
 const poundsUom = () => (refs.uom as Record<string, string>).pounds;
 const clampPast = (date: Date): Date => new Date(Math.min(date.getTime(), Date.now() - 3_600_000));
@@ -86,6 +90,7 @@ export const seedBprs = async (
   const consumptionRows: any[] = [];
   const transitionRows: any[] = [];
   const noteRows: any[] = [];
+  const activityLogRows: any[] = [];
   const outputLots: DemoBprLot[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -104,7 +109,9 @@ export const seedBprs = async (
     const createdAt = randomPastDate(1, 60);
     const completedAt = donePlus ? clampPast(addDays(createdAt, randFloat(1, 10))) : null;
     const updatedAt = completedAt ?? clampPast(addDays(createdAt, randFloat(0.5, 12)));
-    const scheduledForStart = addDays(createdAt, randFloat(0, 3));
+    const scheduledForStart = WINDOW_SCHEDULED.has(statusKey)
+      ? productionSlot()
+      : addDays(createdAt, randFloat(0, 3));
     const scheduledForEnd = addDays(scheduledForStart, randFloat(0.2, 1.5));
 
     const bprId = uuid();
@@ -146,6 +153,28 @@ export const seedBprs = async (
       completedAt,
       isDone: donePlus,
     });
+
+    // the two activity logs the UI cascade writes on BPR creation (createBpr.ts)
+    activityLogRows.push(
+      {
+        id: uuid(),
+        userId: user.id,
+        action: 'Create BPR',
+        entityType: 'bpr',
+        entityId: bprId,
+        details: { context: `BPR created for ${mbpr.producesItem.referenceCode}` },
+        ...stamp(createdAt),
+      },
+      {
+        id: uuid(),
+        userId: user.id,
+        action: 'Create Lot',
+        entityType: 'lot',
+        entityId: outputLotId,
+        details: { context: `Lot was created from a batch of ${mbpr.producesItem.referenceCode}` },
+        ...stamp(createdAt),
+      },
+    );
 
     // copy the recipe BOM into instance lines (qty = batch * concentration%)
     for (const line of mbpr.bomLines) {
@@ -272,6 +301,7 @@ export const seedBprs = async (
   await insert('bprStagingConsumption', consumptionRows);
   await insert('bprStatusTransition', transitionRows);
   await insert('bprNote', noteRows);
+  await insert('activityLog', activityLogRows);
 
   return outputLots;
 };
