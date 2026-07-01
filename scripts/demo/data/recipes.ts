@@ -40,14 +40,14 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Brew', label: 'Pull the shots',
         instructions: ['Grind the astral beans fine and pull until the crema shimmers, ~25 seconds.'],
-        equipmentTypeKeys: ['espressoMachine'], actionableTypeKeys: ['numericEntry', 'completeStep'],
+        equipmentTypeKeys: ['espressoMachine'], actionableTypeKeys: ['ph', 'completeStep'],
         addendums: [{ typeKey: 'warning', content: 'Over-extracted shots will literally drift off the cup. Watch the timer.' }],
         ingredients: [{ ingredientName: 'Astral Espresso Beans', concentration: 18 }],
       },
       {
         phase: 'Finish', label: 'Combine and sweeten',
         instructions: ['Stretch the milk to a glossy microfoam, then fold in the sugar.'],
-        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['booleanCheck', 'completeStep'],
+        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Moon-Grazed Whole Milk', concentration: 78 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 4 },
@@ -64,7 +64,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Steep', label: 'Bloom the spice',
         instructions: ['Steep the brimstone blend and split vanilla in the kettle three minutes — no longer or it bites.'],
-        equipmentTypeKeys: ['compoundingKettle'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['compoundingKettle'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         addendums: [{ typeKey: 'warning', content: 'Wear the dragon-scale mitts. The steam off the brimstone is no joke.' }],
         ingredients: [
           { ingredientName: 'Brimstone Spice Blend', concentration: 8 },
@@ -91,13 +91,13 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Whisk', label: 'Smooth the base',
         instructions: ['Whisk the goodberry extract smooth before anything else, or it pebbles.'],
-        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['booleanCheck', 'completeStep'],
+        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['passesTasteTest', 'completeStep'],
         ingredients: [{ ingredientName: 'Crushed Goodberry Syrup Extract', concentration: 10 }],
       },
       {
         phase: 'Finish', label: 'Build the latte',
         instructions: ['Add milk, then balance with honey and a touch of sugar.'],
-        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['numericEntry', 'completeStep'],
+        equipmentTypeKeys: ['workTable'], actionableTypeKeys: ['ph', 'completeStep'],
         ingredients: [
           { ingredientName: 'Moon-Grazed Whole Milk', concentration: 80 },
           { ingredientName: 'Feywild Honey Crystals', concentration: 5 },
@@ -115,7 +115,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Make the shells',
         instructions: ['Sift flour and sugar, fold into whipped meringue powder to a lava ribbon.'],
-        equipmentTypeKeys: ['standMixer', 'benchScale'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['standMixer', 'benchScale'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 25 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 30 },
@@ -147,7 +147,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Whip', label: 'Whip the meringue',
         instructions: ['Whip meringue powder and sugar to stiff, glossy peaks with the vanilla.'],
-        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         addendums: [{ typeKey: 'warning', content: 'Never run this on a humid day — you will get puddles, not kisses.' }],
         ingredients: [
           { ingredientName: 'Dried Flumph Meringue Powder', concentration: 45 },
@@ -172,7 +172,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Mix and proof the dough',
         instructions: ['Mix the enriched dough, knead, then proof until doubled.'],
-        equipmentTypeKeys: ['standMixer', 'proofingCabinet'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['standMixer', 'proofingCabinet'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 45 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 15 },
@@ -203,7 +203,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Cut the dough',
         instructions: ['Cut cold butter into the flour, add milk and a pinch of salt; do not overwork.'],
-        equipmentTypeKeys: ['workTable', 'benchScale'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['workTable', 'benchScale'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 50 },
           { ingredientName: 'Moon-Grazed Whole Milk', concentration: 25 },
@@ -234,7 +234,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Develop the dough',
         instructions: ['Mix to a strong gluten window; the Underdark flour bakes dense, so proof longer.'],
-        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 50 },
           { ingredientName: 'Moon-Grazed Whole Milk', concentration: 25 },
@@ -260,7 +260,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Bake', label: 'Blind-bake the shells',
         instructions: ['Press the flour-sugar shells and blind-bake until pale gold.'],
-        equipmentTypeKeys: ['convectionOven', 'benchScale'], actionableTypeKeys: ['numericEntry', 'completeStep'],
+        equipmentTypeKeys: ['convectionOven', 'benchScale'], actionableTypeKeys: ['ph', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 35 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 35 },
@@ -270,7 +270,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Fill', label: 'Cook the caramel',
         instructions: ['Cook the milk caramel to soft-ball, pour into shells, set.'],
-        equipmentTypeKeys: ['compoundingKettle'], actionableTypeKeys: ['booleanCheck', 'completeStep'],
+        equipmentTypeKeys: ['compoundingKettle'], actionableTypeKeys: ['passesTasteTest', 'completeStep'],
         ingredients: [{ ingredientName: 'Moon-Grazed Whole Milk', concentration: 20 }],
       },
       {
@@ -290,7 +290,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Steep', label: 'Steep the spice tea',
         instructions: ['Steep peppermint and vanilla hot, then sweeten with sap and sugar.'],
-        equipmentTypeKeys: ['teaUrn'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['teaUrn'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Pandemonium Peppermint Leaves', concentration: 6 },
           { ingredientName: 'Chult Vanilla Pods', concentration: 4 },
@@ -315,7 +315,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Laminate the dough',
         instructions: ['Mix, then laminate the dough for the claw layers.'],
-        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['standMixer'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 48 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 20 },
@@ -346,7 +346,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Brew', label: 'Pull and bloom',
         instructions: ['Pull the espresso, bloom the medium roast, and whisper in the chili and brimstone.'],
-        equipmentTypeKeys: ['espressoMachine'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['espressoMachine'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         addendums: [{ typeKey: 'warning', content: 'A WHISPER of chili. One flake too many and it stops being a mocha.' }],
         ingredients: [
           { ingredientName: 'Waterdeep Medium-Roast Coffee', concentration: 12 },
@@ -375,7 +375,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Mix', label: 'Cream the shortbread',
         instructions: ['Cream to a soft dough; chill before cutting.'],
-        equipmentTypeKeys: ['standMixer', 'benchScale'], actionableTypeKeys: ['numericEntry', 'completeStep'],
+        equipmentTypeKeys: ['standMixer', 'benchScale'], actionableTypeKeys: ['ph', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 50 },
           { ingredientName: 'Starlight Cane Sugar', concentration: 28 },
@@ -401,7 +401,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Bake', label: 'Blind-bake the crust',
         instructions: ['Press and blind-bake the savory Underdark crust.'],
-        equipmentTypeKeys: ['convectionOven', 'benchScale'], actionableTypeKeys: ['numericEntry', 'completeStep'],
+        equipmentTypeKeys: ['convectionOven', 'benchScale'], actionableTypeKeys: ['ph', 'completeStep'],
         ingredients: [
           { ingredientName: 'Powdered Underdark Flour', concentration: 40 },
           { ingredientName: 'Chionthar Coarse Sea Salt', concentration: 5 },
@@ -410,7 +410,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Fill', label: 'Custard and bake',
         instructions: ['Whisk the milk custard with the spice, fill, and bake until just set.'],
-        equipmentTypeKeys: ['workTable', 'convectionOven'], actionableTypeKeys: ['booleanCheck', 'completeStep'],
+        equipmentTypeKeys: ['workTable', 'convectionOven'], actionableTypeKeys: ['passesTasteTest', 'completeStep'],
         addendums: [{ typeKey: 'info', content: 'Label it clearly — it is the one savory item and the sweet-tooth crowd grabs it by mistake.' }],
         ingredients: [
           { ingredientName: 'Moon-Grazed Whole Milk', concentration: 45 },
@@ -429,7 +429,7 @@ export const RECIPES: ReadonlyArray<Recipe> = [
       {
         phase: 'Steep', label: 'Low-and-slow steep',
         instructions: ['Steep the peppermint low and slow so it soothes instead of buzzes; caffeine-free.'],
-        equipmentTypeKeys: ['teaUrn'], actionableTypeKeys: ['numericEntry', 'booleanCheck'],
+        equipmentTypeKeys: ['teaUrn'], actionableTypeKeys: ['ph', 'passesTasteTest', 'completeStep'],
         ingredients: [
           { ingredientName: 'Pandemonium Peppermint Leaves', concentration: 8 },
           { ingredientName: 'Yggdrasil Sap Concentrate', concentration: 3 },
