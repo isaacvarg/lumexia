@@ -1,3 +1,3 @@
 {
-  "pages": ["items", "item-details", "quantities", "uom-conversions"]
+  "pages": ["items", "item-details", "quantities", "uom-conversions", "audits"]
 }

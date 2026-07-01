@@ -1,0 +1,37 @@
+---
+title: Purchasing
+description: Procurement requests, purchase orders, and supplier management
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+The purchasing module covers the full procure-to-receive cycle: someone asks for
+an item, a buyer turns that ask into an order with a supplier, and the goods are
+later booked into stock by [receiving](/docs/receiving). Everything in the module
+hangs off two records: the **request** (a need for an item) and the **purchase
+order** (a commitment to buy it from a specific supplier).
+
+## The flow
+
+A typical purchase moves through three stages:
+
+1. **Procurement request:** a user flags that an item needs to be bought. This can
+   come from the warehouse, from production planning, from a reordering rule, or
+   from an automated trigger.
+2. **Purchase order:** a buyer selects a supplier, adds the items and quantities,
+   and pushes the order through its stages until it is confirmed and awaiting
+   delivery.
+3. **Receiving:** when the shipment arrives, the goods are counted in against the
+   order and become new lots of stock.
+
+Suppliers tie it together. Each purchase order belongs to one supplier, and the
+supplier record accumulates a history of everything bought from them.
+
+## In this section
+
+<Cards>
+  <Card title="Procurement Requests" href="/docs/purchasing/procurement-requests" description="Raising requests for items, including items not yet in the system, and tracking them to completion." />
+  <Card title="Purchase Orders" href="/docs/purchasing/purchase-orders" description="Building orders, moving them through the pipeline, notes, and generating the PO document." />
+  <Card title="Suppliers" href="/docs/purchasing/suppliers" description="Adding suppliers and reviewing spend, items supplied, contacts, and aliases." />
+  <Card title="Receiving" href="/docs/receiving" description="How confirmed orders are booked into stock as lots." />
+</Cards>

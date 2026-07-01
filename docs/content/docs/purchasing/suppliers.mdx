@@ -1,0 +1,82 @@
+---
+title: Suppliers
+description: Adding suppliers and reviewing spend, items supplied, contacts, and aliases.
+---
+
+A **supplier** is a vendor you buy from. Every purchase order belongs to one
+supplier, and the supplier record gathers a full history of what you have bought,
+who you deal with there, and how they refer to your items. Suppliers live at
+`/purchasing/suppliers`.
+
+## Adding a supplier
+
+Create a supplier from the suppliers list. The form asks for one required field:
+
+- **Name:** the supplier's name. This is all that is needed to create the record.
+
+Expanding **Add additional details** reveals optional fields you can fill in now or
+later: **Street 1**, **Street 2**, **City**, **State**, **Zipcode**, and **Phone**.
+Leaving them blank is fine. Address and phone, along with whether the address prints
+on purchase orders, can always be edited afterward on the supplier's Settings tab.
+
+## The suppliers list
+
+The list shows every active supplier, sorted by name, with search across the table.
+Archived suppliers are excluded from the list. Clicking a supplier opens its detail
+page.
+
+## Supplier details
+
+A supplier's detail page is organized into six tabs.
+
+### Purchases
+
+The default tab, and the home for spend analytics. A metrics panel with an **All /
+This Year / Last Year** toggle shows three figures: **Purchase Orders** (the count
+of orders in range), **Total Spent**, and **Avg. Order Value** (total spent divided
+by order count), alongside a chart of spend over time. Below the metrics is a table
+of every purchase order for the supplier, filterable by status and payment method,
+with each row linking to the order.
+
+### Contacts
+
+The people you deal with at the supplier. Each contact has a name and an optional
+role, phone, and email. Selecting a contact shows their detail and a dedicated notes
+section, so you can keep a running record of conversations with that specific
+person.
+
+### Notes
+
+Supplier-level notes, kept separately from contact notes. These are general notes
+about the supplier as a whole. Each note shows its created and updated times and can
+be edited or deleted.
+
+### Items
+
+A view of everything you have ever purchased from the supplier, answering how much
+and how often you buy each item. The left side lists the items supplied, sortable by
+name, quantity, or spend. Selecting an item shows a summary for the chosen date
+range: **Total Spent**, **Last Price** per unit, the **units** it was purchased in,
+and the number of **purchases**, plus a price trend chart and a table of the orders
+for that item.
+
+### Aliases
+
+The item [aliases](/docs/inventory/items#aliases) tied to this supplier, meaning the
+names or codes the supplier uses for your items. Each row shows the alias name, the
+item it maps to, the item's code, and the alias type, and links back to the
+inventory item. These aliases are what print on purchase orders sent to the
+supplier. Aliases are created on the item itself, as described in the inventory
+documentation.
+
+### Settings
+
+Where you maintain the supplier's own details after creation: the address fields,
+phone, and a **Show address on purchase order** toggle that controls whether the
+supplier's address is printed on generated POs. This tab also holds **Archive
+Supplier**.
+
+<Callout>
+  Archiving a supplier is a soft delete. The supplier is hidden from the list and
+  from new purchase orders, but its history is preserved rather than erased.
+</Callout>

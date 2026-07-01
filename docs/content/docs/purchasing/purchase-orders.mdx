@@ -1,0 +1,182 @@
+---
+title: Purchase Orders
+description: Building orders, moving them through the pipeline, and generating the PO document.
+---
+
+A **purchase order** (PO) is a commitment to buy specific items, in specific
+quantities, from one supplier. It is the document you send to the supplier and the
+record receiving uses to book goods into stock. Every PO belongs to a single
+supplier and carries its own line items, notes, accounting detail, and activity
+history.
+
+The purchase orders board lives at `/purchasing/purchase-orders`.
+
+## The purchase orders list
+
+The board is a table of every active order, newest first. Archived orders are
+hidden. Each row summarizes one PO:
+
+| Column | Meaning |
+| --- | --- |
+| **PO #** | The order's reference number, assigned automatically in sequence. |
+| **Supplier** | The supplier the order is placed with. |
+| **Status** | Where the order sits in its pipeline, shown as a colored tag. |
+| **Accounting** | The state of the order's accounting detail (payment and paperwork), shown as a colored tag. Blank until accounting is started. |
+| **Total ($)** | The sum of every line item's quantity times its price. |
+| **Updated** | When the order last changed. |
+
+You can filter the table by **Supplier**, **Status**, and **Accounting**. Clicking
+a row opens that order.
+
+## Creating a purchase order
+
+There are two ways to start a new order, and both open it as a **Draft**:
+
+- **From the purchase orders board:** press **New Purchase Order** (or the `ctrl+c`
+  shortcut), then pick a supplier. Typing filters the supplier list, and pressing
+  Enter selects the first match. The order opens empty, ready for you to add items.
+- **From a procurement request:** on a request's detail page, use the **Linked
+  POs** card to add a new order. This creates the PO for the request's supplier and
+  seeds it with the requested item as a first line, then links the order back to
+  the request so both stay in sync.
+
+## The purchase order tabs
+
+An open order is organized into tabs:
+
+- **Items:** the line items being ordered. This is where most of the work happens.
+- **Accounting:** the order's payment and paperwork detail, with its own Details,
+  Notes, and Files sub-tabs. See the [Accounting](/docs/accounting) module for how
+  this fits into reconciliation.
+- **Notes:** internal, public, and supplier notes for the order (covered below).
+- **Activity:** a log of every change to the order, filterable by action and user.
+- **Options:** high-level actions. **Duplicate** clones the order and all of its
+  items into a new Draft, and **Archive** removes the order from the board after a
+  confirmation.
+
+## Line items
+
+Line items are managed on the **Items** tab. By default the tab is read-only. Press
+**Modify** (or `ctrl+e`) to edit, then **Add Item** (or `ctrl+r`) to search for an
+item by name, alias, or reference code and add it. A newly added line starts at
+quantity 0 and price 0, using the item's inventory unit as its unit of measurement.
+
+Each line exposes:
+
+- **Quantity:** how much to order.
+- **Price Per Unit:** the agreed price per unit of measurement.
+- **UOM:** the unit the supplier sells in, chosen from any unit in the system.
+- **Total:** quantity times price, calculated for you.
+
+### Units and conversions
+
+A purchase order records quantities in the unit the supplier sells in, which is not
+always the unit you stock the item in. The PO itself does no conversion: it stores
+exactly what you ordered in the chosen purchase UOM.
+
+The conversion to the item's inventory unit happens later, at
+[receiving](/docs/receiving). When goods are booked in, Lumexia converts the
+received quantity into the item's inventory UOM using either a standard conversion
+or a supplier-specific discrete conversion. For how those conversions are defined,
+see [Unit of Measurement Conversions](/docs/inventory/uom-conversions). If a
+supplier sells in a non-standard pack unit, make sure a discrete conversion exists
+for that item and supplier, or receiving will not be able to convert it.
+
+## Notes
+
+An order supports three kinds of notes, and the difference is about who sees them:
+
+| Note type | Where it appears |
+| --- | --- |
+| **Internal** | Internal use only. These never appear on any purchase order PDF. |
+| **Public** | Print on the PDF for this specific order. |
+| **Supplier** | Stored on the supplier, and print on every order placed with that supplier. |
+
+Supplier notes are convenient for standing instructions that apply to a vendor
+across all orders, while public notes are specific to a single order.
+
+## Supplier aliases on purchase orders
+
+Suppliers often refer to an item by their own name or catalogue code rather than
+yours. When a [supplier alias](/docs/inventory/items#aliases) exists for the order's
+supplier and item, the line shows the supplier's name for the item, and a tooltip
+lists every alias plus your true item name. The generated PO prints the supplier's
+alias, so the document reads in terms the supplier recognizes.
+
+Supplier aliases are created on the item, as described in the inventory
+[aliases](/docs/inventory/items#aliases) documentation. A supplier's linked aliases
+are also listed on the supplier's [Aliases tab](/docs/purchasing/suppliers).
+
+## Keyboard shortcuts
+
+The Items tab is built for fast keyboard entry:
+
+| Shortcut | Action |
+| --- | --- |
+| `ctrl + e` | Toggle the Items tab between view and modify mode. |
+| `ctrl + r` | Open the add-item row. |
+| `enter` | Add the top search result when adding an item. |
+| `ctrl + c` | Open the New Purchase Order dialog from the board. |
+| `ctrl + /` | Open the keyboard cheatsheet. |
+| `ctrl + k` | Open the command palette. |
+
+## Generating the purchase order document
+
+The order header has a **PO** button that generates and downloads the purchase
+order as a PDF. The document includes your company details and logo, the shipping
+and supplier addresses, the line items with quantities and prices, the public and
+supplier notes, and the order totals.
+
+### Company details
+
+The company information on the PDF comes from **Settings → Company**
+(`/settings/company`). Configure it there once and every generated PO uses it. The
+fields are grouped into:
+
+- **Company:** name, phone, and email.
+- **Address:** the street, city, state, and zip that appear as the shipping
+  address.
+- **Purchasing Contact:** the contact name and email shown to the supplier.
+
+The company logo is uploaded on the same settings page and is drawn on the PDF.
+
+## Pushing a purchase order through the pipeline
+
+A PO advances through a series of stages. Use the **Next** and **Previous** buttons
+in the header to move it along; each change is applied to the order and to all of
+its line items.
+
+| Stage | Meaning |
+| --- | --- |
+| **Draft** | The order is being built and has not been sent. |
+| **Pending** | The order has been sent and is awaiting the supplier's response. |
+| **Confirmed / Awaiting Delivery** | The supplier confirmed and the goods are on the way. |
+| **Received** | Everything on the order has been booked into stock. |
+| **Partially Received** | Some, but not all, of the order has arrived. |
+
+Manual advancement only goes as far as **Confirmed / Awaiting Delivery**. The last
+two stages are set by receiving rather than by hand.
+
+<Callout>
+  Receiving can only see an order once it reaches **Confirmed / Awaiting Delivery**.
+  The header's **Receiving** button warns you if the order is not yet at that stage.
+  When the shipment is booked in, receiving moves the order to Received or Partially
+  Received automatically. See the [Receiving](/docs/receiving) module for the rest
+  of that workflow.
+</Callout>
+
+## Purchasing insights
+
+Lumexia rolls up purchase orders into spend and frequency figures in two places:
+
+- **On the supplier:** the supplier's [Purchases tab](/docs/purchasing/suppliers)
+  shows order count, total spent, and average order value over a date range, plus a
+  spend-over-time chart. Its Items tab breaks the same history down per item, with
+  total spent, last price, the units purchased in, and how often the item was
+  bought.
+- **On the item:** the item details **Purchasing** tab shows the same story from the
+  item's side, comparing suppliers and pricing over time. See the
+  [item details](/docs/inventory/item-details) page.
+
+Together these answer how much you spend with a supplier, how much you spend on an
+item, and how frequently you buy it.

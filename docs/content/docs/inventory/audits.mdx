@@ -1,0 +1,135 @@
+---
+title: Audits
+description: Verifying that recorded stock matches what's physically on the shelf.
+---
+
+Recorded stock and physical stock drift apart over time — spills, miscounts,
+breakage, and data-entry slips all add up. An **inventory audit** is how Lumexia
+reconciles the two: staff physically count what's on the shelf and correct the
+records to match.
+
+Lumexia offers two forms of audit:
+
+- **Audit requests** — a focused check of a **single item**, raised on demand or
+  automatically.
+- **Discrepancy audits** — a broader **category-wide sweep** that counts many
+  items in one sitting.
+
+Both are reached from the **Audit** area in the sidebar, whose button shows a
+live count of open audits so the warehouse always knows how much verification
+work is waiting.
+
+## Open audits
+
+An **audit request** is a standing ask for someone to verify an item's on-hand
+quantity. It has a simple lifecycle: it is **open** from the moment it's raised
+until an audit is performed against it, at which point it becomes **completed**.
+The number badge next to the **Audit** sidebar button counts the open ones,
+alerting warehouse staff that verification has been requested.
+
+The **Open** tab of the Audit page lists every open request — showing the item,
+who requested it, and when — next to a panel of recently completed audits. The
+**Archive** tab holds the full history of completed audits.
+
+Requests are raised in several ways:
+
+| Source | How it happens |
+| --- | --- |
+| **Reordering rules** | A rule with *Create audit request* enabled raises one automatically when stock runs low. Evaluated daily — see [Reordering Rule](/docs/inventory/item-details#reordering-rule). |
+| **Automated audit triggers** | A scheduled job raises requests based on configurable conditions (low on-hand, heavy production usage, negative stock). See [Automated audit triggers](#automated-audit-triggers) below. |
+| **Manually from an item** | The **Inventory Audit** action on the [item details page](/docs/inventory/item-details) requests a count for that item. |
+| **Manually from production or purchasing** | Planners and buyers can request an audit from a batch's bill of materials or from a purchasing request, alerting the warehouse to confirm stock before they proceed. |
+
+<Callout>
+  Automatically raised requests are attributed to the **Lumexia** system user, so
+  it's clear the request came from a rule rather than a person.
+</Callout>
+
+## Scanning and reviewing on hand
+
+Audits are built for the warehouse floor. From the Audit page, staff **scan a
+lot's barcode** with a handheld scanner — no typing, no searching. The scan takes
+them straight to that item's audit view.
+
+That view lists every lot of the item alongside the quantity Lumexia currently
+has **on record**, with a running total across the lots. Depleted (zero) lots are
+hidden by default; a **Show All** toggle reveals them. For each lot, staff compare
+the recorded figure against the physical count and take one of two actions:
+
+- **Adjust** — enter the actual counted quantity. Lumexia computes the difference
+  and records it as a stock adjustment.
+- **Deplete** — zero the lot out when there's physically nothing left.
+
+<Callout>
+  Corrections are never silent overwrites. Every adjustment or depletion is
+  written as a **transaction** against the lot, so on-hand is recomputed from the
+  ledger and the change is fully traceable. See
+  [Inventory Quantities](/docs/inventory/quantities) for how stock is derived from
+  transactions.
+</Callout>
+
+## What an audit does
+
+Performing an audit does more than nudge a number. When an audit request is
+**completed**, Lumexia:
+
+- **Reconciles** recorded stock against the physical count through the adjustment
+  and depletion transactions the auditor made.
+- **Records who and when** — the audit captures the person who conducted it and
+  the time it happened.
+- **Snapshots every change** — each correction is stored with its before-and-after
+  quantity, so the audit is a self-contained record of exactly what changed.
+
+The request then flips to **completed**, and the result joins the item's
+[Audits history](/docs/inventory/item-details#audits) and the Archive tab, where
+it can be reviewed later in full.
+
+## Discrepancy audits
+
+A **discrepancy audit** widens the lens from one item to a whole category. Rather
+than verifying a single item on request, it's a deliberate physical-inventory
+sweep of many items at once.
+
+The workflow is:
+
+1. **Start** — choose an item category to audit (or all purchased items). Lumexia
+   takes a **starting snapshot** of every item in scope — its total on-hand
+   quantity, its number of lots, and how many of those are depleted — and builds
+   a worklist with each item marked *not checked*.
+2. **Conduct** — working through the warehouse, staff **scan a lot** to pull up
+   the item being counted, then adjust, deplete, zero out depleted lots, or
+   generate a new lot as the physical count requires. Each item is marked
+   **audited** as it's finished.
+3. **Close** — closing the audit records an **ending snapshot** for every item.
+   Any item still left unchecked is flagged **incomplete**, and a confirmation
+   warns how many remain before you close.
+
+### Benefits
+
+Because a discrepancy audit captures a **starting and ending snapshot** for each
+item — quantity, lot count, and depleted-lot count — it measures how far an entire
+category has drifted from reality in a single, coordinated effort. It gives you:
+
+- **Full coverage** — a structured worklist ensures every item in the category is
+  accounted for, with clear *audited* / *incomplete* progress tracking.
+- **A measurable before/after** — the paired snapshots quantify the total
+  correction across the sweep, not just item by item.
+- **A complete trail** — every adjustment is a transaction, so the whole audit is
+  auditable after the fact.
+
+## Automated audit triggers
+
+Beyond manual requests, Lumexia can raise audit requests on its own. The
+**Triggers** tab of [Inventory Settings](/docs/inventory/items#configuration)
+controls this scheduled job:
+
+- **Low on-hand** — flag an item whose stock has fallen below a set fraction of
+  its lot's original quantity, when it has no active reordering rule to catch it.
+- **Heavy production usage** — flag an item consumed across more than a set number
+  of batch records.
+- **Negative stock** — flag any lot that has gone negative.
+- **Item categories** — enable or disable the trigger per item category, so only
+  the categories you care about are swept.
+
+Together these keep the warehouse ahead of stock problems without anyone having to
+remember to ask for a count.

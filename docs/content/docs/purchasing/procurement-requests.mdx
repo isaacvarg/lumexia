@@ -1,0 +1,143 @@
+---
+title: Procurement Requests
+description: Raising requests for items and tracking them from request to delivery.
+---
+
+A **procurement request** records that an item needs to be bought. It gives the
+purchasing team a queue of demand to work through, and it keeps a history of who
+asked for what and when. Requests come in two kinds:
+
+- **Standard requests:** for items that already exist in Lumexia.
+- **General requests:** for items that are not in the system yet, where purchasing
+  needs to source and add the item first.
+
+The requests board lives at `/purchasing/requests`. Its header has two buttons:
+**Add Request** to raise a new one, and **Archive** to browse completed history.
+
+## Creating a request
+
+Adding a standard request opens a short four-step wizard:
+
+1. **Select Item:** choose the item being requested. You can search by name or
+   alias, scan a barcode, or open the "Can't Find An Item?" panel to raise a
+   general request instead.
+2. **Existing Requests Validation:** Lumexia checks whether the item already has an
+   open request so you do not create duplicates.
+3. **Notes:** add any number of typed notes to explain the request. New note types
+   can be created inline.
+4. **Complete:** save the request. It is created with the status **Requested** and
+   normal priority, and Lumexia captures a snapshot of the item's inventory at that
+   moment.
+
+<Callout>
+  **Scanning autofills the item.** On the Select Item step you can scan a lot's
+  barcode with a handheld scanner. Lumexia resolves the lot to its parent item and
+  pre-selects it, so the request is for the right item without any typing. Scanning
+  fills in the item only, not quantities.
+</Callout>
+
+<Callout type="warn">
+  If an active request already exists for the item, the validation step stops you
+  with a warning: "Hold Up! There is already one or more active requests pending."
+  You can go back, or continue anyway. Choosing to continue is recorded on the
+  request's inventory snapshot, so it is clear the duplicate was intentional.
+</Callout>
+
+## Requesting an item not in the system
+
+Sometimes you need something Lumexia has never purchased before. The **general
+request** flow handles this. Rather than picking an existing item, you describe the
+item so purchasing can source it:
+
+- **Item Title:** the name of the item you want.
+- **Files:** attach images, spec sheets, or anything that helps identify it.
+- **Notes:** add a link to the product and a description of what is needed.
+
+When the details are ready, press **Commit** to promote the draft into a real
+general request that purchasing can see.
+
+<Callout>
+  A general request is a placeholder for an unknown item. Once purchasing sources
+  it, they should add the real item to Lumexia so it can be requested and tracked
+  normally from then on.
+</Callout>
+
+Purchasing completes a general request from its detail page. The **Items &
+Requests** section has an **Add Item & Request** form that captures the new item's
+**Name**, **Reference Code**, and **Item Type**. Submitting it creates the real
+item (defaulting to tracked, purchased, counted in pounds, and active) along with a
+standard request linked back to the general request. The general request and the
+new item stay connected for traceability.
+
+## View modes
+
+The requests board offers four ways to look at the same requests. Switch between
+them with the tabs at the top of the page:
+
+| View | What it shows |
+| --- | --- |
+| **New** | The inbox of freshly raised requests: in-system requests still at the Requested status, alongside open general requests. This is where purchasing starts. |
+| **Status** | Requests grouped by status, with buttons to filter to a single status. Good for working a particular stage, such as everything awaiting a price. |
+| **Supplier** | Requests grouped by the supplier they are tagged to, or by the supplier of a linked purchase order. Requests with no supplier fall into an "Untagged" group. |
+| **Calendar** | A month or multi-month calendar plotting each request by its expected delivery dates. Requests without a date do not appear here. |
+
+## Request statuses
+
+A request carries a status that describes where it is in its life. The statuses,
+in order, are:
+
+| Status | Meaning |
+| --- | --- |
+| **Requested** | A user has asked for this item to be purchased. |
+| **On Hold** | Something needs to happen before the purchaser can proceed. |
+| **Replacement Ingredient Testing** | The ingredient needs to be replaced and a substitute is being tested. |
+| **Pricing Requested** | Waiting for the supplier to provide a current price. |
+| **Allocating Ingredients** | Waiting to fill out a purchase order with other materials. |
+| **PO Pending** | A purchase order was sent and is awaiting the supplier's response. |
+| **PO Confirmed** | The supplier confirmed, but there is no delivery estimate yet. |
+| **Expected Delivery Date** | A delivery estimate is known. |
+| **No ETA** | No estimate from the supplier, or a delivery missed its estimate. |
+| **Delivered - Issue** | The order arrived but there is an issue to resolve. |
+| **Partial Delivery** | Only part of the material arrived. |
+| **Request Cancelled - Duplicate Request** | Cancelled because it duplicated an active request or was not needed. |
+| **Discontinued Ingredient** | The item was discontinued, by us or by the supplier. |
+| **Replacement Ingredient Found** | A tested replacement has been confirmed. |
+| **Delivered** | The material has arrived and is ready to use. |
+
+<Callout>
+  Four statuses are treated as finished: Delivered, Request Cancelled - Duplicate
+  Request, Discontinued Ingredient, and Replacement Ingredient Found. Requests in
+  these states leave the main board and can be found in the Archive.
+</Callout>
+
+## The request detail page
+
+Opening a request shows its full picture across several cards:
+
+- **Basics:** the requesting user, when it was requested, an editable **Expected
+  On** date range, the **Status** and **Priority** (both clickable to change), and
+  **Supplier Tags** for associating one or more suppliers with the request.
+- **Notes:** typed notes on the request, with support for new note types.
+- **Linked Batches:** the batch production records that depend on this item, so you
+  can see what production is waiting on it. You can connect existing batches and see
+  a total quantity needed.
+- **Linked POs:** the purchase orders fulfilling the request. You can connect an
+  existing purchase order or add a new one directly, with a running total of the
+  quantity purchased.
+- **Inventory:** a full-width card with three sub-tabs:
+  - **Current:** live stock figures (On Hand, Allocated, Soft Allocated, Available,
+    Soft Availability), audit status, and tables of pending batches, purchases, and
+    allocations. See [Inventory Quantities](/docs/inventory/quantities) for what
+    each figure means. You can also request an inventory audit from here.
+  - **Notes:** the request's notes again, with a count.
+  - **Snapshot:** the inventory as it was when the request was created, including
+    the duplicate-request warning flags. This is a frozen record, useful for
+    understanding why the request was raised.
+
+## Seeing completed requests
+
+The main board deliberately hides finished requests so it stays focused on active
+work. To see everything, press **Archive** in the header. The archive is a single
+searchable, sortable table that merges both standard and general requests, with
+columns for the reference number, name, status, requester, created date, and type.
+Clicking a row opens that request's detail page.

@@ -3,6 +3,109 @@ title: Unit of Measurement Conversions
 description: How converting from one unit to another is handled in Lumexia.
 ---
 
-International System of Units
-imperial and U.S. customary unit of mass
+Inventory rarely arrives in exactly the unit you stock it in. A supplier might
+sell by the kilogram while you count in pounds, or ship a "sack" that you break
+down into individual units on the shelf. Lumexia reconciles these differences
+with two kinds of unit relationships:
+
+- **Standard conversions** — globally true relationships between scientific
+  units (for example, `1 kg = 1000 g`). They apply everywhere, regardless of
+  item or supplier.
+- **Discrete conversions** — relationships that are only true for a specific
+  item and supplier (for example, *this supplier's* sack of *this flour* holds
+  50 lb).
+
+## Units of Measurement
+
+Units are managed from the **Units** tab of
+[Inventory Settings](/docs/inventory/items#configuration). Each unit has a
+**name** (e.g. Kilogram) and an **abbreviation** (e.g. kg), and the table lists
+them alphabetically.
+
+From the Units of Measurement table you can:
+
+- **Add** a new unit with the `+` button.
+- **Edit** an existing unit's name or abbreviation.
+- **Delete** a unit — but only when nothing depends on it.
+
+<Callout type="warn">
+  A unit can't be deleted while it is still assigned to any record — an item's
+  inventory UOM, a lot, a transaction, a purchase-order line, an audit item, an
+  experiment sample, or an existing conversion. If any of these reference it, a
+  warning appears and the deletion is ignored so historical data stays intact.
+</Callout>
+
+## Standard conversions
+
+Common scientific units come pre-configured: the International System of Units
+(SI), along with imperial and U.S. customary units of mass. Because these
+relationships ship with the system, conversions like grams to kilograms or
+kilograms to pounds work out of the box.
+
+Additional standard conversions are managed from the **Conversions** table on
+the same Units tab, where you can add, edit, and delete them. A conversion is
+stored as a single factor between two units — for example, `1 lb = 453.592 g`.
+
+You only ever enter each pair once. Although a conversion reads in one direction
+(`1 A = N B`), the converter applies it **both ways**: it multiplies by the
+factor going from A to B, and divides by it going from B to A. There is no need
+to add a second, inverse row.
+
+<Callout>
+  If Lumexia needs to convert between two units and can't find a factor, it stops
+  and asks you to add the missing conversion — either a standard conversion (for
+  SI/imperial units) or a discrete conversion (for a specific item and supplier).
+</Callout>
+
+## Discrete conversions
+
+Some units aren't universal — they only make sense for a particular item bought
+from a particular supplier. These are handled with **discrete conversions**,
+which are specific to one item **and** one supplier. They live on the item's
+**Inventory** tab rather than in settings.
+
+This solves the common headache of a supplier selling an item in a different
+unit than the one you keep stock in. For example, suppose you stock **Glycerin** in pounds, but one supplier only sells it by the drum. You can
+add a discrete conversion for that item and supplier stating that `1 drum = 450
+lbs`. Then, when you order 2 drums from that supplier and the order goes through
+the [receiving workflow](/docs/inventory/item-details#inventory), Lumexia adds
+900 lb to the item's stock automatically.
+
+<Callout>
+  Discrete conversions are created and edited per item. See
+  [Discrete Conversions](/docs/inventory/item-details#discrete-conversions) on
+  the item details page for how to manage them.
+</Callout>
+
+A few things to keep in mind:
+
+- There is at most **one** discrete conversion per item + supplier pair.
+- Changing an item's inventory UOM from the
+  [Danger zone](/docs/inventory/item-details#danger-zone) clears that item's
+  discrete conversions, since the unit they resolved to no longer applies.
+
+## How a unit is chosen for conversion
+
+When Lumexia needs to convert a quantity, the **standard** flag on the units
+involved decides the path:
+
+- **Same unit** — if the input and target units are identical, the quantity
+  passes through unchanged.
+- **Standard units** — if the units are standard, Lumexia looks up the global
+  standard conversion between them.
+- **Non-standard units** — if either unit is non-standard, Lumexia looks for a
+  discrete conversion for the specific item and supplier. This is why a discrete
+  conversion needs both an item and a supplier to resolve.
+
+## Quality measurements
+
+The [Quality](/docs/quality) module deliberately does **not** use these
+system-wide units of measurement. Quality and analytical measurements tend to be
+scientific in nature and rarely need to be converted the way inventory
+quantities do in a manufacturing ERP. They are better treated as part of the
+scientific record than as convertible stock quantities, so Lumexia stores them
+as free-form strings rather than as units tied to the conversion system.
+
+
+
 
