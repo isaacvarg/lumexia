@@ -5,20 +5,25 @@ import inventoryTypeActions from "@/actions/inventory/inventoryTypeActions"
 import aliasTypeActions from "@/actions/inventory/aliasTypes"
 import { getAllItemTypes } from "@/actions/inventory/itemTypes/getAll"
 import { getItemFileTypes } from "@/app/inventory/items/[name]/_actions/files/getItemFilesTypes"
+import { getAllUom } from "@/actions/inventory/getAllUom"
+import { getAllUomConversions } from "@/actions/inventory/uomConversions/getAll"
 import InventoryAuditSettingsForm from "./_components/InventoryAuditSettingsForm"
 import InventoryConfiguration from "./_components/InventoryConfiguration"
+import UnitsConfiguration from "./_components/UnitsConfiguration"
 import TabSelector from "./_components/shared/TabSelector"
 import TabsContainer from "./_components/shared/TabsContainer"
 
 const InventorySettingsPage = async () => {
 
-  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes] = await Promise.all([
+  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes, uoms, uomConversions] = await Promise.all([
     appActions.configs.ensureInventoryAuditConfigs(),
     itemTypeActions.getAll(),
     inventoryTypeActions.getAll(),
     getAllItemTypes(),
     aliasTypeActions.getAll(),
     getItemFileTypes(),
+    getAllUom(),
+    getAllUomConversions(),
   ])
 
   return (
@@ -35,6 +40,9 @@ const InventorySettingsPage = async () => {
             aliasTypes={aliasTypes}
             fileTypes={fileTypes}
           />
+        }
+        units={
+          <UnitsConfiguration uoms={uoms} conversions={uomConversions} />
         }
       />
     </div>

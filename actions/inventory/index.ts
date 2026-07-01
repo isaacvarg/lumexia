@@ -29,6 +29,10 @@ import { getAllLots } from "./lots/getAll";
 import { getSingleLot } from "./lots/getOne";
 import { getReceivables } from "./receiving/getReceivables";
 import { createInventoryTransaction } from "./transactions/create";
+import { createUomConversion } from "./uomConversions/create";
+import { deleteUomConversion } from "./uomConversions/delete";
+import { getAllUomConversions } from "./uomConversions/getAll";
+import { updateUomConversion } from "./uomConversions/update";
 
 export const inventoryActions = {
   getInventory: getInventory,
@@ -75,6 +79,12 @@ export const inventoryActions = {
   },
   uom: {
     getAll: getAllUom,
+  },
+  uomConversions: {
+    getAll: getAllUomConversions,
+    create: createUomConversion,
+    update: updateUomConversion,
+    delete: deleteUomConversion,
   },
   receiving: {
     getReceivables: getReceivables,
