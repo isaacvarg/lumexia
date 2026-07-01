@@ -3,7 +3,6 @@ import React from 'react'
 import CreateEditMBPR from './_components/CreateEditMBPR'
 import { productionActions } from '@/actions/production'
 import MbprTable from './_components/MbprTable'
-import EditConfigurations from './_components/EditConfigurations'
 
 const MbprMainPage = async () => {
 
@@ -13,9 +12,8 @@ const MbprMainPage = async () => {
     <div className='flex flex-col gap-6'>
       <PageTitle>Master Batch Production Records</PageTitle>
 
-      <div className='flex justify-between'>
+      <div className='flex justify-start'>
         <CreateEditMBPR />
-        <EditConfigurations />
       </div>
 
       <MbprTable mbprs={mbprs} />

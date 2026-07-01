@@ -1,6 +1,7 @@
 "use server"
 
 import { bprBomLineStatuses } from "@/configs/staticRecords/bprBomLineStatuses";
+import { getBprOverviews } from "@/lib/bpr/bprOverview";
 import prisma from "@/lib/prisma";
 
 export const getAwaitingVerificationBprs = async (isSecondary: boolean = false) => {
@@ -24,11 +25,23 @@ export const getAwaitingVerificationBprs = async (isSecondary: boolean = false) 
         include: {
           producesItem: true,
         }
+      },
+      lotOrigin: {
+        include: {
+          lot: true,
+        }
       }
 
     }
   })
 
-  return bprs;
+  const overviews = await getBprOverviews(bprs.map(b => ({ id: b.id, bprStatusId: b.bprStatusId })))
+
+  return bprs.map(bpr => ({
+    ...bpr,
+    overview: overviews[bpr.id] ?? null,
+  }))
 
 }
+
+export type AwaitingVerificationBpr = Awaited<ReturnType<typeof getAwaitingVerificationBprs>>[number]

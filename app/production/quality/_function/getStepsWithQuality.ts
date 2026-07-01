@@ -1,13 +1,26 @@
 import { bprStepActionableStatuses } from "@/configs/staticRecords/bprStepActionableStatuses";
+import { getBprOverviews } from "@/lib/bpr/bprOverview";
 import prisma from "@/lib/prisma"
 
 export const getStepsWithQuality = async (isSecondary: boolean) => {
 
   // first we need bprs with a compounding status
-  const bprs = await getIncompleteBprs(isSecondary)
+  const steps = await getIncompleteBprs(isSecondary)
 
+  const overviews = await getBprOverviews(
+    steps.map(s => ({ id: s.bprBatchStep.bpr.id, bprStatusId: s.bprBatchStep.bpr.bprStatusId }))
+  )
 
-  return bprs
+  return steps.map(step => ({
+    ...step,
+    bprBatchStep: {
+      ...step.bprBatchStep,
+      bpr: {
+        ...step.bprBatchStep.bpr,
+        overview: overviews[step.bprBatchStep.bpr.id] ?? null,
+      },
+    },
+  }))
 
 }
 
@@ -48,6 +61,11 @@ const getIncompleteBprs = async (isSecondary: boolean) => {
               mbpr: {
                 include: {
                   producesItem: true
+                }
+              },
+              lotOrigin: {
+                include: {
+                  lot: true,
                 }
               }
             }

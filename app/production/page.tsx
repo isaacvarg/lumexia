@@ -1,9 +1,7 @@
-import React from 'react'
+import { redirect } from "next/navigation"
 
-const ProductionMain = () => {
-  return (
-    <div>ProductionMain</div>
-  )
+const ProductionPage = () => {
+  redirect('/settings/production')
 }
 
-export default ProductionMain
+export default ProductionPage
