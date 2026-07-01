@@ -1,0 +1,76 @@
+---
+title: Production Quality
+description: Primary and secondary verification of a batch, and how it gates progress until sign-off.
+---
+
+Production Quality is the verification checkpoint inside a batch. As materials are
+[staged](/docs/production/compounding) and steps are worked, Production Quality
+independently checks that the right lot was pulled in the right amount, and that
+flagged steps were done correctly, before the batch is allowed to move on.
+
+<Callout>
+  This is the **production-side** quality check that gates a batch during
+  manufacturing. It is separate from the top-level [Quality](/docs/quality)
+  module, which defines item specifications and records QC examinations against
+  lots. Both are "quality", but they do different jobs.
+</Callout>
+
+{/* ![Production Quality dashboard](/modules/production/production-quality.png) */}
+
+## Why verification exists
+
+Every material weighed by production is checked by someone else before it is
+consumed, and the check is done **twice**, by two different roles. This two-person,
+two-pass control means no single person both stages a material and clears it: a
+mistake in the wrong lot or the wrong amount is caught before it goes into the
+batch. Certain compounding steps can also require sign-off before the next step
+proceeds.
+
+## The verification queues
+
+The dashboard at `/production/quality` gathers the work waiting on quality into
+two queues:
+
+- **Awaiting Primary Verification**: staged materials and flagged steps that need
+  their first check.
+- **Awaiting Secondary Verification**: items that passed primary and need the
+  independent second check.
+
+When both queues are empty, there is nothing waiting on quality.
+
+## The verification workflow
+
+Opening an item shows what was staged: the material, the **lot**, the **quantity**
+weighed, who staged it, and (in the newer view) the staging photos. The verifier
+then either:
+
+- **Approves / verifies** the staged weight, or
+- **Denies** it with a note explaining why.
+
+Verification runs in two passes. A staged material advances **Staged → Primary
+Verified → Secondary Verified**, with primary done by the **Production Quality**
+role and secondary by the **Production Quality Secondary** role. A material's
+line is only fully cleared once every staged pull for it has been secondary
+verified.
+
+Flagged compounding-step actionables are verified the same way: an actionable
+marked as requiring verification is checked (and, if configured, secondarily
+checked) before its step can be completed.
+
+## How verification locks the batch
+
+Verification is a gate, not a formality. It blocks the batch's progress in three
+places until sign-off is complete:
+
+1. **Staging to compounding.** A batch cannot leave **Staging Materials** for
+   **Compounding** until **every** material line has been **secondary verified**.
+   Until then the compounding steps do not open.
+2. **Step locking.** During compounding, a step is **locked** while the previous
+   step has verification-required actionables that quality has not yet verified.
+   A locked step shows "STEP IS LOCKED" and directs staff to get Production QA to
+   verify.
+3. **Material check-off.** A material can only be checked off on a step once it
+   has been secondary verified; before that it shows "Awaiting verification".
+
+Together these ensure a batch physically cannot advance past a material or a
+flagged step until Production Quality has signed off on it.

@@ -1,0 +1,147 @@
+---
+title: Planning
+description: Requesting batches, material sufficiency and allocation, scheduling, and the BPR lifecycle.
+---
+
+Planning is where **Batch Production Records (BPRs)** are created and managed. A
+BPR is one concrete run of an item, instantiated from that item's
+[MBPR](/docs/production/mbpr) at a chosen batch size. This page covers requesting
+a batch, reading its material sufficiency, allocating stock, scheduling, and
+moving it through its lifecycle.
+
+The planning dashboard lives at `/production/planning`.
+
+{/* ![Planning dashboard](/modules/production/planning.png) */}
+
+## The planning dashboard
+
+The dashboard has two views:
+
+- **Status**: BPRs grouped by status. A row of status buttons (each with a count)
+  sits above a grid of batch cards for the selected status.
+- **Table**: every BPR in one table, filterable by **Item** and **Status**.
+
+Two buttons sit in the header:
+
+- **Request Batch** starts a new BPR (below).
+- **Handle Completed BPRS** processes finished batches (below).
+
+Clicking a batch card or table row opens that BPR's detail page.
+
+## Requesting a batch
+
+**Request Batch** opens a short wizard: pick the **produced item**, then its
+**active MBPR**, then a **batch size** defined on that MBPR. Submitting creates a
+new BPR in **Draft** status and does the setup work automatically:
+
+- Copies the MBPR's bill of materials into the BPR, converting each line's
+  concentration into an absolute quantity in pounds for the chosen batch size.
+- Generates the BPR's per-run steps and actionables from the MBPR's steps.
+- Creates a [lot](/docs/inventory/lot-numbers) for the produced item (starting at
+  zero quantity) that the finished batch will fill.
+
+"Requesting a batch" therefore means instantiating a ready-to-work draft from the
+master recipe. From there, planning works its material sufficiency and schedules
+it.
+
+## The BPR detail page
+
+An open BPR is organized into tabs:
+
+- **Basics**: three cards, **Batch Size**, **Status**, and **Scheduling**, plus
+  the **Bill of Materials** sufficiency table (below).
+- **Steps**: each batch step and its actionables, with completion values as they
+  are filled in during compounding.
+- **Quality**: the [examinations](/docs/quality/examinations) conducted against
+  this batch.
+- **Notes**: notes attached to the BPR.
+- **Activity**: the change log.
+
+The **Status** card shows the batch's current status and opens a **Change Status
+To…** dialog for manual changes. **Scheduling** sets the batch's scheduled
+date range, which is what puts it on the [compounding](/docs/production/compounding)
+schedule.
+
+## The bill of materials and material sufficiency
+
+The Basics tab's bill-of-materials table lists every material the batch needs and
+whether there is enough stock. Its columns change with the batch's status: a
+**Draft** BPR shows the required and available amounts and a sufficiency verdict,
+and once the batch leaves Draft the table adds **Staged**, **1° Verification**,
+and **2° Verification** columns that track staging progress on the floor.
+
+The **Sufficiency** column flags each material at a glance:
+
+- A green check: enough on hand.
+- A yellow triangle: enough on hand for this batch, but not once other draft
+  batches are also accounted for.
+- A red X: not enough on hand.
+
+Each material line also carries its own status as it is staged: **Pending →
+Staged → Primary Verified → Secondary Verified → Consumed**.
+
+### The material allocations dialog
+
+Clicking a material row opens the material's **Material Allocations** dialog, which breaks
+down exactly where the item stands. Every amount is in pounds and carries a
+tooltip:
+
+| Amount | Meaning |
+| --- | --- |
+| **On Hand** | Physical quantity in stock across all lots. |
+| **Allocated (Other Batches)** | Committed to other confirmed batches that have not yet consumed their materials. Excludes this batch. |
+| **Soft Allocated (Other Batches)** | Committed to other **draft** batches not yet confirmed. Excludes this batch. |
+| **Required for this Batch** | How much this batch needs. |
+| **Available after this Batch** | On Hand minus other batches' allocations minus this batch's requirement: what would remain free. |
+| **Soft Availability after this Batch** | The above, minus other drafts' soft allocations. |
+
+These mirror the item's inventory quantities; see
+[Inventory Quantities](/docs/inventory/quantities) for the underlying
+definitions. The dialog also lists active purchasing requests, allocations, and
+purchase orders for the material, and lets you act on a shortfall directly:
+
+- **Request Inventory Audit**: raise an [audit](/docs/inventory/audits) to confirm
+  the true on-hand count.
+- Raise a [purchasing request](/docs/purchasing/procurement-requests) for the
+  material.
+
+## Scheduling
+
+Set a scheduled date range on the **Scheduling** card. A batch cannot be opened
+on the [compounding](/docs/production/compounding) floor until it has a scheduled
+date, so scheduling here is what makes a queued batch workable.
+
+## The BPR lifecycle
+
+Most status changes happen automatically as work completes; the manual "Change
+Status To…" dialog is for exceptions. The everyday flow:
+
+1. **Draft**: created by Request Batch. Planning works material sufficiency and
+   may set intermediate statuses (Allocating Materials, Verifying BOM
+   Fulfillment, Awaiting Materials, Known Material Arrival) while stock is sorted
+   out.
+2. **Queued**: confirmed and scheduled, ready to stage.
+3. **Staging Materials**: materials are staged and verified on the floor.
+4. **Compounding**: every material verified; the steps are worked.
+5. **Completed**: all steps done.
+6. **Awaiting QC**: after the completion cascade consumes materials (below).
+7. **Released**: cleared for use or sale.
+
+Off the happy path are **Investigating / Corrective Actions**, **Failed**, and
+**Consumption Error**.
+
+## Handling completed batches
+
+When a batch finishes compounding it becomes **Completed**, but its materials are
+not consumed from inventory until you run the completion step. **Handle Completed
+BPRS** on the dashboard processes every completed batch at once:
+
+- Creates inventory consumption [transactions](/docs/inventory/quantities) for
+  each staged material.
+- Marks the batch's materials as consumed.
+- Advances each batch from **Completed** to **Awaiting QC**.
+
+If consumption fails for a batch, it is moved to **Consumption Error** and a note
+records the cause; a per-batch **Retry Consumption** button on the Status card
+re-runs the process once the problem is fixed. The action is safe to re-run: it
+cleans up any prior consumption first.

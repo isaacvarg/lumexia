@@ -1,0 +1,84 @@
+---
+title: Lot Numbers
+description: How lot numbers are constructed, how to read their parts, and how the QR code on a label relates to the lot.
+---
+
+A **lot** is one physical batch of stock of an [item](/docs/inventory/items):
+the units you received in a single delivery, or the output of a single
+production run. Stock quantities are computed from lots (see
+[Inventory Quantities](/docs/inventory/quantities)), and each lot is managed from
+the item's [Lots](/docs/inventory/item-details#lots) tab.
+
+Every lot carries a **lot number**: a short, human-readable code that identifies
+it. Lumexia generates this number automatically whenever a lot is created,
+whether from [receiving](/docs/receiving/workflow) a purchase order, a production
+run, or a lot created by hand. You never type a lot number yourself, but knowing
+how it is built makes it easy to read one off a label and understand what it
+tells you.
+
+## Anatomy of a lot number
+
+A lot number follows a fixed pattern:
+
+```
+<reference code>.<letter><2 digits><month letter><DD><YY>
+```
+
+For example, `BASE1234.A12A0124` is a lot of the item with reference code
+`BASE1234`, created on January 01, 2024.
+
+Everything after the `.` is a compact date-and-serial stamp. Read left to right:
+
+| Segment | Example | Meaning |
+| --- | --- | --- |
+| **Reference code** | `BASE1234` | The [item's reference code](/docs/inventory/items), before the dot. Ties the lot to its item. |
+| **Serial letter + digits** | `A12` | A random letter (`A`–`Z`) and two random digits (`00`–`99`). Keeps lot numbers unique when several lots of the same item are created on the same day. |
+| **Month letter** | `A` | The month, encoded as a letter: `A` = January through `L` = December. |
+| **Day** | `01` | The two-digit day of the month. |
+| **Year** | `24` | The last two digits of the year. |
+
+### Month letters
+
+The month is written as a single letter, `A` through `L`:
+
+| Letter | Month | Letter | Month |
+| --- | --- | --- | --- |
+| `A` | January | `G` | July |
+| `B` | February | `H` | August |
+| `C` | March | `I` | September |
+| `D` | April | `J` | October |
+| `E` | May | `K` | November |
+| `F` | June | `L` | December |
+
+## Reading a lot number
+
+Take `BASE1234.A12A0124` and split it at the dot:
+
+- `BASE1234` is the item's reference code, so this lot belongs to that item.
+- `A12` is the random serial, guaranteeing this lot number differs from any other
+  lot of `BASE1234` stamped the same day.
+- `A` is the month letter: January.
+- `01` is the day.
+- `24` is the year: 2024.
+
+So the lot was created on **January 01, 2024** for item **BASE1234**.
+
+<Callout>
+  The serial (`A12` above) is random, not sequential. It exists only to keep lot
+  numbers distinct; it does not count lots or imply an order.
+</Callout>
+
+## The QR code on a label relates to the lot's ID
+
+When you print a [label](/docs/receiving/labels), the lot number is printed on it
+in plain text, and the label also carries a **QR code**. The QR code does not
+encode the printed lot number: it encodes the lot's **unique ID** (its internal
+identifier). Scanning the QR resolves straight to that exact lot record, with no
+ambiguity even if two lot numbers ever looked alike.
+
+This is what makes scanning fast and reliable elsewhere in Lumexia: during an
+[inventory audit](/docs/inventory/audits) you scan a lot to pull up the item and
+count it, and when raising a
+[procurement request](/docs/purchasing/procurement-requests) a scan resolves the
+lot to its parent item and fills the form in for you. In every case the scan is
+matched on the lot's ID, not on the human-readable lot number.

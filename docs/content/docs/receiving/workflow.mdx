@@ -1,0 +1,137 @@
+---
+title: Workflow
+description: Finding what needs receiving, receiving items fully or partially, unit conversions, and the lots that result.
+---
+
+Receiving works through purchase orders that are on their way in. The dashboard
+at `/receiving` gathers every order that is ready to be received, and each
+order's page is where you count its line items into stock.
+
+![Receiving dashboard](/modules/receiving/dashboard.png)
+
+## Seeing what needs to be received
+
+The receiving dashboard has two tabs:
+
+- **Awaiting:** orders that still have goods to receive. An order appears here
+  when its status is **Confirmed / Awaiting Delivery** or **Partially Received**.
+- **Received:** orders that have been fully received. These are kept for
+  reference and for reprinting labels.
+
+Both tabs show the same columns:
+
+| Column | Meaning |
+| --- | --- |
+| **#** | The purchase order's reference number. |
+| **Supplier** | The supplier the order was placed with. |
+| **Status** | Where the order sits in its pipeline, shown as a colored tag. |
+| **Updated** | When the order last changed. |
+
+You can filter by **Supplier**, and clicking a row opens that order's receiving
+page.
+
+<Callout>
+  An order only shows up in receiving once it reaches **Confirmed / Awaiting
+  Delivery**. Advance it that far from the purchase order itself; see
+  [pushing a purchase order through the pipeline](/docs/purchasing/purchase-orders#pushing-a-purchase-order-through-the-pipeline).
+  The purchase order's **Receiving** button warns you if the order is not yet at
+  that stage.
+</Callout>
+
+The home dashboard also carries a **Receivable POs** panel that lists the same
+awaiting orders, so incoming deliveries are visible without opening the module.
+
+## The order's receiving page
+
+Opening an order shows its line items split into two sections:
+
+- **Receivables:** line items that have not been received yet. This is the
+  action area, where you count goods in.
+- **Received:** line items that have already been received. This is where you
+  print [labels](/docs/receiving/labels) for the resulting lots.
+
+### The item name shown in the table
+
+Suppliers often refer to an item by their own name or catalogue code. When a
+[supplier alias](/docs/inventory/items#aliases) exists for this order's supplier
+and item, the table shows the supplier's name for the item; otherwise it shows
+your true item name. This helps warehouse staff be able to identify what is being received, as the supplier name is likely what be on physical shipment.
+
+When an item has other names on file, a small icon appears
+next to it: hover over the icon to see an **Aliases** tooltip listing every
+other name the item is known by, including your true item name.
+
+## Receiving items
+
+In the **Receivables** section, select one or more line items. Two actions
+appear:
+
+- **Fully Receive:** books in the entire ordered quantity of each selected line.
+- **Partially Receive:** lets you enter a smaller quantity for each selected
+  line.
+
+### Fully receiving
+
+**Fully Receive** counts the full ordered quantity of every selected line into
+stock. If you receive every remaining line on the order, the order moves to
+**Received**. If you fully receive only some lines and leave others, the order
+moves to **Partially Received** and stays on the Awaiting tab until the rest
+arrives.
+
+### Partially receiving
+
+Choose **Partially Receive** when a line arrives incomplete. Each selected item
+gets a **Quantity** field, prefilled with the full ordered amount and labeled
+with the purchase unit. Enter what actually arrived and submit.
+
+When you receive less than the ordered quantity, the line splits: the amount you
+received is booked into stock, and a new line item is created for the remainder
+so it stays outstanding on the order. The order moves to **Partially Received**,
+and the leftover line waits on the Awaiting tab for the next delivery.
+
+<Callout>
+  Receiving a delivery also updates any [procurement
+  requests](/docs/purchasing/procurement-requests) linked to the order, marking
+  them Delivered or Partial Delivery so the original requester can see progress.
+</Callout>
+
+## Units and conversions
+
+An order records quantities in the unit the supplier sells in, which is not
+always the unit you stock the item in. Receiving reconciles the two: when the
+purchase unit differs from the item's inventory unit of measurement, the
+received quantity is converted into the inventory unit before the lot is created.
+
+Lumexia converts using either a standard conversion (for SI or imperial units)
+or a supplier-specific [discrete
+conversion](/docs/inventory/item-details#discrete-conversions) (for pack units
+like a case, tote, or drum). For the full picture of how conversions are
+defined, see [Unit of Measurement
+Conversions](/docs/inventory/uom-conversions).
+
+If no conversion exists for the units involved, the line cannot be received and
+shows a red **Conversion Error** button instead. Clicking it opens the discrete
+conversion form for that item and supplier, pre-filled with the purchase unit;
+once you save the conversion (for example, `1 drum = 450 lb`), return to
+receiving and the line can be received normally.
+
+## The lots that result
+
+Each received line becomes a new [lot](/docs/inventory/item-details#lots) of the
+item:
+
+- The lot's quantity is stored in the item's **inventory unit of measurement**,
+  after any conversion above.
+- A [lot number](/docs/inventory/lot-numbers) is generated automatically from the
+  item's reference code and the date.
+- The lot records its origin as this purchase order, so you can always trace a
+  lot back to the receipt that created it.
+
+<Callout>
+  Receiving does not capture an expiry date. If you track expiry, record it
+  separately; lots created from receiving carry a lot number, quantity, and
+  origin, but no expiration field.
+</Callout>
+
+Once a line is received, it moves to the **Received** section, where you can
+generate [labels](/docs/receiving/labels) for its lot.

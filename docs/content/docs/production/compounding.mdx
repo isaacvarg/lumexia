@@ -1,0 +1,116 @@
+---
+title: Compounding
+description: Staging materials and executing batch steps on the production floor.
+---
+
+Compounding is the shop-floor half of production: the place where staff
+physically stage the materials for a batch and then work through its steps to
+make it. It picks up where [Planning](/docs/production/planning) leaves off, once
+a batch is queued and scheduled.
+
+The compounding area lives at `/production/compounding`.
+
+{/* ![Compounding](/modules/production/compounding.png) */}
+
+## Staging and compounding
+
+The work happens in two phases:
+
+- **Staging**: gathering and weighing each raw material the batch needs,
+  scanning its lot, and recording the weight. Staged materials are then verified
+  by [Production Quality](/docs/production/quality).
+- **Compounding**: following the batch's ordered steps: reading the
+  instructions, adding the verified materials, and checking off each actionable
+  to actually produce the batch.
+
+## The compounding dashboard
+
+The dashboard shows two things:
+
+- A **This Week / Next Week** schedule grid of batches due in the production days
+  ahead.
+- **All Compoundables**: every batch currently in a workable status.
+
+A batch appears as compoundable when its status is **Queued**, **Staging
+Materials**, or **Compounding**.
+
+<Callout type="warn">
+  A batch with no scheduled date cannot be opened here: clicking it shows
+  **Missing Schedule Date** and asks you to add a schedule date to access it.
+  Scheduling is done back in [Planning](/docs/production/planning) on the batch's
+  Scheduling card.
+</Callout>
+
+Opening a batch shows the right view for its status: a queued batch offers
+**Begin Staging**; a staging batch shows the staging panels; a compounding batch
+shows the steps.
+
+## Roles
+
+Compounding is built around three roles, and what you see when you open a batch
+depends on which role you hold:
+
+- **Production**: stages materials and executes the batch steps.
+- **Production Quality**: performs **primary** verification of staged materials
+  and flagged steps.
+- **Production Quality Secondary**: performs an independent **secondary**
+  verification.
+
+If your role has nothing to do at the batch's current stage, you see a read-only
+overview that names the team the batch is waiting on. This split enforces that no
+single person both stages a material and clears it. Verification is covered in
+full on the [Production Quality](/docs/production/quality) page.
+
+## Staging a material
+
+From a queued batch, press **Begin Staging** to move it to **Staging Materials**.
+The batch's materials are then split into **Not Started** and **Staged**.
+
+To stage a material, open it and work the short wizard:
+
+1. **Scan** the lot's barcode. The scanned lot must be a lot of the required
+   item, or Lumexia rejects it.
+2. **Enter the weight** in pounds. There must be enough on hand, and the staged
+   amount must fall within a **±1.5% tolerance** of the required quantity.
+3. Optionally attach a **photo** of the staged material.
+
+Each staged weight is recorded, and a material can be staged in more than one
+pull until its total is within tolerance. Once a material is fully staged, its
+line moves to **Staged**, ready for [verification](/docs/production/quality).
+
+## Compounding the batch
+
+When every material has been staged and verified, the batch moves to
+**Compounding** and the steps open up. Steps are worked in order. On the current
+step, staff:
+
+- Read the **instructions**, **materials**, and any **addendums** carried over
+  from the [MBPR](/docs/production/mbpr).
+- **Check off each material** as it is added. A material can only be checked off
+  once it has been **secondary verified**; until then it shows "Awaiting
+  verification".
+- **Complete each actionable**, entering the value its type calls for (a yes/no
+  check, a number, a photo, or a note).
+
+**Complete Step** becomes available only when the prior steps are done, every
+material is checked off, and every actionable is complete. When the last step is
+completed, the batch is automatically marked **Completed**.
+
+<Callout>
+  A step can be **locked** if the previous step still has actionables awaiting
+  Production Quality verification. A locked step shows "STEP IS LOCKED" and asks
+  you to get Production QA to verify before continuing. See
+  [Production Quality](/docs/production/quality) for how this gating works.
+</Callout>
+
+## Active timers
+
+The compounding area is designed to track **active timers** for batches in
+progress (for example, tank time). This feature is a **work in progress**: the
+panel currently shows "No active timers" and is not yet functional.
+
+## After completion
+
+A completed batch still has to have its materials consumed from inventory and be
+moved into quality control. That final step is handled from Planning; see
+[Handling completed batches](/docs/production/planning#handling-completed-batches).

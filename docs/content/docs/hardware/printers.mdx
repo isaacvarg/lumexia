@@ -1,0 +1,74 @@
+---
+title: Printers
+description: How Lumexia prints labels, the two printing paths, and their hardware requirements.
+---
+
+Lumexia prints labels in two different ways, depending on what is being labeled.
+Inventory and receiving labels are generated as a PDF and printed through your
+computer like any other document; research sample labels are sent directly to a
+small thermal label printer over Bluetooth. The two paths use different hardware
+and have different requirements.
+
+<Callout>
+  There is no printer settings page in Lumexia. Neither path needs in-app
+  configuration: the PDF path uses your operating system's own print dialog, and
+  the Bluetooth path is set up in the browser at print time.
+</Callout>
+
+## Inventory and receiving labels (PDF)
+
+The QR labels produced by [receiving](/docs/receiving/labels) and from a
+[lot's details](/docs/inventory/item-details#lots) are generated as a PDF and
+downloaded to your computer. You then open that file and print it through your
+operating system's normal print dialog.
+
+Because it is just a PDF, this path works with **any printer**: a regular office
+printer, or a dedicated label printer loaded with label stock. There is no brand
+requirement and no driver specific to Lumexia.
+
+A few practical notes:
+
+- Each label is a **4 x 3 inch** page, one label per page.
+- For sheet printers, print onto 4 x 3 label sheets or trim to size.
+- For a dedicated label printer, load 4 x 3 media and make sure your print
+  dialog is set to print at actual size (no "fit to page" scaling), so the QR
+  code stays crisp and scannable.
+
+## Research sample labels (Niimbot thermal printer)
+
+Labels for research and experiment **samples** take a different route: they are
+sent straight to a thermal label printer over Bluetooth, with no PDF and no
+system print dialog.
+
+This path is built for a specific device:
+
+| Requirement | Value |
+| --- | --- |
+| **Printer** | Niimbot B1 thermal label printer |
+| **Resolution** | 203 DPI |
+| **Label size** | 50 x 30 mm |
+| **Connection** | Web Bluetooth |
+| **Browser** | Chrome or Edge |
+
+Some setup details worth knowing:
+
+- Printing runs from the **computer physically paired** to the printer over
+  Bluetooth. The first time you print, the browser prompts you to choose the
+  Bluetooth device.
+- Only **Chrome or Edge** support the Web Bluetooth connection this uses. If the
+  print button reports a connection problem, open the page in one of those
+  browsers on the printer's computer.
+- One click prints one label for the selected sample.
+
+<Callout type="warn">
+  The Niimbot path is fixed to the Niimbot B1 at 203 DPI on 50 x 30 mm labels.
+  Other thermal printers, including Zebra (ZPL), Brother, and DYMO, are not
+  supported.
+</Callout>
+
+## Which path applies
+
+| You are labeling | Printer path |
+| --- | --- |
+| A lot from [receiving](/docs/receiving/labels) or [lot details](/docs/inventory/item-details#lots) | PDF, any printer |
+| A [research](/docs/research) sample | Niimbot B1 over Bluetooth |

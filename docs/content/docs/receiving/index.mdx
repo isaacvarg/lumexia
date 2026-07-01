@@ -1,0 +1,40 @@
+---
+title: Receiving
+description: Booking confirmed purchase orders into stock as lots, and printing labels.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+![Receiving board](/modules/receiving/receiving.png)
+
+The receiving module is where goods physically arriving at the facility are
+counted in against their [purchase orders](/docs/purchasing/purchase-orders) and
+become new stock. It closes the procure-to-receive loop: purchasing commits to
+buying an item, and receiving turns the delivery that follows into countable
+inventory.
+
+Every receipt does two things at once. It records that some or all of a purchase
+order has been delivered, advancing the order's status; and it creates a new
+**lot** of the item, stored in the item's inventory unit of measurement, ready
+to be tracked, transacted, and consumed like any other stock.
+
+## Where it fits
+
+Receiving sits between purchasing and inventory:
+
+1. A [purchase order](/docs/purchasing/purchase-orders) is confirmed with a
+   supplier and moves to **Confirmed / Awaiting Delivery**. Only then does it
+   appear in receiving.
+2. When the shipment arrives, you receive its line items: fully, or partially if
+   only some of the order turned up.
+3. Each received line becomes a [lot](/docs/inventory/item-details#lots) of the
+   item, and the order advances to **Received** or **Partially Received**.
+4. Optionally, you print QR [labels](/docs/receiving/labels) for the new lots so
+   the physical stock can be identified and scanned later.
+
+The receiving dashboard lives at `/receiving`, and is also reachable from the
+**Receiving** button on a purchase order and the **Receivable POs** panel on the
+home dashboard.
+
+## In this section
+

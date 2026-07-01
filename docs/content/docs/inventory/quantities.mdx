@@ -9,7 +9,8 @@ of inventory misunderstanding. This page defines each one precisely.
 
 <Callout>
   **On-hand stock is not a stored number.** Lumexia never keeps a single
-  "quantity" field that gets edited up and down. Instead, every lot remembers the
+  "quantity" field that gets edited up and down. Instead, every
+  [lot](/docs/inventory/lot-numbers) remembers the
   quantity it started with, and every change is recorded as a **transaction**.
   On-hand is recomputed from that ledger whenever it's needed. This gives a
   complete, auditable history of every movement.

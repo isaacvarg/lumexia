@@ -1,0 +1,80 @@
+---
+title: Parameters
+description: Measurable characteristics, their data types and input definitions, and templates and groups for reuse.
+---
+
+A **parameter** is a measurable characteristic of an item that quality cares
+about: pH, assay, appearance, viscosity, and so on. Parameters are the vocabulary
+of the quality module: you define them once, attach them to items as
+[specifications](/docs/quality/specifications), and record values against them in
+[examinations](/docs/quality/examinations).
+
+Parameters are managed at `/quality/qc/parameters`, which has three tabs:
+**Parameters**, **Groups**, and **Templates**.
+
+{/* ![Parameters](/modules/quality/parameters.png) */}
+
+## What a parameter carries
+
+Each parameter has:
+
+- **Name**: what is being measured (for example, "pH").
+- **Data type**: the kind of value the measurement takes (below).
+- **Unit of measurement**: a free-text label shown next to the value (for
+  example, "pH", "°C", "%").
+- **Is Wet Parameter**: a flag distinguishing wet-chemistry parameters.
+- Optional **input definitions**: extra sub-inputs captured alongside the main
+  value (below).
+
+### Data types
+
+A parameter takes one of four data types:
+
+| Data type | Value |
+| --- | --- |
+| **Number** | A decimal measurement. |
+| **Integer** | A whole-number measurement. |
+| **Text** | A free-text observation. |
+| **Boolean** | A yes/no result, displayed as **Pass** / **Fail**. |
+
+<Callout>
+  Quality measurements are stored as free-form values and are deliberately **not**
+  run through the system's unit conversions: the unit is just a label. Scientific
+  and analytical measurements rarely need conversion the way inventory quantities
+  do. See [Unit of Measurement Conversions](/docs/inventory/uom-conversions#quality-measurements).
+</Callout>
+
+## Input definitions
+
+Some measurements need context recorded alongside the main value, such as the
+temperature or wavelength a reading was taken at. **Input definitions** capture
+these extra sub-inputs. Each input definition has a name, a label, a data type, an
+optional unit, and a **Required** flag, and they later appear as additional fields
+when a value is recorded during an examination. Specifications can also be
+**pinned** to specific input-definition values (see
+[Specifications](/docs/quality/specifications#conditions)).
+
+## Creating a parameter
+
+Use **New Parameter** and fill in the name, description, unit of measurement, and
+data type, plus the Is Wet Parameter flag. The parameter's own configuration page
+then lets you manage its **Basics**, its membership in **Groups** and
+**Templates**, and its **Input Definitions**.
+
+## Templates and groups
+
+Templates and groups both save you from adding parameters to items one at a time,
+but they work differently:
+
+- A **Template** is simply a named, reusable set of parameters. Applying a
+  template to an item attaches all of its parameters at once. Templates are good
+  for "the parameters we always test on this kind of item".
+- A **Group** is a set of parameters tied to an **examination type**. Groups
+  control **which parameters appear for a given examination type** when
+  conducting an examination. A group carries a name, an abbreviation, and the
+  examination type it belongs to.
+
+Membership is managed from either side: add a parameter to a template or group,
+or add parameters to a template or group from its own detail page. Applying a
+template to an item is done from the item's
+[Quality tab](/docs/quality/specifications).

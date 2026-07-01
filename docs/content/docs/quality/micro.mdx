@@ -1,0 +1,34 @@
+---
+title: Micro
+description: Generating a sample submission form for outsourced microbiological testing.
+---
+
+The **Micro** area handles microbiological testing, which is typically sent out
+to a lab rather than measured in-house. Instead of recording results the way an
+[examination](/docs/quality/examinations) does, Micro generates a **Sample
+Submission Form (SSF)**: the paperwork that accompanies the physical samples to
+the testing lab.
+
+Micro lives at `/quality/micro`.
+
+{/* ![Micro submission](/modules/quality/micro.png) */}
+
+## Creating a submission
+
+Creating a submission is a two-step wizard:
+
+1. **Select a BPR**: search for and pick the produced
+   [batch](/docs/production/planning) the samples are drawn from. Each result
+   shows the produced item, the batch reference, and its lot number.
+2. **Sample designation**: declare how many containers of each kind are being
+   sampled: **Drums**, **Pails**, **Gallons**, and **Tank**.
+
+Submitting generates the Sample Submission Form as a printable PDF for the samples
+to travel with.
+
+<Callout>
+  Micro does not record measurements or evaluate specifications: it produces the
+  lab submission document. Results that come back from the lab are recorded
+  separately, for example as a [finished-product examination](/docs/quality/examinations)
+  on the lot.
+</Callout>

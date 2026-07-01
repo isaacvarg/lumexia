@@ -1,0 +1,175 @@
+---
+title: MBPR
+description: Authoring the master batch record; its versions, steps, materials, instructions, batch sizes, and vessels.
+---
+
+A **Master Batch Production Record (MBPR)** is the master template for producing
+one item. It is the recipe: the bill of materials, the ordered steps and their
+instructions, and the batch sizes the item can be made in. You write an MBPR once
+and every batch of that item is instantiated from it.
+
+An MBPR differs from a [BPR](/docs/production/planning) in the same way a recipe
+differs from a meal. The MBPR stores materials as **concentrations** (percent by
+weight) and templated steps; a BPR resolves those into concrete pounds and
+per-run tasks when an actual batch is requested. One MBPR yields many BPRs.
+
+MBPRs live at `/production/mbpr`.
+
+![MBPR list](/modules/production/mbpr-list.png)
+
+## The MBPR list
+
+The list, titled **Master Batch Production Records**, shows one row per record:
+
+| Column | Meaning |
+| --- | --- |
+| **Produced Item** | The item this MBPR makes. |
+| **Version Label** | The version's label (an item can have several versions). |
+| **Status** | Active (green) or archived (red). |
+| **Updated** | When the record was last touched. |
+
+By default only **active** records are shown, and you can filter by Item,
+Version, and Status. Two buttons sit above the table:
+
+- **Create or Modify MBPR** opens the MBPR wizard.
+- **Configure** opens the shared configuration page (equipment, vessels, and
+  actionable types) described at the end of this page.
+
+Clicking a row opens that MBPR's detail page.
+
+## The MBPR detail page
+
+The detail page is organized into tabs:
+
+- **Overview**: three panels: **Basics** (the produced item, version label, and
+  record status), **Batch Sizes** (the defined sizes with a **Set Active Size**
+  control), and **Bill of Materials**.
+- **Instructions**: the **Work Instructions** for each step, in order.
+- **Notes**: notes attached to the MBPR.
+- **Activity**: the change log.
+
+![MBPR Details](/modules/production/mbpr-details.png)
+
+<Callout>
+  The bill of materials on the Overview tab shows a **Quantity (lbs)** column
+  computed from the **active batch size**. Because an MBPR stores concentrations,
+  the absolute weights only make sense against a specific batch size, so an
+  active batch size must be set for the quantities to resolve.
+</Callout>
+
+## Creating and editing an MBPR
+
+![Edit MBPR](/modules/production/mbpr-edit.png)
+
+There are a few ways in:
+
+- **Create or Modify MBPR** on the list opens the wizard with no item selected.
+- **Edit MBPR** on a detail page opens the wizard for that item.
+- Inside the wizard you can add, edit, copy, or delete versions.
+
+The wizard walks through four steps: **Item** (choose the produced item),
+**Version** (choose or create a version), **Production** (build the steps), and
+**Batch Sizes**. Changes are saved as you make them; there is no single final
+submit.
+
+### Versions: new vs copy
+
+An item can carry several MBPR versions, each with its own label. On the Version
+step you can:
+
+- **Add New**: start a blank version with a version label and an estimated total
+  time.
+- **Copy**: deep-clone an existing version (its steps, materials, instructions,
+  addendums, actionables, and batch sizes), which is far faster than rebuilding a
+  similar recipe from scratch. The copy is labeled "Copy of …" for you to rename.
+
+<Callout>
+  Only **one** version should be **active** for an item at a time. A version is
+  made active by setting its **Status** to Active; the list shows active records
+  by default. Keeping a single active version avoids ambiguity for planning,
+  pricing, and trends.
+</Callout>
+
+## Steps and phases
+
+The recipe is built as an ordered list of **steps**. Each step has a **sequence**
+number, a **label**, and a **phase** (a free-text grouping such as "Heating" or
+"Cooling"); steps are displayed grouped by phase. Add steps with **Add Step**.
+
+<Callout>
+  Every step is expected to end with a **Complete Step** actionable (see below).
+  Until a step has one, you cannot add the next step; a warning lists the steps
+  that are missing it.
+</Callout>
+
+## What a step contains
+
+Selecting a step reveals its sections. Each is where a different kind of detail
+lives, and several of them reappear later during [compounding](/docs/production/compounding):
+
+- **Materials**: the bill-of-materials lines for this step. Each is an inventory
+  item plus a **concentration (% w/w)**. These become the batch's weighed
+  materials (in pounds) once a BPR is created.
+- **Work Instructions**: free-text, step-by-step directions. They appear on the
+  detail page's Instructions tab and to operators during compounding.
+- **Addendums**: typed supplemental notes or warnings attached to the step, each
+  with a color-coded type.
+- **Actionables**: the tasks an operator must complete on this step. Each
+  actionable has a **type** (see below) and three flags: **Required**,
+  **Verification Required**, and **Secondary Verification Required**. A special
+  **Complete Step** actionable marks the step finished. Each actionable is
+  assigned to a **role**, so only that role sees and acts on it during
+  compounding.
+
+<Callout type="warn">
+  The step **Equipment** section is a work in progress and is not yet available
+  in the wizard (it displays "WIP"). Equipment is otherwise managed on the
+  Configure page.
+</Callout>
+
+### Actionable types
+
+Actionables come in typed flavors so the operator is asked for the right kind of
+input:
+
+| Data type | What the operator does |
+| --- | --- |
+| **Boolean** | Confirms a yes/no check (for example, a completed action). |
+| **Numeric** | Records a number, optionally with a unit and min/max limits. |
+| **Photo** | Attaches photo evidence. |
+| **Text** | Writes a short note. |
+
+The catalog of actionable types (including the flags above and per-type limits)
+is managed on the Configure page.
+
+## Batch sizes and compounding vessels
+
+The **Batch Sizes** step defines the sizes the item can be produced in. For each
+size you set:
+
+- **Batch Size (lbs)**: the total batch weight.
+- **Tank Time**: the time the batch occupies its vessel.
+- **Compounding Vessel**: chosen from the vessels whose capacity range contains
+  the batch size. Only vessels large enough (and not too large) for the size are
+  offered.
+
+<Callout>
+  An MBPR can define multiple batch sizes, but only **one** is **active** at a
+  time. Setting a size active (with **Set Active Size**, or **Set As Active** in
+  the wizard) deactivates the others. The active size drives the bill-of-material
+  quantities, pricing, and trends, so exactly one is active to avoid confusion.
+</Callout>
+
+## The Configure page
+
+**Configure** (`/production/mbpr/configurations`) manages the shared building
+blocks that MBPR steps and batch sizes draw on:
+
+- **Equipment**: the facility's production equipment, grouped by type.
+- **Compounding Vessels**: each vessel is a piece of equipment plus a **capacity
+  minimum/maximum (lbs)** and an **operational cost ($/hour)**. Batch sizes pick
+  from these.
+- **Step Actionable Types**: the catalog of actionable types (name, data type,
+  and the role that performs them) that steps reference.
+
+Configure these once and every MBPR reuses them.

@@ -66,7 +66,7 @@ The table of lots for the item.
 - Depleted lots can be filtered out.
 - **Lot Details** -- Click a lot to view its details: 
   - Buttons
-      - Print Label: Prints a label that can be placed on the physical lot/item for tracking. Features the lot number, name of corresponding item, scannable qr code for the lot uuid, and the timestamp the label was generated.
+      - Print Label: Prints a label that can be placed on the physical lot/item for tracking. Features the [lot number](/docs/inventory/lot-numbers), name of corresponding item, scannable qr code for the lot uuid, and the timestamp the label was generated.
       - Generate COA: If an `QC Examination` has been conducted for this lot, then a certificate of analysis featuring the results can be generated.
       - Create Transaction: Deplete, Add/Subtract or set the available quantity of this lot
   - Cards
@@ -152,9 +152,10 @@ New examinations for the item can be created from here via the `New Examination`
 ### Production
 
 How the item relates to manufacturing. For **produced** items, this shows the
-active master batch record and its bill of materials, plus the batches produced.
-For **purchased** items, it shows how the item is consumed and used across
-production. See the [Production](/docs/production) module for details.
+active [master batch record](/docs/production/mbpr) and its bill of materials,
+plus the [batches produced](/docs/production/planning). For **purchased** items,
+it shows how the item is consumed and used across production. See the
+[Production](/docs/production) module for details.
 
 **Brimstone Spiced Blend** demo example of _purchased item_
 ![Purchased example](/modules/inventory/production-tab-purchased.png)
@@ -166,7 +167,10 @@ production. See the [Production](/docs/production) module for details.
 
 
 
-The item's quality program: its quality **parameters** and specifications, the **examinations** recorded against its lots, and the resulting **measurements**.
+The item's quality program: its quality [**parameters**](/docs/quality/parameters)
+and [specifications](/docs/quality/specifications), the
+[**examinations**](/docs/quality/examinations) recorded against its lots, and the
+resulting **measurements**.
 
 ![Quality tab example](/modules/inventory/quality-tab.png)
 

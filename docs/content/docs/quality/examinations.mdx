@@ -1,0 +1,76 @@
+---
+title: Examinations
+description: Recording test results against a lot, runs and verdicts, bulk entry, and the certificate of analysis.
+---
+
+An **examination** is a recorded test event against a [lot](/docs/inventory/lot-numbers).
+It captures the values measured for each of the item's
+[parameters](/docs/quality/parameters), evaluates them against the item's
+[specifications](/docs/quality/specifications), and ends in an overall verdict.
+Examinations live at `/quality/qc/examination`.
+
+{/* ![Examinations](/modules/quality/examinations.png) */}
+
+## Starting an examination
+
+An examination is always tied to a lot. You can start one by:
+
+- **Selecting a lot** from the search, recent batches, or purchases, then
+  choosing **New**.
+- **Scanning** a lot's barcode, which opens a new examination for it directly.
+- **Bulk Entry** for recording many results at once (below).
+
+## Conducting an examination
+
+Conducting an examination is a three-step flow:
+
+1. **Type**: choose the examination type: **Dry**, **In-Process**, **Finished
+   Product**, or **Legacy Data**. The type determines which parameters appear,
+   via their [groups](/docs/quality/parameters#templates-and-groups), and which
+   specifications apply.
+2. **Results**: for each parameter, enter the measured value. Its
+   [specification](/docs/quality/specifications) is shown alongside, and a live
+   verdict badge reports **PASS**, **FAIL**, **UNKNOWN**, or "no matching spec"
+   as you type. You can record more than one **Run** per parameter when a test is
+   repeated. The Results view also holds **Notes** and **Attachments** tabs.
+3. **Verdict**: set the overall outcome with **Pass** or **Out of
+   Specification**.
+
+An examination's status reflects where it is: **open** while in progress, then
+**pass** or **out of specification** once a verdict is set.
+
+## The examinations list and detail
+
+The **Examinations** list shows every examination with its reference number, item,
+who conducted it, type, and status. Opening one shows its header (item, lot,
+conducted by, type, status) and the same **Results**, **Notes**, and
+**Attachments** views in read-only form, with each run's recorded value and its
+pass/fail badge.
+
+## Bulk entry
+
+**Bulk Entry** records many results in one pass: add a row per lot with its
+examination type and parameter values, then submit. Bulk-entered examinations are
+recorded as passing, and if a row's lot number does not yet exist Lumexia creates
+the lot automatically. This is useful for importing historical or batch results.
+
+## Certificate of analysis
+
+A **Certificate of Analysis (COA)** is a document summarizing a finished lot's
+results against its specifications. It is generated from the lot itself, on the
+[lot details](/docs/inventory/item-details#lots) page with **Generate COA**, not
+from the quality module.
+
+Generating a COA requires the lot to have a **Finished Product** examination; if
+none exists, Lumexia asks you to conduct one first. The document includes each
+specification and result marked with
+[Display on Certificate of Analysis](/docs/quality/specifications#certificate-of-analysis),
+along with your company details, and is saved to the item's files as a regulatory
+document.
+
+## How examinations connect to production
+
+A produced batch's [Quality tab](/docs/production/planning) lists the
+examinations conducted for that batch, using these same examination screens. This
+is how in-process and finished-product testing of a batch is tracked alongside its
+manufacturing record.

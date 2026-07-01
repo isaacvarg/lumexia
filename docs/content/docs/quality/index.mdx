@@ -1,0 +1,54 @@
+---
+title: Quality
+description: Defining what "good" means for an item, and recording test results against its lots.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+{/* ![Quality](/modules/quality/quality.png) */}
+
+The quality module does two things: it **defines what "good" means** for each
+item, and it **records the results** of testing the item's stock. The first is a
+setup activity (parameters and specifications); the second is a day-to-day one
+(examinations against lots), and Lumexia checks results against the
+specifications to decide pass or fail.
+
+## The pieces
+
+- **Parameters** are the measurable characteristics you test, such as pH, assay,
+  or appearance. A parameter has a data type and can carry extra sub-inputs.
+- **Specifications** attach parameters to a specific item and set the acceptable
+  values, so an item knows what a passing result looks like for each parameter.
+- **Examinations** are recorded test events against a [lot](/docs/inventory/lot-numbers).
+  You enter measured values and Lumexia evaluates each one against the item's
+  specification.
+- **Micro** submissions generate a lab sample submission form for outsourced
+  microbiological testing.
+
+The quality area is reached at `/quality/qc`, with a separate **Micro** area at
+`/quality/micro`. You can also start an examination by scanning a lot.
+
+<Callout>
+  In the interface a recorded test event is always called an **examination**.
+</Callout>
+
+## In this section
+
+<Cards>
+  <Card title="Parameters" href="/docs/quality/parameters" description="Measurable characteristics, their data types and input definitions, plus templates and groups for reuse." />
+  <Card title="Specifications" href="/docs/quality/specifications" description="Attaching parameters to an item and defining the acceptable values that decide pass or fail." />
+  <Card title="Examinations" href="/docs/quality/examinations" description="Recording test results against a lot, runs and verdicts, bulk entry, and the certificate of analysis." />
+  <Card title="Micro" href="/docs/quality/micro" description="Generating a sample submission form for outsourced microbiological testing." />
+</Cards>
+
+## Where quality connects
+
+Quality ties into the rest of Lumexia through lots and produced batches:
+
+- Every examination is recorded against a [lot](/docs/inventory/lot-numbers), and
+  an item's [Quality tab](/docs/inventory/item-details#quality) shows its
+  parameters, specifications, and results.
+- A produced batch's [Quality tab](/docs/production/planning) lists the
+  examinations conducted for that batch.
+- A [Certificate of Analysis](/docs/quality/examinations#certificate-of-analysis)
+  for a finished lot is built from its specifications and results.

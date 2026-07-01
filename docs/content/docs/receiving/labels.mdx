@@ -1,0 +1,70 @@
+---
+title: Labels
+description: Printing QR labels for received lots, what a label shows, and labeling strategy.
+---
+
+Every lot created by [receiving](/docs/receiving/workflow) can be labeled with a
+printable QR label. The label identifies the physical stock and carries a
+scannable code tied to the lot, so material on the shelf can be matched back to
+its record in Lumexia.
+
+## Printing labels at receiving
+
+Labels are generated from the **Received** section of an order's receiving page,
+once the line items have been received:
+
+1. Select one or more received items.
+2. Click the QR button to open the label form.
+3. For each item, set **Labels To Print**. This defaults to 1.
+4. Click **Print**.
+
+Lumexia builds a PDF with one label per page (repeated for the count you set on
+each item) and downloads it. Open the downloaded file and print it through your
+operating system's print dialog on the printer loaded with your label stock. See
+[Printers](/docs/hardware/printers) for the hardware side of this.
+
+![Receiving label form](/modules/receiving/label-generator.png)
+
+## What a label shows
+
+Each label is a 4 x 3 inch page containing:
+
+- The **[lot number](/docs/inventory/lot-numbers)**.
+- The **item name**.
+- A **QR code** encoding the lot's unique identifier, so scanning it resolves
+  straight to the lot.
+- The **timestamp** the label was generated.
+
+![Example of a lot label](/modules/inventory/label-example.png)
+
+## Reprinting a single label later
+
+You do not have to print every label at the moment of receiving. Any existing
+lot can have a fresh label generated at any time from its lot details: open the
+item, find the lot on the [Lots](/docs/inventory/item-details#lots) tab, and use
+**Print Label**. This produces the same label described above for that one lot,
+which is handy when a label is lost, damaged, or needed for an additional
+container.
+
+## Labeling strategy
+
+How many labels to print and where to put them depends on how the stock is
+physically packaged:
+
+- **One label per container.** The most common approach is one label per
+  physical package that will live on the shelf independently: a drum, a sack, a
+  case. That way each unit that can be moved or consumed on its own carries its
+  own scannable lot identity.
+- **Apply on receipt.** Labeling as goods are received, before they are put
+  away, keeps every package traceable from the moment it enters the facility.
+- **Reprint as needed.** If a package is split or a label is damaged, reprint a
+  single label from the lot rather than re-receiving anything.
+
+Because the QR code resolves to the lot, not to an individual container, every
+label for a given lot is interchangeable; print as many as the lot has packages.
+
+## Hardware
+
+For printer requirements, supported devices, and how the different printing
+paths work, see the [Printers](/docs/hardware/printers) page in the hardware
+section.

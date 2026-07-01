@@ -1,0 +1,74 @@
+---
+title: Specifications
+description: Attaching parameters to an item and defining the acceptable values that decide pass or fail.
+---
+
+A **specification** is the acceptable value for a [parameter](/docs/quality/parameters)
+on a specific item. Parameters say *what* you measure; specifications say what
+*counts as passing*. Together they let Lumexia turn a recorded measurement into a
+pass or fail verdict during an [examination](/docs/quality/examinations).
+
+Specifications are managed on an item's **Quality** tab; see
+[item details](/docs/inventory/item-details#quality).
+
+{/* ![Specifications](/modules/quality/specifications.png) */}
+
+## Attaching parameters to an item
+
+Before you can specify values, the item needs parameters. From the item's Quality
+tab, add parameters by one of:
+
+- **Template**: attach every parameter in a [template](/docs/quality/parameters#templates-and-groups)
+  at once.
+- **Single**: attach one parameter.
+- **AI**: for purchased items, recognize parameters from a supplier document.
+
+Each attached parameter can then be expanded to define its specifications.
+
+## Defining a specification
+
+Specifications are grouped by **examination type**, so an item can hold a
+different value for, say, an in-process check versus a finished-product check.
+Each specification has a **specification type** that sets the shape of the
+acceptable value:
+
+| Specification type | Passing when the value is |
+| --- | --- |
+| **Range (min – max)** | Between the minimum and maximum, inclusive. |
+| **Max (≤)** | At or below the threshold. |
+| **Min (≥)** | At or above the threshold. |
+| **Single value** | Exactly the given value. |
+
+You give the specification a name, choose its examination type and type, and enter
+the value(s): a **Min** and **Max** for a range, a **Threshold** for max/min, or a
+single **Value**.
+
+### Conditions
+
+A specification can optionally be **pinned** to specific
+[input-definition](/docs/quality/parameters#input-definitions) values with its
+**Conditions** section, so a limit only applies under certain circumstances (for
+example, a viscosity spec that only applies at a particular temperature). A
+specification with no conditions applies as the general fallback; a conditional
+one takes priority when its pinned inputs match the recorded values.
+
+### Certificate of analysis
+
+Each specification has a **Display on Certificate of Analysis** toggle. When on,
+that parameter and its result appear on the item's
+[certificate of analysis](/docs/quality/examinations#certificate-of-analysis).
+
+## How pass or fail is decided
+
+When a measurement is recorded, Lumexia finds the specification that matches the
+examination type (and any pinned input conditions) and compares the value:
+
+- Numeric specification types compare the measured number against the range or
+  threshold.
+- A single-value specification compares the value exactly.
+- If the value cannot be compared to the specification (for example, a
+  non-numeric entry against a numeric limit), the result is reported as
+  **unknown** rather than pass or fail.
+
+The verdict is shown live as you enter values during an
+[examination](/docs/quality/examinations).

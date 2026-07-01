@@ -1,0 +1,89 @@
+---
+title: Production
+description: Master batch records, planning batches, compounding on the floor, and production-quality verification.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+![Production](/modules/production/production-planning.png)
+
+The production module is where an item is actually manufactured. It turns a
+recipe into a repeatable, traceable batch: what goes in, in what order, who did
+each part, who verified it, and what came out. Everything is anchored to two
+records that sound alike but do very different jobs: the **MBPR** and the
+**BPR**.
+
+## MBPR vs BPR
+
+- A **Master Batch Production Record (MBPR)** is the reusable **template** for
+  producing one item. It holds the bill of materials (as concentrations), the
+  ordered steps and instructions, and the batch sizes the item can be made in. An
+  MBPR is written once and reused for every batch.
+- A **Batch Production Record (BPR)** is a single **run** made from an MBPR at a
+  chosen batch size. Creating a BPR copies the MBPR's recipe into concrete
+  quantities (in pounds) and per-run tasks, then that batch is scheduled, staged,
+  compounded, verified, and completed.
+
+So the MBPR is the recipe; the BPR is one time you cook it. One MBPR produces
+many BPRs over its life.
+
+## The four areas
+
+Production is organized into four areas, each with its own page:
+
+1. **MBPR**: authoring and versioning the master recipe: steps, materials,
+   instructions, batch sizes, and vessels.
+2. **Planning**: requesting a batch (creating a BPR), checking material
+   sufficiency, allocating stock, and scheduling.
+3. **Compounding**: the shop-floor work: staging materials and executing the
+   batch steps.
+4. **Production Quality**: independent primary and secondary verification of
+   staged materials and flagged steps, which gates the batch's progress.
+
+<Cards>
+  <Card title="MBPR" href="/docs/production/mbpr" description="Authoring the master recipe: versions, steps, materials, instructions, batch sizes, and vessels." />
+  <Card title="Planning" href="/docs/production/planning" description="Requesting batches, material sufficiency and allocation, scheduling, and the BPR lifecycle." />
+  <Card title="Compounding" href="/docs/production/compounding" description="Staging materials and executing batch steps on the production floor." />
+  <Card title="Production Quality" href="/docs/production/quality" description="Primary and secondary verification, and how it locks batch progress until sign-off." />
+</Cards>
+
+## The batch lifecycle
+
+A batch moves through a defined set of statuses. Most transitions happen
+automatically as work is completed; some can be set by hand. In broad strokes:
+
+1. A batch is **requested** in Planning, creating a **Draft** BPR from an MBPR.
+2. Planning confirms material sufficiency and schedules the batch, which becomes
+   **Queued**.
+3. On the floor, materials are **staged** and verified (**Staging Materials**).
+4. Once every material is verified, the batch moves to **Compounding** and the
+   steps are worked.
+5. When all steps are done, the batch is **Completed**, its materials are
+   consumed from inventory, and it moves to **Awaiting QC** for
+   [quality](/docs/quality) testing, then **Released**.
+
+The full status set:
+
+| Status | Meaning |
+| --- | --- |
+| **Draft** | Requested or anticipated; not yet being allocated. |
+| **Allocating Materials** | Material availability is being checked and stock allocated to the batch. |
+| **Verifying BOM Fulfillment** | Whether materials can fulfill the batch is in question; an inventory audit is likely. |
+| **Awaiting Materials** | A material's stock is blocking the batch. |
+| **Known Material Arrival** | Blocked by a material, but that material has a known arrival date. |
+| **Queued** | On the batch schedule, ready to stage. |
+| **Staging Materials** | Materials are being staged and verified. |
+| **Compounding** | Actively being made. |
+| **Completed** | Physically finished; steps all complete. |
+| **Awaiting QC** | Waiting for micro and in-house quality control. |
+| **Released** | Released for use/sale. |
+| **Investigating / Corrective Actions** | Something went wrong and is being investigated. |
+| **Failed** | Corrective actions could not save the batch; scrapped. |
+| **Consumption Error** | An error occurred consuming the batch's materials and must be resolved. |
+
+<Callout>
+  Statuses can be advanced manually from a BPR's Status card ("Change Status
+  To…"), but the everyday flow (Queued → Staging → Compounding → Completed →
+  Awaiting QC) is driven automatically by Lumexia as each stage's work finishes.
+  See [Planning](/docs/production/planning) for the details.
+</Callout>
