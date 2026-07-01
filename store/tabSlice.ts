@@ -7,6 +7,7 @@ import { UserSettingsTab } from '@/app/settings/user/_components/shared/TabSelec
 import { UserAdminTab } from '@/app/settings/users/[id]/_components/shared/TabSelector';
 import { CompanySettingsTab } from '@/app/settings/company/_components/shared/TabSelector';
 import { InventorySettingsTab } from '@/app/settings/inventory/_components/shared/TabSelector';
+import { ProductionSettingsTab } from '@/app/settings/production/_components/shared/TabSelector';
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -21,6 +22,7 @@ export type TabsConfig = {
   userAdminDetails: UserAdminTab,
   companySettings: CompanySettingsTab,
   inventorySettings: InventorySettingsTab,
+  productionSettings: ProductionSettingsTab,
 };
 
 type TabGroupKey = keyof TabsConfig;
@@ -47,6 +49,7 @@ const initialState: TabState = {
     userAdminDetails: 'profile',
     companySettings: 'info',
     inventorySettings: 'triggers',
+    productionSettings: 'equipment',
   },
 }
 

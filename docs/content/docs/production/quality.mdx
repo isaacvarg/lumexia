@@ -13,6 +13,7 @@ flagged steps were done correctly, before the batch is allowed to move on.
   manufacturing. It is separate from the top-level [Quality](/docs/quality)
   module, which defines item specifications and records QC examinations against
   lots. Both are "quality", but they do different jobs.
+
 </Callout>
 
 {/* ![Production Quality dashboard](/modules/production/production-quality.png) */}
@@ -24,7 +25,7 @@ consumed, and the check is done **twice**, by two different roles. This two-pers
 two-pass control means no single person both stages a material and clears it: a
 mistake in the wrong lot or the wrong amount is caught before it goes into the
 batch. Certain compounding steps can also require sign-off before the next step
-proceeds.
+proceeds. This is very important as mistakes at these steps can result in costly corrective actions or at worst a failed batch in which all materials are lost.
 
 ## The verification queues
 
@@ -39,6 +40,8 @@ two queues:
 When both queues are empty, there is nothing waiting on quality.
 
 ## The verification workflow
+
+![Production quality](/modules/production/production-quality.png)
 
 Opening an item shows what was staged: the material, the **lot**, the **quantity**
 weighed, who staged it, and (in the newer view) the staging photos. The verifier
