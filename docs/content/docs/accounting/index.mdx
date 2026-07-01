@@ -1,0 +1,35 @@
+---
+title: Accounting
+description: Purchase-order reconciliation, parametric pricing examinations, and the payment-method catalog.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+![Accounting example](/modules/accounting/accounting-example.png)
+
+The accounting module is where the money side of a purchase is squared away: it
+reconciles a purchase order against its paperwork and payment, decides what a
+finished product should sell for, and keeps the catalog of payment methods those
+purchases are charged to. It sits downstream of purchasing and receiving; a
+purchase order raised elsewhere in Lumexia flows into accounting to be matched,
+paid, and (for the items it brought in) re-priced.
+
+The module is organized into three areas, each with its own page.
+
+<Cards>
+  <Card title="PO Matching" href="/docs/accounting/po-matching" description="Reconcile a purchase order against its invoice, packing slip, and payment; keep digital copies of the paperwork; and track who did what." />
+  <Card title="Pricing" href="/docs/accounting/pricing" description="Run a pricing examination that recomputes consumer prices to hit a target profit margin, then send it through an approval workflow." />
+  <Card title="Payments" href="/docs/accounting/payments" description="Maintain the catalog of payment methods (cards, bank transfers, checks) that purchase orders are charged to." />
+</Cards>
+
+Like much of Lumexia, this module is shaped around the needs of a cosmetic and
+bath-product manufacturer, so some of its vocabulary and checklists are specific
+to that workflow.
+
+<Callout type="info" title="Future improvements">
+  Today the module covers PO matching, pricing, and payment methods. These pieces
+  are robust, but the accounting area still has room to grow: account
+  reconciliation, exporting to QuickBooks or other platforms, and similar
+  integrations are all on the wish list. If you have suggestions, please open an
+  issue on GitHub.
+</Callout>

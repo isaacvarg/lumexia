@@ -7,6 +7,8 @@ import { DemoItem } from './items';
 import { DemoUser } from './users';
 import { DemoMbpr } from './mbprs';
 import { DemoEquipment } from './equipment';
+import { DemoItemPricingData } from './itemPricingData';
+import { DemoFinishedProduct } from './appliedTemplates';
 
 const poundsUom = () => (refs.uom as Record<string, string>).pounds;
 const examStatus = (key: string) => (refs.pricingExaminationStatuses as Record<string, string>)[key];
@@ -16,8 +18,13 @@ const DRAFT_COUNT = 8;
 const REVIEW_COUNT = 6;
 const APPROVED_COUNT = 6;
 
-// seeds the pricing-examination side: live pricing/finished-product/container records
-// plus examinations across draft (queued), needs-review (pendingReview) and approved.
+const SELLABLE_PURCHASED_TYPES = new Set(['Merchandise', 'Tabletop', 'Cat Supplies']);
+
+// seeds the pricing-examination side: examinations across draft (queued), needs-review
+// (pendingReview) and approved, plus the archive snapshots hung off the reviewed/approved ones.
+// Live pricing records are owned by earlier layers — this layer references them:
+//   • ItemPricingData        → seedItemPricingData (one per item)
+//   • FinishedProduct + aux  → seedAppliedTemplates (per produced/sellable item)
 export const seedPricing = async (
   purchasedItems: DemoItem[],
   producedItems: DemoItem[],
@@ -25,33 +32,33 @@ export const seedPricing = async (
   equipment: DemoEquipment[],
   packagingItems: DemoItem[],
   users: DemoUser[],
+  ipdByItemId: Map<string, DemoItemPricingData>,
+  fpByItemId: Map<string, DemoFinishedProduct[]>,
 ): Promise<void> => {
   const mbprByItemId = new Map(mbprs.map((m) => [m.producesItem.id, m]));
   const vessels = equipment.filter((e) => e.vesselId);
   const containerItem = packagingItems.find((i) => /cup|mug/i.test(i.name)) ?? packagingItems[0];
-  const ingredientItems = purchasedItems.filter((i) => i.type === 'Ingredients');
+  const sellablePurchased = purchasedItems.filter((i) => SELLABLE_PURCHASED_TYPES.has(i.type));
 
-  // row buckets
-  const itemPricingDataRows: any[] = [];
-  const finishedProductRows: any[] = [];
-  const finishedProductAuxRows: any[] = [];
-  const consumerContainerRows: any[] = [];
-  const itemConsumerContainerRows: any[] = [];
+  // row buckets (live records are seeded elsewhere; here we only build archives + exams)
   const examRows: any[] = [];
   const ipdArchiveRows: any[] = [];
   const producedArchiveRows: any[] = [];
   const bomArchiveRows: any[] = [];
   const fpArchiveRows: any[] = [];
   const fpAuxArchiveRows: any[] = [];
+  const consumerContainerRows: any[] = [];
+  const itemConsumerContainerRows: any[] = [];
   const ccArchiveRows: any[] = [];
   const iccArchiveRows: any[] = [];
   const validationRows: any[] = [];
   const noteRows: any[] = [];
 
-  // distinct items for the three buckets (mix of purchased ingredients + produced)
+  // distinct items for the three buckets (mix of produced + sellable-purchased — the
+  // things a user actually examines; raw ingredients/supplies are inputs, not examined).
   const pool = shuffle([
-    ...ingredientItems.map((i) => ({ item: i, produced: false })),
     ...producedItems.map((i) => ({ item: i, produced: true })),
+    ...sellablePurchased.map((i) => ({ item: i, produced: false })),
   ]);
   let cursor = 0;
   const take = (n: number) => pool.slice(cursor, (cursor += n));
@@ -72,7 +79,8 @@ export const seedPricing = async (
     });
   }
 
-  // builds a full examination (live records + archive tree) for review/approved
+  // builds a full examination (exam + archive tree) for review/approved, snapshotting the
+  // live ItemPricingData / FinishedProduct records the earlier layers created.
   const buildFull = (item: DemoItem, produced: boolean, approved: boolean) => {
     const examId = uuid();
     const createdAt = randomPastDate(5, 90);
@@ -143,106 +151,81 @@ export const seedPricing = async (
         ...stamp(createdAt, updatedAt),
       });
     } else {
-      // purchased — one live ItemPricingData + its archive
-      const arrivalCost = randFloat(0.2, 3);
-      const productionUsage = randFloat(0, 1.5);
-      const unforeseen = randFloat(0, 0.8);
-      const materialPrice = randFloat(2, 40);
-      const overallItemCost = round2(materialPrice + arrivalCost + productionUsage + unforeseen);
-      costPerLb = overallItemCost;
+      // purchased — snapshot the item's live ItemPricingData (owned by seedItemPricingData)
+      const ipd = ipdByItemId.get(item.id)!;
+      costPerLb = ipd.overallItemCost;
 
-      const ipdId = uuid();
-      itemPricingDataRows.push({
-        id: ipdId,
-        itemId: item.id,
-        arrivalCost,
-        productionUsageCost: productionUsage,
-        auxiliaryUsageCost: 0,
-        unforeseenDifficultiesCost: unforeseen,
-        isUpcomingPriceActive: false,
-        upcomingPrice: 0,
-        upcomingPriceUomId: poundsUom(),
-        overallItemCost,
-        ...stamp(createdAt, updatedAt),
-      });
       ipdArchiveRows.push({
         id: uuid(),
         examinationId: examId,
-        currentItemPricingDataId: ipdId,
-        arrivalCost,
-        productionUsageCost: productionUsage,
-        auxiliaryUsageCost: 0,
-        unforeseenDifficultiesCost: unforeseen,
-        isUpcomingPriceActive: false,
-        upcomingPrice: 0,
-        upcomingPriceUomId: poundsUom(),
-        overallItemCost,
+        currentItemPricingDataId: ipd.id,
+        arrivalCost: ipd.arrivalCost,
+        productionUsageCost: ipd.productionUsageCost,
+        auxiliaryUsageCost: ipd.auxiliaryUsageCost,
+        unforeseenDifficultiesCost: ipd.unforeseenDifficultiesCost,
+        isUpcomingPriceActive: ipd.isUpcomingPriceActive,
+        upcomingPrice: ipd.upcomingPrice,
+        upcomingPriceUomId: ipd.upcomingPriceUomId,
+        overallItemCost: ipd.overallItemCost,
         ...stamp(createdAt, updatedAt),
       });
     }
 
-    // a finished product (live + archive) with a couple of packaging auxiliaries
-    const fillQuantity = randFloat(0.5, 1.2);
-    const declaredQuantity = pick([8, 12, 16]);
-    const difficulty = randFloat(0.1, 0.4);
-    const auxItems = sample(packagingItems, randInt(1, 2));
-    const auxiliariesTotalCost = round2(auxItems.reduce((acc) => acc + randFloat(0.02, 0.08), 0));
-    const productFillCost = round2(fillQuantity * costPerLb);
-    const finishedProductTotalCost = round2(productFillCost + auxiliariesTotalCost + difficulty);
-    const consumerPrice = round2(finishedProductTotalCost * randFloat(1.6, 2.6));
-    const markup = round2(consumerPrice - finishedProductTotalCost);
-    const profitPercentage = round2((markup / consumerPrice) * 100);
+    // snapshot one of the item's live finished products (owned by seedAppliedTemplates)
+    const liveFps = fpByItemId.get(item.id);
+    if (liveFps && liveFps.length) {
+      const fp = pick(liveFps);
+      const productFillCost = round2(fp.fillQuantity * costPerLb);
+      const auxiliariesTotalCost = round2(fp.auxiliaries.reduce((acc) => acc + randFloat(0.02, 0.08), 0));
+      const finishedProductTotalCost = round2(productFillCost + auxiliariesTotalCost + fp.difficultyAdjustmentCost + fp.freeShippingCost);
+      const consumerPrice = round2(finishedProductTotalCost * randFloat(1.6, 2.6));
+      const markup = round2(consumerPrice - finishedProductTotalCost);
+      const profitPercentage = consumerPrice ? round2((markup / consumerPrice) * 100) : 0;
 
-    const fpId = uuid();
-    const fpCommon = {
-      name: `${item.name} — ${declaredQuantity}oz`,
-      filledWithItemId: item.id,
-      fillQuantity,
-      declaredQuantity,
-      freeShippingCost: 0,
-      fillUomId: poundsUom(),
-      difficultyAdjustmentCost: difficulty,
-      finishedProductTotalCost,
-      auxiliariesTotalCost,
-      productFillCost,
-      consumerPrice,
-      markup,
-      profit: markup,
-      profitPercentage,
-    };
-    finishedProductRows.push({ id: fpId, recordStatusId: refs.recordStatuses.active, ...fpCommon, ...stamp(createdAt, updatedAt) });
-    fpArchiveRows.push({ id: uuid(), pricingExaminationId: examId, currentFinishedProductId: fpId, ...fpCommon, ...stamp(createdAt, updatedAt) });
-
-    for (const aux of auxItems) {
-      const qty = randInt(1, 2);
-      const auxDifficulty = randFloat(0.01, 0.06);
-      finishedProductAuxRows.push({
+      fpArchiveRows.push({
         id: uuid(),
-        apartOfFinishedProductId: fpId,
-        auxiliaryItemId: aux.id,
-        recordStatusId: refs.recordStatuses.active,
-        quantity: qty,
-        difficultyAdjustmentCost: auxDifficulty,
+        pricingExaminationId: examId,
+        currentFinishedProductId: fp.id,
+        name: fp.name,
+        filledWithItemId: item.id,
+        fillQuantity: fp.fillQuantity,
+        declaredQuantity: fp.declaredQuantity,
+        freeShippingCost: fp.freeShippingCost,
+        fillUomId: poundsUom(),
+        difficultyAdjustmentCost: fp.difficultyAdjustmentCost,
+        finishedProductTotalCost,
+        auxiliariesTotalCost,
+        productFillCost,
+        consumerPrice,
+        markup,
+        profit: markup,
+        profitPercentage,
         ...stamp(createdAt, updatedAt),
       });
-      fpAuxArchiveRows.push({
-        id: uuid(),
-        apartOfFinishedProductId: fpId,
-        auxiliaryItemId: aux.id,
-        quantity: qty,
-        difficultyAdjustmentCost: auxDifficulty,
-        ipdArrivalCost: randFloat(0.05, 0.5),
-        ipdProductionUsageCost: randFloat(0, 0.3),
-        ipdAuxiliaryUsageCost: randFloat(0, 0.3),
-        ipdUnforeseenDifficultiesCost: randFloat(0, 0.2),
-        ipdUpcomingPrice: 0,
-        ipdUpcomingPriceUomId: poundsUom(),
-        ipdIsUpcomingPriceActive: false,
-        ...stamp(createdAt, updatedAt),
-      });
+
+      for (const aux of fp.auxiliaries) {
+        fpAuxArchiveRows.push({
+          id: uuid(),
+          apartOfFinishedProductId: fp.id,
+          auxiliaryItemId: aux.auxiliaryItemId,
+          quantity: aux.quantity,
+          difficultyAdjustmentCost: aux.difficultyAdjustmentCost,
+          ipdArrivalCost: randFloat(0.05, 0.5),
+          ipdProductionUsageCost: randFloat(0, 0.3),
+          ipdAuxiliaryUsageCost: randFloat(0, 0.3),
+          ipdUnforeseenDifficultiesCost: randFloat(0, 0.2),
+          ipdUpcomingPrice: 0,
+          ipdUpcomingPriceUomId: poundsUom(),
+          ipdIsUpcomingPriceActive: false,
+          ...stamp(createdAt, updatedAt),
+        });
+      }
     }
 
     // consumer container (live + archive) + the item-in-container line
+    const fillQuantity = randFloat(0.5, 1.2);
+    const declaredQuantity = pick([8, 12, 16]);
+    const consumerPrice = round2(fillQuantity * costPerLb * randFloat(1.6, 2.6));
     const ccId = uuid();
     const containerCost = randFloat(0.1, 0.6);
     const fillLaborCost = randFloat(0.05, 0.3);
@@ -326,10 +309,7 @@ export const seedPricing = async (
   for (const { item, produced } of reviews) buildFull(item, produced, false);
   for (const { item, produced } of approvals) buildFull(item, produced, true);
 
-  // insert in FK-safe order (live records → examinations → archives → validation/notes)
-  await insert('itemPricingData', itemPricingDataRows);
-  await insert('finishedProduct', finishedProductRows);
-  await insert('finishedProductAuxiliary', finishedProductAuxRows);
+  // insert in FK-safe order (live consumer records → examinations → archives → validation/notes)
   await insert('consumerContainer', consumerContainerRows);
   await insert('itemConsumerContainer', itemConsumerContainerRows);
   await insert('pricingExamination', examRows);

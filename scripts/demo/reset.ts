@@ -33,6 +33,8 @@ const WIPE_ORDER: string[] = [
   'bprNote',
   'bprStagingConsumption',
   'bprStaging',
+  'bprStepActionableCompletionFile',
+  'bprStepActionableCompletion',
   'bprStepActionable',
   'bprBatchStep',
   'bprBillOfMaterials',

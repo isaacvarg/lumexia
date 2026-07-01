@@ -1,0 +1,74 @@
+---
+title: Payments
+description: Maintain the catalog of payment methods that purchase orders are charged to.
+---
+
+![Payments](/modules/accounting/payments.png)
+
+The Payments area is the catalog of **payment methods**: the cards, bank
+transfers, and checks that purchases are charged to. There is no separate
+"payment" record in Lumexia; a payment is really a purchase order whose
+accounting record points at one of these methods. So this area is about
+defining the methods and seeing, for any one of them, which purchases it has
+paid for.
+
+Payments live at `/accounting/payments`.
+
+## The dashboard
+
+The dashboard shows every payment method as a visual card, styled to match its
+type: credit cards (Visa, Mastercard, Amex) render as cards, bank transfers and
+checks get their own look. An **Add Payment Method** button sits in the header.
+Clicking a card opens that method's details.
+
+## Adding a payment method
+
+**Add Payment Method** opens a short wizard with a live preview of the card as
+you build it:
+
+1. **Type**: choose Visa, Mastercard, Amex, bank transfer, or check.
+2. **Info**: the method's details. **Method Name**, **Identifier**, **Limit**,
+   and **Associated Name** are required; **Expiry** and **Account Ending In** are
+   optional.
+3. **Colors**: the card's gradient and accent colors, so methods are easy to
+   tell apart at a glance.
+
+Submitting creates the method and returns you to the dashboard.
+
+The fields a method stores are:
+
+| Field | Meaning |
+| --- | --- |
+| **Method Name** | The display name (for example "Gold Card"). |
+| **Associated Name** | The name on the card or account. |
+| **Payment Type** | Visa, Mastercard, Amex, bank transfer, or check. |
+| **Identifier** | A free-form identifier for the method. |
+| **Account Ending In** | The last few digits, when relevant. |
+| **Expiry** | The expiration, when relevant. |
+| **Limit** | The method's spending limit. |
+| **Colors** | The gradient and accent colors used on the card. |
+
+## Editing a payment method
+
+Editing reuses the same wizard. From a method's details page, **Modify** reopens
+the wizard pre-filled with that method's values; submitting updates the existing
+method instead of creating a new one.
+
+## Payment method details
+
+A method's details page (`/accounting/payments/methods/[id]`) shows its visual
+card and a **Purchases** table of every purchase order that has been paid with
+it:
+
+| Column | Meaning |
+| --- | --- |
+| **#** | The purchase order's reference code. |
+| **Supplier** | Who the order was placed with. |
+| **Total ($)** | The order total. |
+| **PO Status** | The purchasing status, as a colored tag. |
+| **Accounting Status** | The accounting status, as a colored tag. |
+
+You can filter the table by PO status and accounting status, and clicking a row
+opens that order in [PO matching](/docs/accounting/po-matching). This makes a
+method's page a quick way to see everything charged to a given card or account
+and jump straight to any of those orders.

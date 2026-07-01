@@ -14,6 +14,8 @@ import { seedMbprs } from './layers/mbprs';
 import { seedBprs } from './layers/bprs';
 import { seedPaymentMethods } from './layers/paymentMethods';
 import { seedPricingTemplates } from './layers/pricingTemplates';
+import { seedItemPricingData } from './layers/itemPricingData';
+import { seedAppliedTemplates } from './layers/appliedTemplates';
 import { seedPricing } from './layers/pricing';
 import { seedPackUoms } from './layers/uomConversions';
 import { seedConfigs } from './layers/configs';
@@ -72,6 +74,12 @@ export const seedDemo = async (): Promise<void> => {
   console.log('✨ Purchase Orders');
   const { pos, lots } = await seedPurchaseOrders(80, suppliers, items.purchased, purchasingUsers, paymentMethods, paymentMethodIdsBySupplier, packMap);
 
+  // one ItemPricingData per item so every item can be priced without erroring; items that were
+  // actually purchased lean on real purchase history, the rest get an active upcoming price.
+  console.log('✨ Item Pricing Data');
+  const poBackedItemIds = new Set(pos.flatMap((p) => p.itemIds));
+  const ipdByItemId = await seedItemPricingData(items.all, poBackedItemIds);
+
   console.log('✨ Purchasing Requests');
   await seedPurchasingRequests(pos, items.purchased, purchasingUsers);
 
@@ -98,8 +106,13 @@ export const seedDemo = async (): Promise<void> => {
   console.log('✨ Pricing Templates');
   await seedPricingTemplates(itemTypes, packagingItems);
 
+  // apply templates → live finished products for produced + sellable-purchased items, so a
+  // fresh examination shows content the moment a user opens it.
+  console.log('✨ Applied Templates (Finished Products)');
+  const fpByItemId = await seedAppliedTemplates(items.all, packagingItems);
+
   console.log('✨ Pricing Examinations');
-  await seedPricing(items.purchased, items.produced, mbprs, equipment, packagingItems, users);
+  await seedPricing(items.purchased, items.produced, mbprs, equipment, packagingItems, users, ipdByItemId, fpByItemId);
 
   // ┌──────────────────────────┐
   // │ ＱＵＡＬＩＴＹ  (ＱＣ) │

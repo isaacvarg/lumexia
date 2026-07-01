@@ -104,6 +104,41 @@ export const PRICING_TEMPLATES: ReadonlyArray<PricingTemplateData> = [
       },
     ],
   },
+  // Retail goods sold as-is. The pricing model is $/lb, so these carry a nominal fill
+  // spec purely so an examination renders finished-product data (see seedAppliedTemplates).
+  {
+    name: 'Retail Merch Packaging', description: 'Standard bagging for boutique merchandise.', forItemTypeName: 'Merchandise',
+    finishedProducts: [
+      {
+        name: 'Merch Item', fillQuantity: 1, declaredQuantity: 1, freeShippingCost: 0, difficultyAdjustmentCost: 0.1,
+        auxiliaries: [
+          { auxiliaryKeyword: 'Napkins', quantity: 1, difficultyAdjustmentCost: 0.01 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Tabletop Packaging', description: 'Packaging for tabletop games and accessories.', forItemTypeName: 'Tabletop',
+    finishedProducts: [
+      {
+        name: 'Boxed Game', fillQuantity: 1, declaredQuantity: 1, freeShippingCost: 0, difficultyAdjustmentCost: 0.1,
+        auxiliaries: [
+          { auxiliaryKeyword: 'Receipt Rolls', quantity: 1, difficultyAdjustmentCost: 0.01 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Cat Supply Packaging', description: 'Packaging for cat supplies and accessories.', forItemTypeName: 'Cat Supplies',
+    finishedProducts: [
+      {
+        name: 'Cat Supply Item', fillQuantity: 1, declaredQuantity: 1, freeShippingCost: 0, difficultyAdjustmentCost: 0.1,
+        auxiliaries: [
+          { auxiliaryKeyword: 'Pastry Bags', quantity: 1, difficultyAdjustmentCost: 0.01 },
+        ],
+      },
+    ],
+  },
 ];
 
 export const EXAMINATION_NOTES: ReadonlyArray<string> = [

@@ -1,0 +1,166 @@
+---
+title: Pricing
+description: Parametric pricing examinations that recompute consumer prices to hit a target profit margin, with an approval workflow.
+---
+
+![Examination Dashboard](/modules/accounting/examination-dashboard.png)
+
+A **pricing examination** is an audit of what an item costs and what its finished
+products should sell for. It gathers the item's current cost structure,
+recalculates the consumer price of each finished product so that it clears a
+healthy profit margin, then archives a full snapshot of those numbers. The
+result is a reviewed, approved price backed by a record of exactly how it was
+derived.
+
+## Why pricing examinations exist
+
+Costs move. A material's purchase price rises, arrival costs change, a
+formulation gets harder to make, and suddenly a product that used to be
+profitable is quietly selling at a loss. This is the problem Lumexia was
+[born to solve](/docs#motivations): during a period of rapid scale-up, material
+availability and pricing swung wildly, and the ripple effects on finished-product
+pricing were nearly impossible to keep straight on paper and in spreadsheets.
+
+A pricing examination makes re-pricing deliberate and traceable. Instead of
+guessing, someone examines the real cost inputs, dials the numbers until every
+container clears the margin target, and sends the result for review. Every
+examination is archived, so you can always see what a price was, when it changed,
+and why.
+
+## What triggers an examination
+
+An examination can start three ways:
+
+- **Automatically on reception.** When an item is received, if its item type has
+  the pricing-examination trigger enabled (set in **Settings > Inventory > Item
+  Types**), Lumexia enqueues an examination for that item. This is how a fresh
+  purchase price automatically prompts a pricing review.
+- **Manually.** From the pricing landing page, use **Begin Pricing Examination**,
+  search for an item, and start one by hand.
+- **After a rejection.** Rejecting an examination automatically queues a new one
+  for the same item (see [Rejection](#rejection)).
+
+## The examination lifecycle
+
+An examination moves through a small set of statuses:
+
+| Status | Meaning |
+| --- | --- |
+| **Queued** | Created and waiting to be conducted. |
+| **Pending Review** | Conducted and completed; awaiting a reviewer's decision. |
+| **Approved** | Accepted; the recomputed prices stand. |
+| **Rejected** | Sent back; a fresh Queued examination is created in its place. |
+
+## The pricing landing page
+
+The landing page at `/accounting/pricing` opens on two tabs.
+
+- **Overview** shows two cards side by side: the **Queue** (examinations waiting
+  to be conducted) and **Latest** (the most recent examinations, with their
+  examined item, who conducted them, when, and their status).
+- **All Examinations** lists every examination.
+
+Clicking a queued examination opens the conduct screen. **Configure Templates**
+sits at the top right; see [Templates](#templates).
+
+## Conducting an examination
+
+![Examination](/modules/accounting/examination.png)
+
+How an examination is conducted depends on how the item is sourced:
+
+- **Purchased items** are priced from their pricing data and their most recent
+  purchase price, converted to a cost per pound.
+- **Produced items** are priced from their active [MBPR](/docs/production/mbpr)'s
+  bill of materials, rolled up into a cost per batch and per pound.
+
+In both cases the building block is the item's cost. An item's cost is its price
+per unit plus its arrival cost plus an allowance for unforeseen difficulties.
+The price per unit is the item's upcoming price when one is set and active;
+otherwise it is the last purchase price.
+
+### Modifying the numbers to ensure a proper profit
+
+For each finished product you set a price, and the point of the examination is to
+make sure that price leaves enough margin. The **Alter By** control lets you
+drive the pricing from whichever figure you think in: **Consumer Price**,
+**Markup %**, **Profit**, or **Profit Margin**. Enter a value for one and the
+other three are back-solved automatically, so you can nudge any single number and
+immediately see the rest.
+
+The four figures relate to the finished product's total cost like this:
+
+| Figure | Definition |
+| --- | --- |
+| **Consumer Price** | cost × (1 + markup / 100) |
+| **Markup %** | (consumer price − cost) ÷ cost × 100 |
+| **Profit** | consumer price − cost |
+| **Profit Margin** | (consumer price − cost) ÷ consumer price × 100 |
+
+A finished product is only considered valid once its profit margin clears the
+target. Products color red while they fall short and green once they pass, so you
+can see at a glance which containers still need attention.
+
+<Callout>
+  The target profit margin is currently fixed at **15%** in code rather than
+  being configurable. A finished product is flagged valid only when its profit
+  margin exceeds 15%.
+</Callout>
+
+## Templates
+
+Building out every finished-product container by hand for each examination is
+tedious, especially when the same set of container sizes recurs across many
+items. A **pricing template** is a reusable blueprint of finished products: each
+one carries its name, fill quantity, declared quantity, free-shipping cost, fill
+unit of measurement, a difficulty adjustment, and any auxiliaries (extra items
+like caps or pumps). A template can be scoped to a specific item type or left
+generic so it applies to any item.
+
+Templates are managed at `/accounting/pricing/templates` through a wizard,
+reachable from **Configure Templates** on the landing page.
+
+While conducting an examination, **Apply Template** instantiates a template's
+containers onto the item, pre-filled with their cost structure but with the
+pricing figures left at zero. You then only have to dial in the margin for each
+container instead of rebuilding it from scratch.
+
+## Completing and review
+
+When the numbers are set, **Complete** archives a snapshot of everything: the
+item's (or produced item's) pricing data and each finished product, including its
+consumer price, markup, profit, and profit margin. The examination then moves to
+**Pending Review**.
+
+The details screen (`/accounting/pricing/details`) is where a reviewer looks it
+over. It shows:
+
+- **Basics**: the item, its status, the cost breakdown (overall item cost,
+  arrival cost, production usage cost, auxiliary usage cost, unforeseen
+  difficulties cost), and, once decided, who approved or rejected it and when.
+- **Notes**: reviewer notes, each with a type and optional file attachments.
+- Tabs for **Finished Products** (each container's archived pricing) and
+  **Pricing Parameters** (the bill-of-materials or container parameters behind
+  the numbers).
+
+The **Approve** and **Reject** buttons appear only while the examination is
+Pending Review. Approving records the approver and the time; the recomputed
+prices stand.
+
+## Rejection
+
+Rejecting an examination does more than mark it declined. It sets the examination
+to **Rejected**, records who rejected it and when, then creates a fresh
+**Queued** examination for the same item linked back to the one it replaced.
+Crucially, the reviewer's notes are copied forward onto the new examination, so
+whoever picks it up next sees the feedback that prompted the redo. Rejection is
+therefore both an audit trail and an automatic re-queue.
+
+## Viewing an item's past examinations
+
+Every item has a pricing overview reachable from its item details. It shows a
+**Last Examined** panel, trend charts of how the item's cost, its bill-of-material
+cost, and its finished-product prices have moved across examinations over time,
+and a table of the full examination history. Clicking any row in that table opens
+that past examination's detail screen, so you can review exactly what was decided
+and why at any point in the item's history.

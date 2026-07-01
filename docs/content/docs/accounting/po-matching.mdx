@@ -1,0 +1,134 @@
+---
+title: PO Matching
+description: Reconcile a purchase order against its invoice, packing slip, and payment, and keep digital copies of the paperwork.
+---
+
+![PO Matching](/modules/accounting/po-matching.png)
+
+PO matching is the accounting side of a purchase order. A purchase order is
+raised over in [purchasing](/docs/purchasing) and its goods arrive through
+[receiving](/docs/receiving), but the money and paperwork still have to be
+squared away: was it paid, did the packing slip come with the shipment, has the
+invoice been handed to whoever cuts the checks, and on which payment method was
+it charged. That reconciliation happens here.
+
+PO matching lives at `/accounting/pos`.
+
+## The dashboard
+
+The dashboard, titled **Purchase Order Accounting**, shows one row per purchase
+order:
+
+| Column | Meaning |
+| --- | --- |
+| **#** | The purchase order's reference code. |
+| **Supplier** | Who the order was placed with. |
+| **Payment Method** | The method the order is charged to, or "Method Not Selected". |
+| **Total ($)** | The order total, summed from its line items (quantity times price). |
+| **Status** | The accounting status, shown as a colored tag. |
+| **Paid** | Paid or not paid. |
+| **Packing Slip** | Received or Missing. |
+| **Invoice** | Handed Off or Not Yet. |
+
+You can filter the table by **Supplier** and **Payment Method**. Clicking a row
+opens that order's accounting detail.
+
+<Callout>
+  A purchase order that has not been touched by accounting yet shows grey "No
+  Data" tags instead of the Paid, Packing Slip, and Invoice states. Click it to
+  start filling in its accounting record.
+</Callout>
+
+## How accounting relates to the purchase order
+
+A purchase order is owned by purchasing; accounting attaches a single record to
+it that holds everything reviewed here. That record carries the accounting
+status, whether it is paid, the payment method, whether the packing slip was
+received, and whether the invoice paperwork was handed off to the admin. The
+Paid, Packing Slip, and Invoice columns on the dashboard are the three
+yes/no states on this record; the "Invoice" label reflects whether the
+paperwork has been handed off.
+
+The accounting status itself (for example Not Started, In Progress, or
+Completed) is configurable data rather than a fixed set baked into the code, and
+each status carries its own color for the tag shown in the table.
+
+## The detail view
+
+Opening a row lands on **PO #&lt;code&gt; Accounting**, organized into four tabs.
+
+### Details
+
+The Details tab holds four panels:
+
+- **Reconciliation toggles**: three yes/no switches for **Paid**, **Packing
+  Slip**, and **Invoice**. Flipping one records the change immediately.
+- **Purchase order info**: read-only details (reference code, created date,
+  supplier, purchasing status, and total). The reference code links back to the
+  order in purchasing.
+- **Accounting Status**: the current status as a large colored block; click it
+  to pick a new status.
+- **Payment Method**: the method the order is charged to; click to choose one
+  from the catalog.
+
+### Notes
+
+Free-text notes, each tagged with a note type, and each able to carry file
+attachments. Use these to record anything a teammate should know about the
+order: a short payment, a disputed line, a delayed credit.
+
+### Files
+
+Digital copies of the order's paperwork. See the next section.
+
+### Activity
+
+A single timeline that merges the accounting audit log with the purchasing-side
+activity for the same order. Each entry shows the user, the type of activity,
+the action, the timestamp, and any extra detail. You can filter by type and by
+user.
+
+## Why matching matters
+
+A single purchase order is usually touched by several people. Purchasing raises
+it; receiving confirms the packing slip arrived with the goods; an admin
+confirms the invoice paperwork was handed off; accounting marks it paid and
+assigns a payment method and status. Because the work is split across roles, no
+one person can see at a glance whether an order is fully squared away.
+
+Matching turns that into a shared checklist. Every change (a toggle flipped, a
+status changed, a payment method chosen, a file added or removed) is written to
+the order's audit log, and the Activity tab folds the accounting log together
+with the purchasing history so the whole story is visible in one place. When a
+supplier calls about an unpaid invoice, or a payment does not reconcile at
+month end, the record shows who did what and when.
+
+<Callout>
+  Matching here is a human checklist backed by attached documents; Lumexia does
+  not automatically compare an invoice total against the purchase-order total.
+  The value is in the shared, auditable record, not in an automated three-way
+  match.
+</Callout>
+
+## The files section
+
+The Files tab is where you keep digital copies of an order's paperwork: the
+invoice, the packing slip, the bill of lading (BOL), and anything else worth
+holding onto. Drag files onto the uploader or click to browse; it accepts images
+and PDFs. Uploaded copies are stored in object storage, and Lumexia generates a
+thumbnail so each file is easy to recognize at a glance.
+
+Each file shows its thumbnail, a type tag, the uploader, and the file name.
+Clicking a file opens it in a new tab through a short-lived link; the trash
+button removes it after a confirmation.
+
+Keeping these copies attached to the order means the paperwork travels with the
+record. Anyone reviewing the order later, whether to answer a supplier question
+or to close the books, can pull up the exact invoice or BOL without digging
+through a shared drive or a physical folder.
+
+<Callout>
+  File typing is only partly wired today: the uploader currently stamps every
+  file with a single default type, so the richer per-file classification
+  (Invoice, Packing Slip, BOL) is not yet selectable at upload time.
+</Callout>
