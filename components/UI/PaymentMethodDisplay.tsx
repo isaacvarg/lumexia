@@ -1,4 +1,4 @@
-'use client '
+'use client'
 import { PaymentMethod } from "@/actions/accounting/paymentMethods/getAll";
 import CreditCard, { CreditCardTypes } from "./CreditCard";
 import BankTransfer from "./BankTransfer";

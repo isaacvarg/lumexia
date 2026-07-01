@@ -1,9 +1,6 @@
 import { accountingActions } from "@/actions/accounting";
-import PageWrapper from "@/components/App/PageWrapper";
-import { Panels } from "@/components/Panels";
-import SectionTitle from "@/components/Text/SectionTitle";
-import AddNewButton from "./_components/AddNewButton";
-import PaymentMethodDisplay from "@/components/UI/PaymentMethodDisplay";
+import PageTitle from "@/components/Text/PageTitle";
+import Link from "next/link";
 import MethodsDisplay from "./_components/MethodsDisplay";
 
 const PaymentsPage = async () => {
@@ -11,18 +8,16 @@ const PaymentsPage = async () => {
     const methods = await accountingActions.paymentMethods.getAll();
 
     return (
-        <PageWrapper pageTitle={'Payments'}>
+        <div className='flex flex-col gap-y-6'>
+            <div className='flex justify-between items-center'>
+                <PageTitle>Payments</PageTitle>
+                <Link href="/accounting/payments/methods/create" className='btn btn-accent'>
+                    Add Payment Method
+                </Link>
+            </div>
 
-            <Panels.Root>
-                <SectionTitle size="small">Payment Methods</SectionTitle>
-
-
-                <MethodsDisplay methods={methods} />  
-
-            </Panels.Root>
-
-
-        </PageWrapper>
+            <MethodsDisplay methods={methods} />
+        </div>
     )
 }
 

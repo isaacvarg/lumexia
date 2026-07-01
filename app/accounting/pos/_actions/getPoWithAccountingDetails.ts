@@ -65,4 +65,12 @@ export async function getPoWithAccountingDetails(id?: string) {
   }
 };
 
+export async function getPosByPaymentMethod(paymentMethodId: string) {
+  const pos = await prisma.purchaseOrder.findMany({
+    where: { poAccountingDetail: { paymentMethodId } },
+    ...poWithAccountingDetailsArgs
+  });
+  return Promise.all(pos.map(transformPo));
+}
+
 export type PoWithAccounting = Awaited<ReturnType<typeof transformPo>>;

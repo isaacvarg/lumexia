@@ -57,6 +57,7 @@ type State = {
   actionableTypes: StateData,
   experiments: StateData,
   users: StateData,
+  paymentMethodPurchases: StateData,
 }
 
 
@@ -115,6 +116,7 @@ export const useTablePagination = create<State & Actions>((set) => ({
   actionableTypes: { pageSize: 20, pageIndex: 0 },
   experiments: { pageSize: 50, pageIndex: 0 },
   users: { pageSize: 20, pageIndex: 0 },
+  paymentMethodPurchases: { pageSize: 20, pageIndex: 0 },
 
 
   setPagination: (filterName, value) =>

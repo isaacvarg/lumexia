@@ -51,6 +51,7 @@ type State = {
   actionableTypes: string
   experiments: string
   users: string
+  paymentMethodPurchases: string
 }
 
 
@@ -110,6 +111,7 @@ export const useTableFilter = create<State & Actions>((set) => ({
   actionableTypes: '',
   experiments: '',
   users: '',
+  paymentMethodPurchases: '',
 
   setFilter: (filterName, value) => set((state) => ({
     ...state,
