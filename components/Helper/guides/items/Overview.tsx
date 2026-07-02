@@ -1,24 +1,32 @@
-import SectionTitle from "@/components/Text/SectionTitle";
 import { GuideTypo } from "../../typography";
 
 const Overview = () => {
   return (
     <GuideTypo.Wrapper>
-      <p className="text-lg">
+      <GuideTypo.Lead>
         Items are the foundation of inventory — every material, component, and
-        product the system tracks starts here. These guides walk through how
-        items are created and how their type shapes everything downstream.
-      </p>
+        product the system tracks starts here. These guides walk through what an
+        item is made of and how to work with the items list.
+      </GuideTypo.Lead>
 
-      <SectionTitle size="small">In this section</SectionTitle>
-      <ul className="list-disc list-inside flex flex-col gap-2">
-        <li>How to create a new item and what each field controls.</li>
-        <li>How an item&apos;s type drives its purchasing and production flows.</li>
-      </ul>
+      <GuideTypo.Section>In this section</GuideTypo.Section>
+      <GuideTypo.List>
+        <GuideTypo.Item>The core properties every item carries.</GuideTypo.Item>
+        <GuideTypo.Item>
+          How procurement type shapes an item&apos;s workflows.
+        </GuideTypo.Item>
+        <GuideTypo.Item>
+          Aliases — alternate names and codes for the same item.
+        </GuideTypo.Item>
+        <GuideTypo.Item>
+          Browsing, filtering, and searching the items list.
+        </GuideTypo.Item>
+        <GuideTypo.Item>
+          Creating a new item and configuring the available options.
+        </GuideTypo.Item>
+      </GuideTypo.List>
 
-      <p className="text-base-content/70">
-        Pick a guide above to dive in.
-      </p>
+      <GuideTypo.Note>Pick a guide above to dive in.</GuideTypo.Note>
     </GuideTypo.Wrapper>
   );
 };

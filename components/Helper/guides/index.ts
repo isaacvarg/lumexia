@@ -1,8 +1,10 @@
 import { GuideSection } from "./types";
 import { itemsSection } from "./items";
+import { itemDetailsSections } from "./itemDetails";
 
 export const guideSections: GuideSection[] = [
-  itemsSection
+  itemsSection,
+  ...itemDetailsSections,
 ];
 
 const byId = new Map(guideSections.map((section) => [section.id, section]));

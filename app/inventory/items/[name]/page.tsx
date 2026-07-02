@@ -17,6 +17,7 @@ import { qualityActions } from "@/actions/quality";
 import { getReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { getItemMeasurements } from "./_actions/quality/getMeasurements";
 import DangerZoneButton from "./_components/shared/DangerZoneButton";
+import ItemHelper from "./_components/shared/ItemHelper";
 
 const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) => {
 
@@ -84,6 +85,8 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
         discreteConversions={discreteConversions}
         reorderingRule={reorderingRule}
       />
+
+      <ItemHelper />
 
       <TitleRow />
 

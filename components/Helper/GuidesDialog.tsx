@@ -87,7 +87,7 @@ const GuidesDialog = () => {
         </div>
 
         {/* Content — section overview, or the selected guide, with a swap animation. */}
-        <div className="mt-6 pt-6 border-t border-base-content/10 flex-1 overflow-y-auto">
+        <div className="mt-6 pt-6 border-t border-base-content/10 flex-1 overflow-y-auto px-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeKey}
@@ -95,7 +95,7 @@ const GuidesDialog = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
-              className="max-w-3xl"
+              className="max-w-4xl mx-auto"
             >
               {ActiveContent ? (
                 <ActiveContent />
