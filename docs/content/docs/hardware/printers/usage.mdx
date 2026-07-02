@@ -3,6 +3,10 @@ title: Usage
 description: How Lumexia prints labels, the two printing paths, and their hardware requirements.
 ---
 
+<Callout title="Future Work">
+The printing should be overhauled soon to allow printing even warehouse labels without dialog directly to a bluetooth label printer, but this is still work in progress.
+</Callout>
+
 Lumexia prints labels in two different ways, depending on what is being labeled.
 Inventory and receiving labels are generated as a PDF and printed through your
 computer like any other document; research sample labels are sent directly to a
@@ -36,11 +40,15 @@ A few practical notes:
 
 ## Research sample labels (Niimbot thermal printer)
 
-Labels for research and experiment **samples** take a different route: they are
+Labels for research and experimenet are are
 sent straight to a thermal label printer over Bluetooth, with no PDF and no
 system print dialog.
 
-This path is built for a specific device:
+<Callout title="Bluetooth Printers">
+While this is only tested with the printer below, other bluetooth label printers might work. Future work might include configuration and wider coverage of devices.
+</Callout>
+
+This path is built/tested  for a specific device:
 
 | Requirement | Value |
 | --- | --- |
@@ -48,7 +56,7 @@ This path is built for a specific device:
 | **Resolution** | 203 DPI |
 | **Label size** | 50 x 30 mm |
 | **Connection** | Web Bluetooth |
-| **Browser** | Chrome or Edge |
+| **Browser** | Chrome, Vivaldi |
 
 Some setup details worth knowing:
 
@@ -60,10 +68,15 @@ Some setup details worth knowing:
   browsers on the printer's computer.
 - One click prints one label for the selected sample.
 
-<Callout type="warn">
-  The Niimbot path is fixed to the Niimbot B1 at 203 DPI on 50 x 30 mm labels.
-  Other thermal printers, including Zebra (ZPL), Brother, and DYMO, are not
-  supported.
+<Callout title="For Local Host">
+In order for this to work if on a development environment, the following flags must be enabled by going to `vivaldi://flags` or `chrome://flags`.
+```
+Insecure origins treated as secure:
+Enabled + `http://localhost:3000`
+
+Web Bluetooth:
+Enabled
+```
 </Callout>
 
 ## Which path applies
