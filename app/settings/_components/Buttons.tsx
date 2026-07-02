@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useAppSelection } from "@/store/appSlice"
-import { TbTool, TbBox, TbUsers, TbBuilding, TbFlask, TbChevronRight } from "react-icons/tb"
+import { TbTool, TbBox, TbUsers, TbBuilding, TbFlask, TbMicroscope, TbChevronRight } from "react-icons/tb"
 import { IconType } from "react-icons"
 
 type SettingCard = {
@@ -23,6 +23,7 @@ const Buttons = () => {
   const cards: SettingCard[] = [
     { label: "Inventory", description: "Configure inventory settings", href: "settings/inventory", icon: TbBox },
     { label: "Production", description: "Configure production settings", href: "settings/production", icon: TbFlask },
+    { label: "Research", description: "Configure research settings", href: "settings/research", icon: TbMicroscope },
     ...(isSystemAdmin
       ? [
         { label: "Manage Users", description: "Add, edit, and assign user roles", href: "settings/users", icon: TbUsers } as SettingCard,

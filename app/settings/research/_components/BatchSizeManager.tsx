@@ -6,7 +6,7 @@ import Card from "@/components/Card";
 import SectionTitle from "@/components/Text/SectionTitle";
 import { researchActions } from "@/actions/research";
 import { CostBatchSizeRow } from "@/actions/research/costBatchSizes/getAll";
-import DeleteConfirm from "../../experiments/[referenceCode]/_components/variants/DeleteConfirm";
+import DeleteConfirm from "@/app/research/experiments/[referenceCode]/_components/variants/DeleteConfirm";
 
 type Props = {
   batchSizes: CostBatchSizeRow[];

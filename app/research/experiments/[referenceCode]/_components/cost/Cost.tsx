@@ -57,7 +57,7 @@ const Cost = ({ experimentId }: Props) => {
         <Card.Root>
           <p className="font-poppins text-base-content/70 italic">
             No default batch sizes configured.{" "}
-            <Link href="/research/settings" className="link link-primary">
+            <Link href="/settings/research" className="link link-primary">
               Configure them in Research Settings
             </Link>{" "}
             to see projected per-batch costs.
