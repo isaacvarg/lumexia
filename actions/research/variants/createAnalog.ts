@@ -45,7 +45,7 @@ export const createExperimentVariantAnalog = async ({
 
   return prisma.$transaction(async (tx) => {
     const variant = await tx.experimentVariant.create({
-      data: { experimentId, label },
+      data: { experimentId, label, sourceMbprId: mbprId },
     });
 
     if (sortedBom.length > 0) {

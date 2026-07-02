@@ -2,13 +2,13 @@
 import { useMbprDetailsSelection } from "@/store/mbprDetailsSlice";
 import TabButton from "./TabButton";
 
-export type MbprTab = 'overview' | 'instructions' | 'notes' | 'activity'
+export type MbprTab = 'overview' | 'instructions' | 'notes' | 'activity' | 'rnd'
 
 const TabSelector = () => {
 
   const { mbpr } = useMbprDetailsSelection()
 
-  const tabs: MbprTab[] = ['overview', 'instructions', 'notes', 'activity'];
+  const tabs: MbprTab[] = ['overview', 'instructions', 'notes', 'activity', 'rnd'];
 
   if (!mbpr) {
     return <Skeleton />

@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Thu Jun 25 2026 10:12:48 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Thu Jul 02 2026 09:38:08 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -1829,6 +1829,7 @@ model MasterBatchProductionRecord {
   BatchStep                   BatchStep[]
   BillOfMaterial              BillOfMaterial[]
   MbprNote                    MbprNote[]
+  ExperimentVariant           ExperimentVariant[]
 
   @@map("master_batch_production_records")
 }
@@ -3109,11 +3110,13 @@ model ExperimentVariantMethodStep {
 model ExperimentVariant {
   id           String   @id @default(uuid())
   experimentId String   @map("experiment_id")
+  sourceMbprId String?  @map("source_mbpr_id")
   label        String
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   experiment  Experiment                    @relation(fields: [experimentId], references: [id])
+  sourceMbpr  MasterBatchProductionRecord?  @relation(fields: [sourceMbprId], references: [id])
   materials   ExperimentVariantMaterial[]
   samples     ExperimentSample[]
   methodSteps ExperimentVariantMethodStep[]

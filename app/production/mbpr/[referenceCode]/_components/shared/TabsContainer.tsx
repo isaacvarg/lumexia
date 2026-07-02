@@ -6,6 +6,7 @@ import OverviewTab from "../tabs/OverviewTab";
 import InstructionsTab from "../tabs/InstructionsTab";
 import NotesTab from "../tabs/NotesTab";
 import ActivityTab from "../tabs/ActivityTab";
+import RndTab from "../tabs/RndTab";
 
 const TabsContainer = () => {
 
@@ -25,6 +26,7 @@ const TabsContainer = () => {
       {currentTab === 'instructions' && <InstructionsTab />}
       {currentTab === 'notes' && <NotesTab />}
       {currentTab === 'activity' && <ActivityTab />}
+      {currentTab === 'rnd' && <RndTab />}
     </AnimatePresence>
   )
 }

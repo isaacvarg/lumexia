@@ -12,7 +12,7 @@ const TabButton = ({ tab }: { tab: MbprTab }) => {
       className={`capitalize min-w-40 btn btn-secondary ${isSelected ? '' : 'btn-dash'}  `}
       onClick={() => setCurrentTab(tab)}
     >
-      {tab}
+      {tab === 'rnd' ? 'R&D' : tab}
     </button>
   )
 }

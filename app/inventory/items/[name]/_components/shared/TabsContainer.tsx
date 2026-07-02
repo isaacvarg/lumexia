@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Inventory from "../inventory/Inventory";
 import Pricing from "../pricing/Pricing";
 import Production from "../production/Production";
+import Rnd from "../rnd/Rnd";
 import Files from "../files/Files";
 import Quality from "../quality/Quality";
 import { useTabSelection } from "@/store/tabSlice";
@@ -32,6 +33,7 @@ const TabsContainer = () => {
         {currentTab === 'purchasing' && <Purchasing />}
         {currentTab === 'pricing' && <Pricing />}
         {currentTab === 'production' && <Production />}
+        {currentTab === 'rnd' && <Rnd />}
         {currentTab === 'quality' && <Quality />}
         {currentTab === 'files' && <Files />}
         {currentTab === 'danger' && <Danger />}

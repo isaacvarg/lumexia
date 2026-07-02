@@ -14,7 +14,7 @@ const TabButton = ({ tab }: { tab: ItemTab }) => {
       className={`capitalize min-w-40 btn btn-secondary ${isSelected ? '' : 'btn-dash'}  `}
       onClick={() => setActiveTab('itemDetails', tab)}
     >
-      {tab}
+      {tab === 'rnd' ? 'R&D' : tab}
     </button>
   )
 }

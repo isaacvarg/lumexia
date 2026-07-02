@@ -1,6 +1,9 @@
 import { createExperiment } from "./createExperiment";
 import { getAllExperiments } from "./getAllExperiments";
 import { getAllExperimentGroups } from "./getAllExperimentGroups";
+import { getExperimentGroupsWithExperiments } from "./getExperimentGroupsWithExperiments";
+import { getExperimentsBySubject } from "./getExperimentsBySubject";
+import { getExperimentsByMbpr } from "./getExperimentsByMbpr";
 import { getAllExperimentStatuses } from "./getAllExperimentStatuses";
 import { getOneExperiment } from "./getOneExperiment";
 import { updateExperiment } from "./updateExperiment";
@@ -64,9 +67,12 @@ export const researchActions = {
     getOne: getOneExperiment,
     create: createExperiment,
     update: updateExperiment,
+    getBySubject: getExperimentsBySubject,
+    getByMbpr: getExperimentsByMbpr,
   },
   experimentGroups: {
     getAll: getAllExperimentGroups,
+    getAllWithExperiments: getExperimentGroupsWithExperiments,
   },
   experimentStatuses: {
     getAll: getAllExperimentStatuses,

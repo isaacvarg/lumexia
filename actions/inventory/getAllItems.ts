@@ -21,7 +21,7 @@ export const getAllItems = async (commandType?: true) => {
   });
 
   const transformedItems = await Promise.all(items.map((item) => {
-    const flatAliases = item.aliases.join("");
+    const flatAliases = item.aliases.map((alias) => alias.name).join(", ");
 
     return {
       ...item,

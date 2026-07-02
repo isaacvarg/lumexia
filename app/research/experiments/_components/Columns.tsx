@@ -44,6 +44,7 @@ export const columns = [
   columnHelper.accessor((r) => r.primarySubject?.name ?? "", {
     id: "subjectName",
     header: "Subject",
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   }),
   columnHelper.accessor((r) => r.experimentGroup?.label ?? "", {
     id: "groupLabel",

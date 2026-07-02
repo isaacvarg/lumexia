@@ -3,6 +3,7 @@ import { InvestigationTab } from '@/store/investigationSlice';
 import { PurchasingTab } from '@/app/purchasing/purchase-orders/[purchaseOrder]/_components/shared/TabSelector';
 import { RequestTab } from '@/app/purchasing/requests/_components/shared/TabSelector';
 import { ExperimentTab } from '@/app/research/experiments/[referenceCode]/_components/shared/TabSelector';
+import { ExperimentsListTab } from '@/app/research/experiments/_components/shared/TabSelector';
 import { UserSettingsTab } from '@/app/settings/user/_components/shared/TabSelector';
 import { UserAdminTab } from '@/app/settings/users/[id]/_components/shared/TabSelector';
 import { CompanySettingsTab } from '@/app/settings/company/_components/shared/TabSelector';
@@ -18,6 +19,7 @@ export type TabsConfig = {
   requests: RequestTab,
   investigation: InvestigationTab,
   experimentDetails: ExperimentTab,
+  researchExperiments: ExperimentsListTab,
   userSettings: UserSettingsTab,
   userAdminDetails: UserAdminTab,
   companySettings: CompanySettingsTab,
@@ -45,6 +47,7 @@ const initialState: TabState = {
     requests: 'new',
     investigation: 'lots',
     experimentDetails: 'basics',
+    researchExperiments: 'experiments',
     userSettings: 'main',
     userAdminDetails: 'profile',
     companySettings: 'info',

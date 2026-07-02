@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { TbRobot } from "react-icons/tb";
+import { BsRobot } from "react-icons/bs";
 import useToast from "@/hooks/useToast";
 
 type Props = {
@@ -44,7 +44,7 @@ const CopyForLlmButton = ({
       {loading ? (
         <span className="loading loading-spinner loading-xs" />
       ) : (
-        <TbRobot />
+        <BsRobot size={18} />
       )}
     </button>
   );

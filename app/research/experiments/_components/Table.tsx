@@ -25,6 +25,15 @@ const Table = ({ experiments }: TableProps) => {
       filterLabel: "Status",
       options: toFacetFilter(experiments, "status.name", "status.name"),
     },
+    {
+      columnName: "subjectName",
+      filterLabel: "Subject",
+      options: toFacetFilter(
+        experiments,
+        "primarySubject.name",
+        "primarySubject.name",
+      ),
+    },
   ];
 
   return (
