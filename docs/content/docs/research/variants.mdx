@@ -1,0 +1,80 @@
+---
+title: Variants
+description: "Candidate formulations: materials and concentrations, phases, the method, and cloning an analog from an MBPR."
+---
+
+A **variant** is a single candidate formulation inside an experiment. It has two parts: a
+**formulation** (the materials and how much of each, by concentration) and a **method**
+(the ordered steps for making it). An experiment usually holds several variants so that
+different formulas can be built, sampled, and compared against one another.
+
+Variants live on the **Variants** tab of an experiment.
+
+![Experiment variants](/modules/research/variants.png)
+
+## The formulation
+
+Each variant carries a table of **materials**. Every line is an
+[inventory item](/docs/inventory/items) plus a **concentration** expressed as **% w/w**
+(percent by weight of the total formula). This mirrors how an
+[MBPR](/docs/production/mbpr) stores its bill of materials, so a variant reads like a
+recipe rather than a fixed batch: it describes proportions, not pounds.
+
+Materials can be added, edited, removed, and dragged to reorder. A running **total**
+concentration is shown so you can see at a glance whether the formula sums to 100%.
+
+<Callout>
+  Concentrations are stored internally as fractions between 0 and 1 but are always
+  displayed and entered as percentages. A material at `0.05` internally shows as **5%**.
+</Callout>
+
+### Phases
+
+Materials can be grouped into **phases**, a free-text label such as "Water phase",
+"Oil phase", or "Cool down". Phases organize a formulation the way a chemist thinks about
+it, and they group the material rows visually. You can:
+
+- Assign a material to a phase, or move it to a different one.
+- Rename a phase, which updates every material in it.
+- Reorder materials within and across phases.
+
+A material with no phase simply sits ungrouped. Phases are per variant; they are not a
+shared catalog.
+
+## The method
+
+Below the formulation, a variant carries an ordered **method**: the numbered steps for
+actually making the formula. Each step has a **sequence**, an optional **phase** label,
+and free-text **content**. Steps can be added, edited, deleted, and dragged to reorder.
+Where the formulation says what goes in, the method says how it is combined.
+
+## Creating an analog from an MBPR
+
+A variant can be built from scratch, or cloned from an existing
+[MBPR](/docs/production/mbpr) with **Add Analog**. This is the fastest way to start from a
+recipe the facility already produces and then tweak it.
+
+Choosing an MBPR and a label creates a variant that copies:
+
+- **Materials**: every line of the MBPR's bill of materials, converted from the MBPR's
+  percentage into the variant's fractional concentration, ordered by step sequence, and
+  tagged with each material's step **phase**.
+- **Method**: the MBPR's active step instructions, flattened into an ordered list of
+  method steps in step-sequence order, each tagged with its step's phase. Archived steps
+  and archived instructions are skipped.
+
+The new variant records which MBPR it came from (its **source MBPR**). That link is what
+powers the reverse view: an MBPR's **R&D** tab lists every experiment that has a variant
+sourced from it, so you can see all the experimentation happening around a given recipe.
+
+<Callout>
+  An analog is a one-time copy, not a live link. Editing the variant afterward does not
+  change the MBPR, and later changes to the MBPR do not flow back into the variant. The
+  source-MBPR reference is kept only so the experiment shows up on that MBPR's R&D tab.
+</Callout>
+
+## Copy for LLM
+
+Each variant has a **Copy for LLM** button that exports just that formulation, its method,
+and its samples and measurements as markdown for pasting into an AI assistant. See
+[Copy for LLM](/docs/research/experiments#copy-for-llm).

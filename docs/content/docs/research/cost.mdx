@@ -1,0 +1,70 @@
+---
+title: Cost
+description: Projected cost per variant, per-batch-size figures, the delta against production, and R&D cost settings.
+---
+
+The **Cost** tab projects what each [variant](/docs/research/variants) would cost to
+produce, before any batch is ever made. It answers a practical question during
+formulation: is this formula affordable, and how does it compare to what the item costs to
+make today? The figures are estimates built from current material prices and a few
+overhead settings.
+
+![Cost projections](/modules/research/cost.png)
+
+## How a projection is built
+
+For each variant, Lumexia works out a **projected cost per pound**:
+
+1. **Material cost**: for every material in the formulation, it looks up the item's
+   purchased cost per pound from [accounting pricing](/docs/accounting/pricing), then
+   multiplies by the material's concentration. Summing these gives the formulation's raw
+   **bill-of-materials cost per pound**.
+2. **Overhead**: the BOM cost is marked up by the configured **overhead percent**, and a
+   flat **overhead per pound** is added on top.
+
+The result is a projected cost per pound for the variant, alongside the raw BOM cost so
+you can see how much of the total is materials versus overhead.
+
+<Callout type="warn">
+  A projection is speculative, so a material with no price on file does not break the tab;
+  it is simply treated as zero cost and counted. Each variant reports how many of its
+  materials were **missing a price**, which flags that the projection understates the true
+  cost. Price the flagged materials in accounting to firm up the number.
+</Callout>
+
+## Per batch size
+
+The per-pound figures are projected across the **cost batch sizes** configured in
+settings. For each size, the tab shows the BOM cost and the projected cost for a batch of
+that weight, so you can read the cost at, say, a 50 lb pilot and a 500 lb production run at
+once. Batch sizes here are purely for costing; they are independent of the batch sizes an
+[MBPR](/docs/production/mbpr) defines for actual production.
+
+## Comparison against production
+
+When the experiment's subject item has already been produced, the tab compares each
+variant's projected cost per pound against the item's **last produced cost per pound**,
+taken from its most recent [pricing examination](/docs/accounting/pricing). The difference
+is shown as a **delta**: a negative delta means the variant is projected to be cheaper than
+what the item costs to make today, a positive delta means more expensive. This turns cost
+from an abstract number into a direct "is this reformulation worth it" signal.
+
+If the subject has never been produced, or has no costed pricing examination, there is no
+baseline to compare against and the delta is simply omitted.
+
+## Settings
+
+The **Settings** page at `/settings/research` holds the inputs the Cost tab depends on:
+
+- **Overhead**: the **overhead percent** and **overhead per pound** applied to every
+  variant's material cost. These are global R&D cost settings.
+- **Cost batch sizes**: the reusable list of batch sizes (a label and a weight in pounds)
+  that projections are spread across. Add, edit, remove, and reorder them here; every
+  experiment's Cost tab uses the same list.
+
+<Callout>
+  Overhead and batch sizes are configured once and shared by every experiment, so changing
+  a setting re-projects the cost on every variant across the module. They are estimating
+  assumptions for R&D, separate from the detailed costing that
+  [accounting pricing](/docs/accounting/pricing) performs on real production batches.
+</Callout>

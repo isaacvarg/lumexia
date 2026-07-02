@@ -1,0 +1,116 @@
+---
+title: Experiments
+description: "The experiment record: the list and groups, creating an experiment, the Basics tab, notes and files, and Copy for LLM."
+---
+
+An **experiment** is the top-level R&D record. It frames a study: the item under
+investigation, who is running it, and what question it is trying to answer. Everything
+else in the module (variants, samples, measurements, costs) lives inside an experiment.
+
+Experiments are listed at `/research/experiments`.
+
+![Experiments list](/modules/research/experiments-list.png)
+
+## The list
+
+The **Experiments** page opens on two tabs:
+
+- **Experiments**: a sortable table of every experiment.
+- **Experiment Groups**: the same experiments organized into groups.
+
+The Experiments table shows one row per experiment:
+
+| Column | Meaning |
+| --- | --- |
+| **Reference** | The experiment's reference code, formatted `EXP-0001`. |
+| **Objective** | The one-line goal of the study. |
+| **Status** | A color-coded status badge (see [statuses](/docs/research)). |
+| **Investigator** | The primary investigator running the experiment. |
+| **Subject** | The item being researched. |
+| **Group** | The experiment group, if the experiment belongs to one. |
+| **Created** | When the experiment was created. |
+
+Clicking a row opens that experiment's detail page. The page also carries a scan
+listener: scanning a sample's QR label from here jumps straight to that sample (see
+[Samples](/docs/research/samples)).
+
+### Experiment groups
+
+An **experiment group** ties related experiments together, for example a series of
+studies on one product line or one problem. The **Experiment Groups** tab lists each
+group with its experiments nested underneath, and groups carry their own status so a
+whole line of work can be marked active, completed, and so on. An experiment's group is
+optional; it can be set when the experiment is created or later on the Basics tab.
+
+## Creating an experiment
+
+**Create Experiment** opens a form that captures:
+
+- **Subject**: the [inventory item](/docs/inventory/items) being researched. This anchors
+  the experiment; cost projections and the item's own R&D tab key off it.
+- **Objective**: a short statement of what the study is trying to achieve.
+- **Hypothesis**: the expected outcome or the idea being tested.
+- **Group**: an optional experiment group to file it under.
+
+A new experiment starts at the **Planning** status and is assigned a reference code
+automatically.
+
+<Callout>
+  An experiment can also be started from elsewhere in the app with its subject
+  pre-filled: the **R&D** tab on an [item](/docs/inventory/item-details) offers a "new
+  experiment for this subject" button, and the **R&D** tab on an
+  [MBPR](/docs/production/mbpr) seeds the produced item as the subject. Both seed the
+  subject only; they do not create any variants.
+</Callout>
+
+## The detail page
+
+![Details](/modules/research/details.png)
+
+An experiment's detail page is organized into tabs:
+
+- **Basics**: the core fields and side panels for notes and files.
+- **Variants**: the candidate formulations. See [Variants](/docs/research/variants).
+- **Samples**: the physical samples and their measurements. See [Samples](/docs/research/samples).
+- **Cost**: projected cost per variant. See [Cost](/docs/research/cost).
+- **Notes**: an aggregated feed of every note across the experiment and its samples.
+- **Files**: an aggregated list of every file attached anywhere in the experiment.
+
+### Basics
+
+The **Basics** tab is where the experiment's identity is edited: its **status**,
+**group**, **objective**, and **hypothesis**. Alongside these sit two panels:
+
+- **Notes**: typed notes on the experiment. Each note has a **note type** (a named,
+  color-coded label such as "Observation" or "Decision"), an author, and content.
+- **Files**: documents or images attached to the experiment.
+
+### Notes and files
+
+Notes and files can be attached in two places: to the **experiment** itself (on Basics)
+and to individual **samples** (on the Samples tab). The experiment's **Notes** and
+**Files** tabs roll both together into a single feed, so the Notes tab shows experiment
+notes and sample notes side by side, each labeled with where it came from. This gives a
+running log of the whole study without hunting through individual samples.
+
+<Callout>
+  Note types are shared across experiment notes and sample notes, so the same set of
+  color-coded labels is available wherever a note is written.
+</Callout>
+
+## Copy for LLM
+
+<Callout title="Improvements">
+This currently has baked in functionality. Future work will include configuration of the prompts to match customizable workflows.
+</Callout>
+
+Throughout the module, a **Copy for LLM** button assembles the experiment's data into a
+single markdown document ready to paste into an external AI assistant such as Claude. The
+export opens with a preamble framing the assistant as a cosmetic chemist, then lays out
+the experiment's metadata, the variant formulations and methods, the samples, their QC
+measurements, and the notes.
+
+The button appears at the variant and sample level, so you can share the context of one
+formulation or one sample rather than the whole experiment. It is a convenience for
+getting a second opinion on formulation, stability, or troubleshooting; nothing is sent
+anywhere automatically, the content is simply copied to your clipboard for you to paste.

@@ -1,0 +1,68 @@
+---
+title: Scanners
+description: How Lumexia reads QR and barcode scans, the hardware it expects, and where scanning is used.
+---
+
+Lumexia uses handheld scanners to turn a physical label back into the exact record
+it belongs to. Scan a lot or sample's QR code and Lumexia jumps straight to it — no
+typing, no searching. Scanning is a first-class part of the warehouse and production
+workflows, and it works with ordinary off-the-shelf hardware.
+
+## How scanning works
+
+Lumexia expects a scanner that behaves like a **keyboard** — the common
+"keyboard-wedge" or **HID** mode that nearly every USB and Bluetooth barcode/QR
+scanner supports. When you scan, the device "types" the encoded value and finishes
+with an **Enter**. Lumexia watches for that keystroke burst and its terminating
+Enter, then resolves the value and navigates.
+
+Because it's just keyboard input, there is **no camera, no scanning library, and no
+in-app driver or configuration**. Any scanner in keyboard-wedge mode works.
+
+<Callout>
+  Lumexia listens for scans globally, but it deliberately ignores keystrokes while
+  you're typing in a text field, and ignores modifier-key shortcuts. So a scan is
+  only picked up when you're not mid-edit — point-and-scan on a page, and it routes.
+</Callout>
+
+## What you scan
+
+You scan the **QR labels Lumexia prints** — see [Printers](/docs/hardware/printers)
+and [Receiving labels](/docs/receiving/labels). Each code encodes the record's
+identity as `<type>:<uuid>`, where the type is a **lot** or a **sample**. Labels
+printed by older versions carry only a bare identifier; those resolve to a **lot**.
+
+| Scanned code | Resolves to |
+| --- | --- |
+| A lot label | The lot's [audit view](/docs/inventory/audits) |
+| A sample label | The [research](/docs/research/samples) sample's experiment |
+| A legacy bare code | A lot |
+
+## Where scanning is used
+
+- **Universal Scanner** — a panel you can scan into from anywhere; it resolves the
+  code and routes you to the right place automatically.
+- **Inventory** — [audits](/docs/inventory/audits) and discrepancy audits: scan a lot
+  to pull up its item and count.
+- **Purchasing** — [procurement requests](/docs/purchasing/procurement-requests): a
+  scan resolves the lot to its parent item and fills the form in for you.
+- **Quality** — QC panels: scan to pull up the record being checked.
+- **Production** — staging and [compounding](/docs/production/compounding) use
+  **scan-to-verify**: scan the lot you're about to use and Lumexia confirms it's the
+  correct material before you proceed.
+
+## Requirements
+
+| Requirement | Value |
+| --- | --- |
+| **Device** | Any USB or Bluetooth barcode/QR scanner in **keyboard-wedge (HID)** mode |
+| **Terminator** | Enter / carriage return after each scan |
+| **Drivers** | None |
+| **In-app setup** | None |
+
+<Callout type="warn">
+  There is no camera-based scanning and no scanner settings page in Lumexia. Anything
+  configurable — symbologies, a suffix character — lives on the scanner itself. The
+  one thing that must be set: the scanner has to **append an Enter** after each scan,
+  which is the default on virtually all of them.
+</Callout>

@@ -1,0 +1,78 @@
+---
+title: R&D
+description: Formulation experiments, their variants, samples, QC measurements, and projected costs.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+![Experiments list](/modules/research/experiments-example.png)
+
+The **Research & Development** module is where a formulation is developed before it
+ever becomes a production recipe. An **experiment** studies one subject item; inside
+it you draft candidate formulations, make physical samples, measure how they perform,
+and project what each would cost to produce. It is the bench-work counterpart to
+[production](/docs/production): production repeats a proven recipe, while R&D is where
+that recipe is found.
+
+R&D lives at `/research/experiments`, reached from the **R&D** section of the sidebar.
+
+## The record hierarchy
+
+Everything in the module hangs off three nested records:
+
+1. An **Experiment** is the study. It names a **subject** (the item being researched),
+   a **primary investigator**, and an optional **objective** and **hypothesis**.
+2. A **Variant** is one candidate formulation within an experiment: a bill of materials
+   expressed as concentrations, plus an ordered method. An experiment usually holds
+   several variants so they can be compared.
+3. A **Sample** is a physical batch made from a variant. Samples are prepared, labeled,
+   and measured; a variant can have many samples over the course of an experiment.
+
+So an experiment answers "what are we trying to make and why"; a variant answers "here
+is a formula to try"; a sample answers "here is a jar we actually mixed, and here is how
+it behaved."
+
+## The four areas
+
+An experiment's detail page is organized into tabs, and this documentation follows the
+same shape:
+
+<Cards>
+  <Card title="Experiments" href="/docs/research/experiments" description="The experiment record: the list, experiment groups, statuses, basics, notes, files, and Copy for LLM." />
+  <Card title="Variants" href="/docs/research/variants" description="Candidate formulations: materials and concentrations, phases, the method, and cloning an analog from an MBPR." />
+  <Card title="Samples" href="/docs/research/samples" description="Physical samples: creation, QR labels, the preparation workflow, and QC measurements." />
+  <Card title="Cost" href="/docs/research/cost" description="Projected cost per variant, per-batch-size figures, the delta against production, and cost settings." />
+</Cards>
+
+## Experiment statuses
+
+Every experiment carries a status that describes where the study stands. New experiments
+start at **Planning**.
+
+| Status | Meaning |
+| --- | --- |
+| **Planning** | Being set up; scope, variants, and samples are still being defined. |
+| **Active** | Underway; samples are being made and measured. |
+| **On Hold** | Paused; work is expected to resume later. |
+| **Completed** | The study reached its conclusion. |
+| **Cancelled** | Stopped without completing. |
+
+<Callout>
+  Status is set by hand on the experiment's **Basics** tab. It is descriptive, not a
+  gate: unlike a production batch, an experiment does not lock work behind its status.
+</Callout>
+
+## How R&D connects to the rest of Lumexia
+
+R&D reuses records from several other modules rather than duplicating them:
+
+| Module | Connection |
+| --- | --- |
+| [Inventory](/docs/inventory) | The experiment's **subject** and every **material** in a variant are inventory items; sample sizes use units of measurement. An item's own **R&D** tab lists the experiments that study it. |
+| [Production](/docs/production/mbpr) | A variant can be created as an **analog** of an [MBPR](/docs/production/mbpr), cloning its bill of materials and steps. The MBPR's **R&D** tab lists experiments built from it. |
+| [Quality](/docs/quality/parameters) | Sample **measurements** are recorded against the same [QC parameters](/docs/quality/parameters) and input definitions used elsewhere for quality control. |
+| [Accounting](/docs/accounting/pricing) | Cost projections pull material prices from [pricing](/docs/accounting/pricing) and compare against the subject's last produced cost. |
+
+Because it draws on these shared records, R&D stays consistent with the rest of the
+system: a material priced in accounting, a parameter defined in quality, or a recipe
+authored in production all flow into an experiment without re-entry.

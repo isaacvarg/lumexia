@@ -15,7 +15,10 @@
     "research",
 
   "---Hardware---",
-    "hardware",
+    "hardware/printers",
+    "hardware/scales",
+    "hardware/scanners",
+    "hardware/tablets",
 
   "---Developer---",
     "Docs",

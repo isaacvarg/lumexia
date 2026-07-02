@@ -1,0 +1,34 @@
+---
+title: Scales
+description: How weights get into Lumexia — entered by hand, not read from a balance.
+---
+
+Lumexia works with weights throughout — inventory amounts, transactions, and
+production quantities are all measured values. But it does **not** connect to a scale
+or balance. You read the value off your device and **type it in**.
+
+## Entering weights
+
+Wherever Lumexia asks for a weight or amount, it's a number field you fill in
+yourself. The main places this happens:
+
+- **Inventory** — item amounts and stock [transactions](/docs/inventory/quantities),
+  including the counts you enter during an [audit](/docs/inventory/audits).
+- **Production** — [compounding](/docs/production/compounding) quantities as you work
+  through a batch.
+
+Units are handled by [UoM conversions](/docs/inventory/uom-conversions), so you can
+enter a measurement in a convenient unit and let Lumexia reconcile it against the
+item's base unit.
+
+<Callout>
+  Entered weights aren't silent overwrites. Adjustments and counts are written as
+  [transactions](/docs/inventory/quantities) against the lot, so on-hand is recomputed
+  from the ledger and every change stays traceable.
+</Callout>
+
+<Callout type="warn">
+  There is no serial, Bluetooth, or Web Serial integration with balances today.
+  Lumexia does not capture weight automatically from a device — every weight is keyed
+  in by a person.
+</Callout>

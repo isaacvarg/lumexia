@@ -1,0 +1,87 @@
+---
+title: Samples
+description: "Physical samples: creation, QR labels, the preparation workflow, and recording QC measurements."
+---
+
+A **sample** is a physical batch made from a [variant](/docs/research/variants). Where a
+variant is the formula on paper, a sample is a jar actually mixed on the bench, then
+prepared, labeled, and measured. A variant can have many samples over the life of an
+experiment, for example a first attempt and a corrected re-make.
+
+Samples live on the **Samples** tab of an experiment.
+
+![Experiment samples](/modules/research/samples.png)
+
+## Creating a sample
+
+A sample is created from a specific variant and captures:
+
+- **Label**: a short name for the sample.
+- **Size**: the amount made, with a **unit of measurement** (grams, ounces, and so on).
+- **Variant**: the formulation the sample is made from.
+
+Each sample is assigned a unique reference code, formatted `S-01`. This code is what the
+QR label and the scan workflow use to identify the sample.
+
+## QR labels and scanning
+
+A sample can be printed as a **QR label** on a label printer straight from its
+card. The label carries the sample's reference and a QR code that encodes the sample. Check out [printers in the hardware section](/docs/hardware/printers).
+
+Scanning that QR code anywhere Lumexia is listening for scans opens the sample's
+experiment and deep-links directly to the sample on the Samples tab. In practice you can
+print a label, stick it on the jar, and later scan the jar to pull up its formulation,
+preparation state, and measurements without searching for it.
+
+## Preparing a sample
+
+![Preparation](/modules/research/sample-preparation.png)
+
+Making a sample is tracked as a **preparation** checklist derived from its variant's
+formulation. Each material in the variant becomes a preparation step, and you toggle each
+one as it is added to the batch. This gives an ingredient-by-ingredient record of what
+actually went in.
+
+When every material has been added, the sample is marked **prepared**, which stamps who
+prepared it and when. A sample can also be marked back to **unprepared** if you need to
+correct the record.
+
+<Callout>
+  The preparation checklist comes from the variant's materials at the time you work
+  through it. It records that each ingredient was added; it is a completion log, not a
+  scale reading. Quantities to weigh come from the variant's concentrations applied to the
+  sample size.
+</Callout>
+
+## Recording measurements
+
+![measurements](/modules/research/measuring.png)
+
+Once a sample exists you can record **QC measurements** against it. A measurement ties the
+sample to a [QC parameter](/docs/quality/parameters) from the quality module, such as pH,
+viscosity, or appearance, and stores the measured **value**.
+
+Two details make measurements flexible:
+
+- **Runs**: the same parameter can be measured more than once on a sample. Each reading is
+  a numbered **run**, so you can record a value at 24 hours, at 48 hours, and so on, and
+  keep them all.
+- **Structured inputs**: parameters that define multiple input fields (through their
+  [input definitions](/docs/quality/parameters)) capture each field on the measurement,
+  not just a single number.
+
+Because R&D uses the same parameter definitions as production quality control, a reading
+taken on the bench is described in exactly the same terms as one taken on a released
+batch.
+
+## Sample notes and files
+
+Like the experiment itself, each sample has its own **notes** and **files** panels. Sample
+notes use the same shared, color-coded [note types](/docs/research/experiments#notes-and-files)
+as experiment notes, and both feed into the experiment's aggregated Notes and Files tabs.
+
+## Copy for LLM
+
+Each sample has a **Copy for LLM** button that exports its formulation, the sample's
+details, its QC measurements, and its notes as markdown for pasting into an AI assistant.
+See [Copy for LLM](/docs/research/experiments#copy-for-llm).

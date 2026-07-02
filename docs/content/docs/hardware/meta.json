@@ -1,3 +1,4 @@
 {
-  "pages": ["printers"]
+  "title": "Hardware",
+  "pages": ["printers", "scanners", "tablets", "scales"]
 }
