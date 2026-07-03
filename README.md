@@ -2,7 +2,7 @@
 
 # Lumexia · Manufacturing ERP
 
-**[Live Demo](https://lumexia-demo.isaacvargas.dev) · [Documentation](./docs)**
+**[Live Demo](https://lumexia-demo.isaacvargas.dev) · [Documentation](https://lumexia.isaacvargas.dev)**
 
 Lumexia is a manufacturing, quality, and inventory management system that helps a
 production business run smoothly from end to end. It brings procurement,
