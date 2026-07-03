@@ -1,4 +1,5 @@
 import { GuideSection } from "./types";
+import { homeSection } from "./home";
 import { itemsSection } from "./items";
 import { itemDetailsSections } from "./itemDetails";
 import { purchasingRequestSections } from "./purchasingRequests";
@@ -12,8 +13,10 @@ import { productionQualitySections } from "./productionQuality";
 import { qualityModuleSections } from "./quality";
 import { researchSections } from "./research";
 import { accountingSections } from "./accounting";
+import { settingsSections } from "./settings";
 
 export const guideSections: GuideSection[] = [
+  homeSection,
   itemsSection,
   ...itemDetailsSections,
   ...purchasingRequestSections,
@@ -27,6 +30,7 @@ export const guideSections: GuideSection[] = [
   ...qualityModuleSections,
   ...researchSections,
   ...accountingSections,
+  ...settingsSections,
 ];
 
 const byId = new Map(guideSections.map((section) => [section.id, section]));

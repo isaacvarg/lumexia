@@ -8,6 +8,7 @@ import ActionableTypesTable from './_components/ActionableTypesTable'
 import { getActionableTypes } from './_actions/getActionableTypes'
 import TabSelector from './_components/shared/TabSelector'
 import TabsContainer from './_components/shared/TabsContainer'
+import ProductionSettingsHelper from './_components/shared/ProductionSettingsHelper'
 
 const ProductionSettingsPage = async () => {
 
@@ -21,6 +22,8 @@ const ProductionSettingsPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <ProductionSettingsHelper />
+
       <PageTitle>Production Settings</PageTitle>
 
       <TabSelector />

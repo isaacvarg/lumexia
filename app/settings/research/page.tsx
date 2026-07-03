@@ -4,6 +4,7 @@ import OverheadForm from "./_components/OverheadForm";
 import BatchSizeManager from "./_components/BatchSizeManager";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
+import ResearchSettingsHelper from "./_components/shared/ResearchSettingsHelper";
 
 const ResearchSettingsPage = async () => {
   const [settings, batchSizes] = await Promise.all([
@@ -13,6 +14,8 @@ const ResearchSettingsPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <ResearchSettingsHelper />
+
       <PageTitle>Research Settings</PageTitle>
       <TabSelector />
       <TabsContainer

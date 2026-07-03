@@ -12,6 +12,7 @@ import InventoryConfiguration from "./_components/InventoryConfiguration"
 import UnitsConfiguration from "./_components/UnitsConfiguration"
 import TabSelector from "./_components/shared/TabSelector"
 import TabsContainer from "./_components/shared/TabsContainer"
+import InventorySettingsHelper from "./_components/shared/InventorySettingsHelper"
 
 const InventorySettingsPage = async () => {
 
@@ -28,6 +29,8 @@ const InventorySettingsPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <InventorySettingsHelper />
+
       <PageTitle>Inventory Settings</PageTitle>
 
       <TabSelector />

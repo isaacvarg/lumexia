@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { GuideSection, getGuideSection } from "@/components/Helper/guides";
 
+// Shown whenever no page-specific section applies — on `/` itself, on any unwired
+// page, or if a bad/unregistered id is ever passed to setHelper.
+const DEFAULT_SECTION_ID = "home";
+
 type State = {
   current: GuideSection | null;
 };
@@ -13,14 +17,16 @@ type Actions = {
 };
 
 export const useHelperSelection = create<State & Actions>((set) => ({
-  current: null,
+  current: getGuideSection(DEFAULT_SECTION_ID) ?? null,
 
   actions: {
     setHelper: (id) => {
-      set(() => ({ current: getGuideSection(id) ?? null }));
+      set(() => ({
+        current: getGuideSection(id) ?? getGuideSection(DEFAULT_SECTION_ID) ?? null,
+      }));
     },
     clearHelper: () => {
-      set(() => ({ current: null }));
+      set(() => ({ current: getGuideSection(DEFAULT_SECTION_ID) ?? null }));
     },
   },
 }));

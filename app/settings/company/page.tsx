@@ -5,6 +5,7 @@ import { createConfigLookup } from "@/utils/data/createConfigLookup"
 import { redirect } from "next/navigation"
 import TabSelector from "./_components/shared/TabSelector"
 import TabsContainer from "./_components/shared/TabsContainer"
+import CompanySettingsHelper from "./_components/shared/CompanySettingsHelper"
 import CompanyInfoForm from "./_components/CompanyInfoForm"
 import CompanyImagesForm from "./_components/CompanyImagesForm"
 
@@ -22,6 +23,8 @@ const CompanySettingsPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <CompanySettingsHelper />
+
       <PageTitle>Company Settings</PageTitle>
 
       <TabSelector />
