@@ -7,6 +7,7 @@ import Ordered from "./Ordered";
 import Step from "./Step";
 import Note from "./Note";
 import Paragraph from "./Paragraph";
+import Links from "./Links";
 
 export const GuideTypo = {
   Wrapper,
@@ -18,4 +19,5 @@ export const GuideTypo = {
   Step,
   Note,
   Paragraph,
+  Links,
 };

@@ -11,16 +11,16 @@ export const helperLinks: HelperLink[] = [
   {
     label: "Lumexia GitHub Repo",
     href: "https://github.com/isaacvarg/lumexia",
-    icon: <TbBrandGithub />,
+    icon: <TbBrandGithub className="size-4" />,
   },
   {
     label: "Isaac Vargas",
     href: "https://isaacvargas.dev",
-    icon: <TbUser />,
+    icon: <TbUser className="size-4" />,
   },
   {
     label: "Lumexia Docs",
     href: "https://lumexia.isaacvargs.dev",
-    icon: <TbFileText />,
+    icon: <TbFileText className="size-4" />,
   },
 ];
