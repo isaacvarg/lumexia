@@ -33,7 +33,27 @@ const ITEM_DETAILS_IMAGE = {
   alt: 'Lumexia item details demo',
   width: 810,
   height: 1440,
+}
 
+const INVENTORY_TRACEABILITY = {
+  src: '/inventory-traceability.png',
+  alt: 'Visibility on lots and invenotry',
+  width: 939,
+  height: 1801,
+}
+
+const PRODUCTION_IMAGE = {
+  src: '/production.webp',
+  alt: 'Production from allocating to compounding',
+  width: 515,
+  height: 1248,
+}
+
+const RESEARCH_IMAGE = {
+  src: '/research.webp',
+  alt: "Research and development",
+  width: 529,
+  height: 1652,
 }
 
 const features = [
@@ -149,9 +169,9 @@ export default function HomePage() {
 
       <FeatureSection
         layout="image-right"
-        title="Inventory you can trust"
-        description="Track on-hand, allocated, and available quantities in real time, with QR labels, audits, and trend reporting to keep counts accurate."
-        image={DEMO_IMAGE}
+        title="Inventory Insight"
+        description="Track on-hand, allocated, and available quantities in real time, with QR labels, audits, and trend reporting to keep counts accurate. Full visibility on lots and movements."
+        image={INVENTORY_TRACEABILITY}
       >
         <PrimaryLink href="/docs/inventory">
           Explore Inventory
@@ -161,19 +181,28 @@ export default function HomePage() {
 
       <FeatureSection
         layout="image-left"
-        title="Production and quality, connected"
-        description="Master and batch production records with full lot tracing, tied directly to parameters, specifications, and quality examinations."
-        image={DEMO_IMAGE}
+        title="Production from planning to compounding"
+        description="Master and batch production records with full lot tracing. Staging and compounding dashboards for warehouse staff to ensure production moves smoothly."
+        image={PRODUCTION_IMAGE}
       >
         <PrimaryLink href="/docs/production">
           Explore Production
           <ArrowRight className="size-4" />
         </PrimaryLink>
-        <SecondaryLink href="/docs/quality">
-          Quality
-          <ArrowRight className="size-4" />
-        </SecondaryLink>
       </FeatureSection>
+
+      <FeatureSection
+        layout="image-right"
+        title="Research & Development"
+        description="Electronic lab notebook that allows your to make analogs of existing MBPRs, measure existing parameters developed by QC, and maintain visibility on larger projects using examination groups."
+        image={RESEARCH_IMAGE}
+      >
+        <PrimaryLink href="/docs/research">
+          Explore R&amp;D
+          <ArrowRight className="size-4" />
+        </PrimaryLink>
+      </FeatureSection>
+
 
       {/* Footer */}
       <footer className="mt-auto border-t border-fd-border">
