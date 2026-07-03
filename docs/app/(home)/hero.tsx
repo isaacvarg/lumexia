@@ -6,7 +6,7 @@ import { ArrowRight, ExternalLink } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { gitConfig } from '@/lib/shared';
 
-const DEMO_URL = '#';
+const DEMO_URL = 'https://lumexia-demo.isaacvargas.dev';
 
 export const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
 

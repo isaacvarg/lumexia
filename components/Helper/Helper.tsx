@@ -18,13 +18,11 @@ const Helper = () => {
   const title = current?.title ?? "helper";
   const guides = current?.guides.length ?? 0;
 
-  // Stay above the dialog overlay (z-50) while the guides dialog is open so the
-  // bar is never covered; otherwise sit at the normal level.
   const isGuidesOpen = isDialogOpen && activeDialogIdentifier === GUIDES_DIALOG;
   const zClass = isGuidesOpen ? "z-[60]" : "z-50";
 
   return (
-    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 ${zClass} flex items-center gap-4 w-[640px] max-w-[calc(100vw-2rem)] pl-6 pr-3 py-2 rounded-full bg-base-100/80 backdrop-blur-md border border-base-content/10 text-base-content shadow-lg font-poppins`}>
+    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 ${zClass} flex items-center gap-4 w-160 max-w-[calc(100vw-2rem)] pl-6 pr-3 py-2 rounded-full bg-base-100/80 backdrop-blur-md border border-base-content/10 text-base-content shadow-lg font-poppins`}>
       <GuidesDialog />
 
       <div className="tooltip flex-1 min-w-0" data-tip="View guides for this section">
