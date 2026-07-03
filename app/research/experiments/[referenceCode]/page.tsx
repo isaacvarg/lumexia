@@ -6,6 +6,7 @@ import { procurementTypes } from "@/configs/staticRecords/procurementTypes";
 import Header from "./_components/Header";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
+import ExperimentHelper from "./_components/shared/ExperimentHelper";
 
 type PageProps = {
   params: { referenceCode: string };
@@ -60,6 +61,7 @@ const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
         samples={samples}
         noteEntries={aggregatedNotes}
       />
+      <ExperimentHelper />
       <TabSelector />
       <TabsContainer
         experiment={experiment}

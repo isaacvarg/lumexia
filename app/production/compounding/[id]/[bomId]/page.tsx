@@ -5,6 +5,7 @@ import Title from '../_components/Title';
 import { getBprBomItem } from './_functions/getBprBomItem';
 import QuantitiesPanel from './_component/QuantitiesPanel';
 import ModeView from './_component/ModeView';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type BomItemPageProps = {
   searchParams: {
@@ -24,6 +25,7 @@ const BomItemPage = async ({ searchParams }: BomItemPageProps) => {
 
   return (
     <div className='flex flex-col gap-y-6'>
+      <HelperSetter section="compounding-staging" />
       <Title bpr={bpr as any} />
 
       <h1 className='font-black font-poppins text-3xl '>Staging {bomItem.bom.item.name} ({bomItem.bom.identifier})</h1>

@@ -5,6 +5,7 @@ import PaymentMethodDisplay from "@/components/UI/PaymentMethodDisplay"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import PurchasesTable from "./_components/PurchasesTable"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
     params: {
@@ -25,6 +26,7 @@ const PaymentMethodDetailsPage = async ({ params }: Props) => {
 
     return (
         <div className='flex flex-col gap-y-6'>
+            <HelperSetter section="accounting-payments" />
             <div className='flex justify-between items-center'>
                 <PageTitle>{method.methodName}</PageTitle>
                 <Link href={`/accounting/payments/methods/create?id=${method.id}`} className='btn btn-accent'>

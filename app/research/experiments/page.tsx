@@ -3,6 +3,7 @@ import CreateExperiment from "./_components/CreateExperiment";
 import ExperimentsScanListener from "./_components/ScanListener";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
+import ExperimentsListHelper from "./_components/shared/ExperimentsListHelper";
 import { researchActions } from "@/actions/research";
 
 const ExperimentsPage = async () => {
@@ -18,6 +19,7 @@ const ExperimentsPage = async () => {
   return (
     <div className="bg-base-200 rounded-xl px-6">
       <ExperimentsScanListener />
+      <ExperimentsListHelper />
       <TabSelector />
       <TabsContainer experiments={experiments} groups={groups} />
       <CreateExperiment />

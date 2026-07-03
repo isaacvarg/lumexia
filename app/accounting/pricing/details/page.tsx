@@ -10,6 +10,7 @@ import RejectButton from './_components/RejectButton'
 import PricingDetailsTabs from './_components/PricingDetailsTabs'
 import { procurementTypes } from '@/configs/staticRecords/procurementTypes'
 import { getProducedPricingByItem } from '../[item]/_functions/getProducedPricingExamination'
+import HelperSetter from '@/components/Helper/HelperSetter'
 
 interface PricingDetailsProps {
   searchParams: {
@@ -31,6 +32,8 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
 
   return (
     <div className="flex flex-col gap-y-4">
+
+      <HelperSetter section="accounting-pricing-review" />
 
       <div className="flex items-center justify-between">
         <PageTitle>{`${examination.examinedItem.name} Pricing Examination `}</PageTitle>

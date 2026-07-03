@@ -20,6 +20,7 @@ import userRoleAssignmentActions from '@/actions/users/userRoleAssignments';
 import { getUserId } from '@/actions/users/getUserId';
 import ActionableCard from './_components/ActionableCard';
 import QualityStepActionsPanel from './_components/QualityStepActionsPanel';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type Props = {
   searchParams: {
@@ -45,6 +46,7 @@ const StepQualityPage = async ({ searchParams }: Props) => {
 
   return (
     <div className='flex flex-col gap-y-4'>
+      <HelperSetter section="production-quality-verify" />
       <h1 className='font-poppins font-bold text-base-content text-4xl flex justify-center'>Step &gt; {step.batchStep.label}</h1>
 
       <QualityStepActionsPanel actionables={actionables as any} bprBatchStep={step} />

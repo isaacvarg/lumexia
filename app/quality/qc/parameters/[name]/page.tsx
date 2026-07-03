@@ -7,6 +7,7 @@ import { getParameterGroups } from "./_actions/getParameterGroups"
 import { getParameterTemplates } from "./_actions/getParameterTemplates"
 import Groups from "./_components/groups/Groups"
 import Templates from "./_components/templates/Templates"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
   searchParams: {
@@ -29,6 +30,7 @@ const ParameterPage = async ({ searchParams }: Props) => {
 
   return (
     <div className="flex flex-col gap-6">
+      <HelperSetter section="qc-param-detail" />
       <PageTitle>{parameter.name} Parameter Configuration</PageTitle>
       <StateSetter
         inputDefinitions={inputDefinitions}

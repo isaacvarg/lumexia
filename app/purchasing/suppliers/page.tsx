@@ -4,6 +4,7 @@ import React from "react";
 import Table from "./_components/Table";
 import CreateSupplierForm from "./_components/CreateSupplierForm";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
+import HelperSetter from "@/components/Helper/HelperSetter";
 
 const SuppliersPage = async () => {
   const suppliers = await supplierActions.getAll({
@@ -12,6 +13,8 @@ const SuppliersPage = async () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <HelperSetter section="suppliers" />
+
       <PageTitle title="Suppliers" />
 
       <CreateSupplierForm />

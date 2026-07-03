@@ -11,6 +11,7 @@ import BomPricingChart from "./_components/BomPricingChart";
 import { getProducedPricingByItem } from "./_functions/getProducedPricingExamination";
 import FinishedProductsChart from "./_components/FinishedProductChart";
 import { procurementTypes } from "@/configs/staticRecords/procurementTypes";
+import HelperSetter from "@/components/Helper/HelperSetter";
 
 interface ItemPricingDashboardProps {
   searchParams: {
@@ -29,6 +30,8 @@ const ItemPricingDashboard = async ({ searchParams }: ItemPricingDashboardProps)
 
   return (
     <div className="flex flex-col gap-y-4">
+
+      <HelperSetter section="accounting-pricing-item" />
 
       <PageTitle>Pricing Overview - {item.name}</PageTitle>
       <PageBreadcrumbs />

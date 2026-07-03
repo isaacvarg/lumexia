@@ -2,6 +2,7 @@ import { qualityActions } from "@/actions/quality"
 import PageTitle from "@/components/Text/PageTitle"
 import Form from "./_components/Form"
 import Parameters from "./_components/Parameters"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
   searchParams: {
@@ -14,6 +15,7 @@ const TemplatePage = async ({ searchParams }: Props) => {
 
   return (
     <div className="flex flex-col gap-6">
+      <HelperSetter section="qc-param-templates" />
       <PageTitle>{template.name} Template</PageTitle>
 
       <Form template={template} />

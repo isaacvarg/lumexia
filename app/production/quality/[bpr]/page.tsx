@@ -3,6 +3,7 @@ import Title from './_components/Title';
 import { getBpr } from './_functions/getBpr';
 import { getBprBom } from './_functions/getBprBom';
 import AwaitingVerificationPanel from './_components/AwaitingVerificationPanel';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type BprQualityProps = {
     searchParams: {
@@ -21,6 +22,7 @@ const BprQualityPage = async ({ searchParams }: BprQualityProps) => {
 
     return (
         <div className='flex flex-col gap-y-4'>
+            <HelperSetter section="production-quality-verify" />
             <Title bpr={bpr as any} />
 
 

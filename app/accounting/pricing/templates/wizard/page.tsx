@@ -7,6 +7,7 @@ import StepPricingTemplate from "./_components/StepPricingTemplate"
 import { Panels } from "@/components/Panels"
 import StepFinishedProduct from "./_components/StepFinishedProduct"
 import { usePricingTemplateWizardSelection } from "@/store/pricingTemplateWizardSlice"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
     searchParams: {
@@ -23,6 +24,8 @@ const PricingTemplateWizard = ({ searchParams }: Props) => {
     const { step } = usePricingTemplateWizardSelection()
     return (
         <div className="flex flex-col gap-y-4">
+
+            <HelperSetter section="accounting-pricing-templates" />
 
             <PageTitle>Pricing Templates</PageTitle>
             <PageBreadcrumbs />

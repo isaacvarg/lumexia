@@ -21,6 +21,7 @@ import { getNoteTypes } from './_functions/getNoteTypes';
 import { getRequestNotes } from './_functions/getRequestNotes';
 import { getRequestPriorities } from './_functions/getRequestPriorities';
 import { getSupplierTags } from './_functions/getSupplierTags';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type RequestDetailsProps = {
   searchParams: {
@@ -57,6 +58,7 @@ const RequestDetailsPage = async ({ searchParams }: RequestDetailsProps) => {
       <SelectBprDialog requestId={request.id} linkableBprs={linkableBprs} />
       <SelectPoDialog requestId={request.id} linkablePos={linkablePos} />
       <NewPurchaseOrderDialog requestId={request.id} suppliers={suppliers} linkablePOs={linkablePos} itemId={request.itemId} />
+      <HelperSetter section="request-details" />
       <RequestDetailsPageTitle request={request} />
 
       <div className='grid grid-cols-2 gap-8'>

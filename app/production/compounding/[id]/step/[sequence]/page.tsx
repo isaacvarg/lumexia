@@ -26,6 +26,7 @@ import StepActionsPanel from './_components/StepActionsPanel';
 import ReadOnly from './_components/ReadOnly';
 import Locked from './_components/Locked';
 import { getBom } from './_function/getBom';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type StepPageProps = {
   searchParams: {
@@ -65,6 +66,7 @@ const StepPage = async ({ searchParams }: StepPageProps) => {
 
   return (
     <div className='flex flex-col gap-y-4'>
+      <HelperSetter section="compounding-step" />
       <Title bpr={bpr as any} />
 
       <Locked isLocked={isActuallyLocked} />

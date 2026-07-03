@@ -5,6 +5,7 @@ import PageTitle from '@/components/Text/PageTitle';
 import Confetti from '@/components/Confetti/Confetti';
 import { getStepsWithQuality } from './_function/getStepsWithQuality';
 import CompoundingStepCard from './_components/CompoundingStepCard';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 const QualityPage = async () => {
 
@@ -24,6 +25,8 @@ const QualityPage = async () => {
 
   return (
     <div className='flex flex-col gap-y-4'>
+
+      <HelperSetter section="production-quality" />
 
       {(!hasVerifiables && !hasSecondaries && !hasCompundingVerifiables) && <Confetti />}
 

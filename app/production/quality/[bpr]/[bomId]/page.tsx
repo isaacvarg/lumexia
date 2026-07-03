@@ -6,6 +6,7 @@ import { getBprStaging } from './_functions/getBprStagings';
 import ActionsArea from './_components/ActionsArea';
 import QuantitiesPanel from './_components/QuantitiesPanel';
 import StagedArea from './_components/StagedArea';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type PageProps = {
   searchParams: {
@@ -28,6 +29,7 @@ const BomVerificationPage = async ({ searchParams }: PageProps) => {
 
   return (
     <div className='flex flex-col gap-y-6'>
+      <HelperSetter section="production-quality-verify" />
       <Title bpr={bpr as any} />
 
       <h1 className='font-black font-poppins text-3xl '>Verifying {bomItem.bom.item.name} ({bomItem.bom.identifier})</h1>

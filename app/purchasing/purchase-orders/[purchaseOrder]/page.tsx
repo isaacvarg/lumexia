@@ -7,6 +7,7 @@ import { getAccountingFilesByPo } from "@/app/accounting/pos/_actions/getAccount
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
 import StateSetter from "./_components/state/StateSetter";
+import POHelper from "./_components/shared/POHelper";
 import { purchasingActions } from "@/actions/purchasing";
 
 type PurchaseOrderDetailsProps = {
@@ -51,6 +52,8 @@ const PurchaseOrderDetails = async ({ searchParams }: PurchaseOrderDetailsProps)
         poSupplierNotes={poSupplierNotes}
         activity={activity}
       />
+
+      <POHelper />
 
       <Header />
 

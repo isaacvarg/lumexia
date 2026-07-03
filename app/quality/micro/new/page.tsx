@@ -3,6 +3,7 @@ import MicroWizard from './_components/MicroWizard'
 import { getBprs } from './_functions/getBprs'
 import PageTitle from '@/components/Text/PageTitle'
 import { appActions } from '@/actions/app'
+import HelperSetter from '@/components/Helper/HelperSetter'
 
 const NewMicroSubmissionPage = async () => {
 
@@ -11,6 +12,7 @@ const NewMicroSubmissionPage = async () => {
 
     return (
         <div className='flex flex-col gap-y-6'>
+            <HelperSetter section="micro" />
             <PageTitle>New SSF Micro Submission</PageTitle>
 
             <MicroWizard bprs={bprs} microFormData={microFormData}/>

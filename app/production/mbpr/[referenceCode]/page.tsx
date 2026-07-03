@@ -6,6 +6,7 @@ import Link from 'next/link';
 import StateSetter from './_components/state/StateSetter';
 import TabSelector from './_components/shared/TabSelector';
 import TabsContainer from './_components/shared/TabsContainer';
+import MbprHelper from './_components/shared/MbprHelper';
 
 type MbprDetailsProps = {
   searchParams: {
@@ -41,6 +42,8 @@ const MbprDetailsPage = async ({ searchParams }: MbprDetailsProps) => {
         activity={activity}
         statuses={recordStatuses}
       />
+
+      <MbprHelper />
 
       <TabSelector />
       <TabsContainer />

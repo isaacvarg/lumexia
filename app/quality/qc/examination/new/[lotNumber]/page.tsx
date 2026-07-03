@@ -4,6 +4,7 @@ import StepTrack from "../_components/shared/StepTrack"
 import StepContainer from "./_components/shared/StepContainer"
 import { qualityActions } from "@/actions/quality"
 import { getResults } from "./_actions/getResults"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
   searchParams: {
@@ -51,6 +52,7 @@ const ExaminationConductPage = async ({ searchParams }: Props) => {
         files={files}
         fileTypes={fileTypes}
       />
+      <HelperSetter section="qc-conduct" />
       <StepTrack />
       <StepContainer />
 

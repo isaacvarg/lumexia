@@ -1,6 +1,7 @@
 import PageWrapper from "@/components/App/PageWrapper"
 import PaymentMethodWizard from "./_component/PaymentMethodWizard"
 import { accountingActions } from "@/actions/accounting"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
     searchParams: {
@@ -15,6 +16,7 @@ const PaymentMethodCreatePage = async ({ searchParams }: Props) => {
 
     return (
         <PageWrapper pageTitle={'Create Payment Method'}>
+            <HelperSetter section="accounting-payments" />
 
             <PaymentMethodWizard existingMethod={existingMethod} />
 

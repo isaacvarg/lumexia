@@ -2,6 +2,7 @@ import { qualityActions } from "@/actions/quality"
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
 import StateSetter from "./_components/state/StateSetter";
+import QcParametersHelper from "./_components/shared/QcParametersHelper";
 
 const ParametersPage = async () => {
 
@@ -21,6 +22,7 @@ const ParametersPage = async () => {
         examinationTypes={examinationTypes}
       />
 
+      <QcParametersHelper />
 
       <TabSelector />
       <TabsContainer />

@@ -3,6 +3,7 @@ import PageTitle from "@/components/Text/PageTitle";
 import { getResults } from "../new/[lotNumber]/_actions/getResults";
 import ExaminationHeader from "./_components/ExaminationHeader";
 import ExaminationDetails from "./_components/ExaminationDetails";
+import HelperSetter from "@/components/Helper/HelperSetter";
 
 type Props = {
   params: {
@@ -27,6 +28,7 @@ const ExaminationDetailsPage = async ({ params }: Props) => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <HelperSetter section="qc-examinations" />
       <PageTitle>Examination {record.referenceCode}</PageTitle>
 
       <ExaminationHeader record={record} />

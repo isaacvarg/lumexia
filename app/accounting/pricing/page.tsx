@@ -9,6 +9,7 @@ import QueueList from './_components/QueueList'
 import TemplatesButton from './_components/TemplatesButton'
 import AllExaminationsTable from './_components/AllExaminationsTable'
 import { Tabs } from '@/components/Tabs2'
+import HelperSetter from '@/components/Helper/HelperSetter'
 
 const PricingPage = async () => {
 
@@ -17,6 +18,8 @@ const PricingPage = async () => {
 
   return (
     <div className='flex flex-col gap-y-6'>
+
+      <HelperSetter section="accounting-pricing" />
 
       <BeginPricingExamDialog items={items} />
 

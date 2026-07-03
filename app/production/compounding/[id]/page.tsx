@@ -6,6 +6,7 @@ import StagingPanel from './_components/staging/StagingPanel';
 import CompoundingPanel from './_components/compounding/CompoundingPanel';
 import QueuedPanel from './_components/queued/QueuedPanel';
 import { bprStatuses } from '@/configs/staticRecords/bprStatuses';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 type CompoundingPageProps = {
   searchParams: {
@@ -26,6 +27,7 @@ const CompoundingPage = async ({ searchParams }: CompoundingPageProps) => {
 
   return (
     <div className='flex flex-col gap-y-4'>
+      <HelperSetter section="compounding-batch" />
       <Title bpr={bpr as any} />
 
       {isStaging && <StagingPanel bom={bom as any} />}

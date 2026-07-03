@@ -3,6 +3,7 @@ import { purchasingActions } from "@/actions/purchasing";
 import PageTitle from "@/components/Text/PageTitle";
 import ItemTable from "./_components/ItemTable";
 import RecievedTable from "./_components/RecievedTable";
+import HelperSetter from "@/components/Helper/HelperSetter";
 
 const ReceivingDetails = async ({ searchParams }: { searchParams: { id: string } }) => {
 
@@ -14,6 +15,7 @@ const ReceivingDetails = async ({ searchParams }: { searchParams: { id: string }
 
   return (
     <div className="flex flex-col gap-y-6">
+      <HelperSetter section="receiving-detail" />
       <PageTitle>
         {`#${purchaseOrder.referenceCode} - ${purchaseOrder.supplier.name}`}
 

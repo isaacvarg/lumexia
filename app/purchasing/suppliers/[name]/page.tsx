@@ -5,6 +5,7 @@ import React from "react";
 import supplierContactActions from "@/actions/purchasing/supplierContactActions";
 import TabsMain from "./_components/tabs/TabsMain";
 import StateSetter from "./_components/state/StateSetter";
+import HelperSetter from "@/components/Helper/HelperSetter";
 import { getPurchases } from "./_actions/getPurchases";
 import { getItems } from "./_actions/getItems";
 import { getAliases } from "./_actions/getAliases";
@@ -38,6 +39,7 @@ const SupplierDetails = async ({ searchParams }: SupplierDetailsProps) => {
         items={items as any[]}
         aliases={aliases}
       />
+      <HelperSetter section="supplier-details" />
       <PageTitle>{supplier.name}</PageTitle>
       <TabsMain />
     </div>

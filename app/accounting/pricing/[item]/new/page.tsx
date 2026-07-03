@@ -13,6 +13,7 @@ import { uom } from "@/configs/staticRecords/unitsOfMeasurement"
 import PricingErrorAlert from "./_components/PricingErrorAlert"
 import ZeroCostBomAlert from "./_components/ZeroCostBomAlert"
 import { detectZeroCostBomItems } from "./_actions/detectZeroCostBomItems"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 type Props = {
   searchParams: {
@@ -119,6 +120,8 @@ const NewPricingExaminationPage = async ({ searchParams }: Props) => {
 
     return (
       <div className="flex flex-col gap-6">
+
+        <HelperSetter section="accounting-pricing-conduct" />
 
         {zeroCostBomDetection?.hasZeroCost && (
           <ZeroCostBomAlert

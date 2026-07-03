@@ -28,6 +28,14 @@ const DEMO_IMAGE = {
   height: 1440,
 } as const;
 
+const ITEM_DETAILS_IMAGE = {
+  src: '/item-details.gif',
+  alt: 'Lumexia item details demo',
+  width: 810,
+  height: 1440,
+
+}
+
 const features = [
   {
     title: 'Inventory',
@@ -88,7 +96,6 @@ export default function HomePage() {
     <main className="flex flex-1 flex-col">
       <Hero />
 
-      {/* Feature cards */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-16">
         <h2 className="mb-6 text-center text-2xl font-semibold">Modules</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,7 +118,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Tech stack */}
       <section className="mx-auto w-full max-w-5xl px-4 pb-16">
         <div className="flex flex-wrap items-center justify-center gap-2">
           {techStack.map((tech) => (
@@ -125,12 +131,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Feature highlights */}
       <FeatureSection
         layout="center"
         title="See everything in one place"
         description="A single, traceable source of truth across procurement, inventory, production, and quality — so nothing slips through the cracks."
-        image={DEMO_IMAGE}
+        image={ITEM_DETAILS_IMAGE}
       >
         <PrimaryLink href="/docs">
           Get Started

@@ -63,7 +63,6 @@ export function Hero() {
 
   return (
     <>
-      {/* Hero */}
       <section className="mx-auto flex w-full max-w-5xl flex-col items-center px-4 pt-16 pb-10 text-center sm:pt-24">
         <motion.h1
           className="text-4xl font-bold tracking-tight sm:text-5xl"
@@ -126,7 +125,6 @@ export function Hero() {
         </motion.div>
       </section>
 
-      {/* Screenshot */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-16">
         <motion.div
           className="overflow-hidden rounded-lg border border-fd-border shadow-lg"

@@ -6,6 +6,7 @@ import StateSetter from './_components/state/StateSetter';
 import TabSelector from './_components/shared/TabSelector';
 import TabsContainer from './_components/shared/TabsContainer';
 import CompleteBprs from './_components/shared/CompleteBprs';
+import HelperSetter from '@/components/Helper/HelperSetter';
 
 const PlanningPage = async () => {
   const bprs = await productionActions.planning.getBprs()
@@ -14,6 +15,8 @@ const PlanningPage = async () => {
 
   return (
     <div className='flex flex-col gap-y-4'>
+
+      <HelperSetter section="planning" />
 
       <StateSetter bprs={bprs} allBprs={allBprs} statuses={statuses} />
 

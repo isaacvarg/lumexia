@@ -5,6 +5,7 @@ import Header from './_components/shared/Header'
 import StateSetter from './_components/shared/StateSetter'
 import TabSelector from './_components/shared/TabSelector'
 import TabsContainer from './_components/shared/TabContainer'
+import RequestHelper from './_components/shared/RequestHelper'
 
 const RequestsPage = async () => {
 
@@ -21,6 +22,8 @@ const RequestsPage = async () => {
         requests={requests}
         generalRequests={generalRequests}
       />
+
+      <RequestHelper />
 
       <TabSelector />
       <TabsContainer />

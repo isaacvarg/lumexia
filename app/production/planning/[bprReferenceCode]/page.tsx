@@ -4,6 +4,7 @@ import StateSetter from "./_components/state/StateSetter";
 import Title from "./_components/header/Title";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
+import BprHelper from "./_components/shared/BprHelper";
 import { inventoryActions } from "@/actions/inventory";
 import { getStepsWithCompletions } from "./_functions/getStepsWithCompletions";
 
@@ -40,6 +41,8 @@ const BprPlanningDetails = async ({ searchParams }: BprPlanningDetailsProps) => 
         qcRecords={qcRecords}
         steps={steps}
       />
+
+      <BprHelper />
 
       <Title />
 

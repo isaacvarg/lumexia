@@ -16,6 +16,7 @@ import LabelCounter from "@/components/Tabs2/LabelCounter"
 import Activity from "./_components/Activity"
 import { purchasingActions } from "@/actions/purchasing"
 import { getAccountingAuditLogsByPo } from "../_actions/getAccountingAuditLogsByPo"
+import HelperSetter from "@/components/Helper/HelperSetter"
 
 
 
@@ -36,9 +37,7 @@ const PoAccountingDetailsPage = async ({ searchParams }: { searchParams: { id: s
 
   return (
     <PageWrapper pageTitle={`PO #${po.referenceCode} Accounting`}>
-
-
-
+      <HelperSetter section="accounting-pos-detail" />
 
       <Tabs.Root defaultValue="details">
 
