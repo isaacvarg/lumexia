@@ -5,9 +5,6 @@ ENV_FILE="${ENV_FILE:-.env}"
 
 env_get() {
   local name="$1"
-  # Prefer a value from the process environment — containerized deploys inject
-  # config this way (e.g. Arcane) and ship no .env file. Fall back to the .env
-  # file for local/dev checkouts, which is not auto-loaded by npm.
   if printenv "$name" >/dev/null 2>&1; then
     printenv "$name"
     return

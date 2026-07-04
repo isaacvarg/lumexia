@@ -15,16 +15,23 @@ COPY . .
 
 RUN npm install
 
-# Static records are excluded from the image (see .dockerignore). Scaffold
-# placeholder versions so the build can compile and the container can boot.
-# Real IDs are produced post-deploy with `npm run refresh-static-records`.
+# Static records are excluded from the image (see .dockerignore). Generate them
+# here from the seed data with deterministic IDs (no database required). These
+# IDs match what the seeder inserts, so this pre-built image is correct against
+# any seeded DB — no post-deploy rebuild needed.
 RUN npm run scaffold-static-records
 
 RUN npm run build
 
+# Ensure the boot entrypoint is executable regardless of the host's file mode.
+RUN chmod +x scripts/docker/entrypoint.sh
+
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+# Boot: apply migrations, seed an empty DB if needed, then start. The image is
+# already correct (deterministic IDs), so the container never builds at runtime.
+# See scripts/docker/entrypoint.sh.
+ENTRYPOINT ["scripts/docker/entrypoint.sh"]
 
 
 
