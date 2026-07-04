@@ -4,14 +4,22 @@ set -euo pipefail
 ENV_FILE="${ENV_FILE:-.env}"
 
 env_get() {
-  grep -E "^[[:space:]]*$1[[:space:]]*[=:]" "$ENV_FILE" 2>/dev/null | head -1 |
-    sed -E "s/^[[:space:]]*$1[[:space:]]*[=:][[:space:]]*//; s/^[\"']//; s/[\"']$//" || true
+  local name="$1"
+  # Prefer a value from the process environment — containerized deploys inject
+  # config this way (e.g. Arcane) and ship no .env file. Fall back to the .env
+  # file for local/dev checkouts, which is not auto-loaded by npm.
+  if printenv "$name" >/dev/null 2>&1; then
+    printenv "$name"
+    return
+  fi
+  grep -E "^[[:space:]]*$name[[:space:]]*[=:]" "$ENV_FILE" 2>/dev/null | head -1 |
+    sed -E "s/^[[:space:]]*$name[[:space:]]*[=:][[:space:]]*//; s/^[\"']//; s/[\"']$//" || true
 }
 
 require_demo_seed() {
   if [ "$(env_get DEMO_SEED)" != "true" ]; then
     echo "" >&2
-    echo "😭 Hold up!: DEMO_SEED must be set to \"true\" in $ENV_FILE." >&2
+    echo "😭 Hold up!: DEMO_SEED must be set to \"true\" in the environment or $ENV_FILE." >&2
     echo "   This guard prevents a real instance from being dropped/recreated." >&2
     echo "" >&2
     exit 1
@@ -22,7 +30,7 @@ recreate_database() {
   local dbname host
   dbname="$(env_get POSTGRES_DB)"
   if [ -z "$dbname" ]; then
-    echo "💔 POSTGRES_DB not found in $ENV_FILE" >&2
+    echo "💔 POSTGRES_DB not found in the environment or $ENV_FILE" >&2
     exit 1
   fi
 
