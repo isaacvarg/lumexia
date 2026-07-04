@@ -1,0 +1,135 @@
+---
+title: Deployment
+description: How to build, tag, push, and update Lumexia — release with GitHub Actions or manually, then deploy to the VPS
+---
+
+Lumexia is deployed as a **prebuilt Docker image**. You build the image once (in
+CI or locally), push it to a container registry, and the server only *pulls* and
+runs it — it never builds anything.
+
+This is possible because static-record IDs are **deterministic** and baked into
+the image at build time, so a prebuilt image already matches any seeded database.
+See [Static Records](/docs/StaticRecords) for why. 
+
+## The release flow at a glance
+
+1. Commit and push your changes as usual
+  - [lazygit](https://github.com/jesseduffield/lazygit) is my favorite
+2. Cut a release — tag `vX.Y.Z` (CI builds and pushes the image), or build and
+   push manually.
+3. On the server: `docker compose pull && docker compose up -d`.
+
+## Release with GitHub Actions (recommended)
+
+The workflow at `.github/workflows/docker-publish.yml` builds the image on
+GitHub's runners and pushes it to
+`ghcr.io/<owner>/lumexia`.
+
+It runs when you either:
+
+- **push a version tag** `vX.Y.Z` — publishes `:X.Y.Z`, `:X.Y`, and `:latest`; or
+- **run it manually** from the repo's **Actions** tab ("Run workflow") —
+  publishes `:latest` and a commit-`sha` tag.
+
+### Cutting a release with lazygit
+
+```bash
+# 1. commit + push your work
+# 2. create an annotated tag on the release commit
+#    in lazygit: Tags panel → create tag → "v1.0.0"
+# 3. push the tag  (lazygit prompts to push it to origin)
+```
+
+Pushing the tag is what triggers the build. A few minutes later the image is in
+the registry, ready to pull.
+
+<Callout type="warn">
+  **First-time setup — fixing `denied: permission_denied: write_package`.**
+  The Actions token needs permission to publish packages:
+
+  1. Repo → **Settings → Actions → General → Workflow permissions** → select
+     **Read and write permissions** → Save, then re-run the failed job.
+  2. If a `lumexia` package already exists (e.g. from an earlier manual push),
+     GitHub → your profile → **Packages → lumexia → Package settings →
+     Manage Actions access** → add the repository with the **Write** role. While
+     there you can set the package **Public** so the server can pull without
+     logging in.
+</Callout>
+
+## Build and push manually (alternative)
+
+You don't need CI — you can build and push from any machine:
+
+```bash
+docker build \
+  -t ghcr.io/isaacvarg/lumexia:v1.0.0 \
+  -t ghcr.io/isaacvarg/lumexia:latest \
+  .
+docker push ghcr.io/isaacvarg/lumexia:v1.0.0
+docker push ghcr.io/isaacvarg/lumexia:latest
+```
+
+`npm run docker:update` (`scripts/update/update.sh`) is a shortcut that builds and
+pushes `:latest` using `DOCKER_REGISTRY`/`DOCKER_IMAGE_NAME` from your `.env`.
+
+## Deploy or update on the server
+
+The compose `lumexia` service pulls
+`${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}` with
+`pull_policy: always`, so updating is just:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Pin a specific version by setting `IMAGE_TAG` in the deployment's `.env` (e.g.
+`IMAGE_TAG="v1.0.0"`). **Rolling back** is the same move in reverse: set
+`IMAGE_TAG` to a previous tag and re-run `docker compose pull && up -d`.
+
+<Callout>
+  If the ghcr package is **private**, authenticate the server to the registry
+  once with `docker login ghcr.io` (using a token that has `read:packages`)
+  before pulling. Making the package public avoids this entirely.
+</Callout>
+
+## What happens on boot
+
+The container entrypoint (`scripts/docker/entrypoint.sh`) runs every start and is
+non-interactive:
+
+1. Waits for Postgres to accept connections.
+2. Applies database migrations (`prisma migrate deploy`) and regenerates the
+   Prisma client — so a release that ships migrations self-applies on `up -d`.
+3. **Seeds the database only if it is empty** — guarded by
+   `scripts/db/is-initialized.ts`. On an uninitialized DB it runs `npm run init`
+   (reference data), plus the demo seed when `DEMO_SEED="true"`. An
+   already-seeded database is left untouched.
+4. Starts the server (`npm run start`).
+
+Because the image is already correct, **the container never builds at runtime**.
+
+## Seeding
+
+A brand-new stack self-seeds on first boot (previous section). You can also seed
+explicitly from inside the running container — see the
+[Docker install guide](/docs/getting-started/installation/docker) for the full
+walkthrough:
+
+```bash
+# production / real instance (non-destructive)
+docker compose exec lumexia npm run db:start
+
+# demo instance only — DESTRUCTIVE, requires DEMO_SEED="true"
+docker compose exec lumexia npm run db:demo:start -- -y
+```
+
+<Callout type="warn">
+  `db:dev:start` and `db:demo:start` **drop and recreate** the database. They are
+  guarded behind `DEMO_SEED="true"` so they can't wipe a real instance by
+  accident. Never set `DEMO_SEED` on production.
+</Callout>
+
+Reseeding does **not** require a restart or rebuild: the deterministic IDs the
+seed inserts already match the running image, so the dashboards pick the data up
+on their next refresh.
