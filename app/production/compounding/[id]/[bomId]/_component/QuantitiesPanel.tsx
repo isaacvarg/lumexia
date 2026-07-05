@@ -25,7 +25,7 @@ const QuantitiesPanel = ({ bomItem, staged }: Props) => {
 
   
   return (
-    <div className='grid grid-cols-3 gap-4'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
       <QuantityBox title='Required' quantity={requiredQuantity} />
       <QuantityBox  title='staged Quantity' quantity={stagedQuantity}/>
       <QuantityBox title='remaining Quantity' quantity={remainingQuantity} remainingStatus={remainingStatus}/>

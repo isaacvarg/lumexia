@@ -11,7 +11,7 @@ const CreateViewMode = ({ links, setMode }: { links: RequestLink[], setMode: Dis
     }
 
     return (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div
                 onClick={() => setMode('add')}
                 className="flex gap-x-2 items-center justify-center min-h-40 w-full bg-lilac-100 rounded-xl hover:cursor-pointer hover:bg-lilac-200">

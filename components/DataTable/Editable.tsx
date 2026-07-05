@@ -76,8 +76,8 @@ const Editable = ({
   });
   return (
     <div className="flex flex-col gap-y-6">
-      <div className="w-full">
-        <table className="min-w-full text-left text-lg font-light">
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full text-left text-base md:text-lg font-light">
           <thead className="border-b font-medium dark:border-neutral-500">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>

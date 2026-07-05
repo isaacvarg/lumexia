@@ -46,8 +46,8 @@ const QuantityStep = ({handleQuantity} : { handleQuantity: Dispatch<React.SetSta
 
 
   return (
-    <div className='grid grid-cols-3 gap-2 '>
-      <span className='flex justify-between col-span-3 p-4 bg-gray-100 rounded-lg'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 '>
+      <span className='flex justify-between col-span-1 sm:col-span-2 lg:col-span-3 p-4 bg-gray-100 rounded-lg'>
         <div className='flex   font-semibold text-2xl font-poppins '>{input}</div>
         <span onClick={() => handleDeleteButton()} className='text-3xl'><TbBackspace /></span>
       </span>

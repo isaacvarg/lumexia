@@ -46,7 +46,7 @@ const Statuses = () => {
       <div
         onClick={() => handleStatusClick()}
         style={{ backgroundColor: bpr?.status.bgColor }}
-        className="flex flex-col h-full items-center justify-center px-4 py-2 rounded-xl col-span-2 hover:!bg-lilac-300 hover:cursor-pointer"
+        className="flex flex-col h-full items-center justify-center px-4 py-2 rounded-xl col-span-1 sm:col-span-2 hover:!bg-lilac-300 hover:cursor-pointer"
       >
         <div style={{ color: bpr?.status.textColor }} className=" font-poppins text-3xl font-semibold">
           {bpr?.status.name || 'None'}
@@ -56,7 +56,7 @@ const Statuses = () => {
       {bpr?.bprStatusId === bprStatuses.consumptionError && (
         <button
           onClick={() => retryConsumption()}
-          className={`btn ${isLoading ? 'btn-disabled' : 'btn-primary'} mt-2 col-span-2`}
+          className={`btn ${isLoading ? 'btn-disabled' : 'btn-primary'} mt-2 col-span-1 sm:col-span-2`}
         >
           {isLoading ? 'Retrying...' : 'Retry Consumption'}
         </button>

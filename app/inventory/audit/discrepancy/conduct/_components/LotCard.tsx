@@ -61,8 +61,8 @@ const LotCard = ({ lot }: { lot: DiscrepancyItem['lots'][number] }) => {
                     </div>
                 )
             ) : (
-                <div className="grid grid-cols-4 gap-2">
-                    <input className="bg-blue-200 rounded-xl px-4 focus:outline-none py-3 col-span-3" value={newQuantity} onChange={(e) => handleAdjustment(e.target.value)} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <input className="bg-blue-200 rounded-xl px-4 focus:outline-none py-3 col-span-1 sm:col-span-2 lg:col-span-3" value={newQuantity} onChange={(e) => handleAdjustment(e.target.value)} />
                     <button className="btn bg-blue-400 hover:bg-blue-400/80" onClick={() => handleSaveAdjustment()}>
                         <TbDeviceFloppy />
                     </button>

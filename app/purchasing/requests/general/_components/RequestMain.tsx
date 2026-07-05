@@ -22,7 +22,7 @@ const RequestMain = ({ notes, noteTypes, files, requestId }: RequestMainProps) =
 
     return (
         <div className="flex items-center px-40">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
 
                 <ActionsPanel requestId={requestId} title={title} />
 

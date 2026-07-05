@@ -39,7 +39,7 @@ const ScanHistory = ({ setIsViewMode, stagings, bomItem }: { setIsViewMode: (isV
   return (
     <div className='flex flex-col gap-y-4'>
 
-      {bomItem.statusId === bprBomLineStatuses.pending && <div className='grid grid-cols-2 gap-4'>
+      {bomItem.statusId === bprBomLineStatuses.pending && <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
         <ActionPanel onClick={() => handleAdd()}>
           Add New
         </ActionPanel>
@@ -50,7 +50,7 @@ const ScanHistory = ({ setIsViewMode, stagings, bomItem }: { setIsViewMode: (isV
         }
 
       </div>}
-      <div className='grid grid-cols-3 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
         {stagings.map((entry: ExBprStaging) => <StagedEntryCard key={entry.id} entry={entry} />)}
       </div>
     </div>

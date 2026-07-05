@@ -18,7 +18,7 @@ const NextStepPanel = async ({ steps }: { steps: ExBprBatchStep[] }) => {
     return (
         <Card.Root>
             <Card.Title>Current Step</Card.Title>
-            <div className='grid grid-cols-3'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'>
             <StepCard step={currentStep as any} isReadOnly={false} isLocked={isLocked} />
             </div>
         </Card.Root>

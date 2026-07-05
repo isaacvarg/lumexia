@@ -175,7 +175,7 @@ const ItemsTab = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Items list - 1/3 */}
         <div className="col-span-1 flex flex-col gap-6">
           <SectionTitle>Items Supplied</SectionTitle>
@@ -227,7 +227,7 @@ const ItemsTab = () => {
         </div>
 
         {/* Item detail - 2/3 */}
-        <div className="col-span-2 flex flex-col gap-6">
+        <div className="col-span-1 sm:col-span-2 flex flex-col gap-6">
           {selectedItem ? (
             <>
               <div className="flex justify-between items-center">
@@ -255,7 +255,7 @@ const ItemsTab = () => {
               </div>
 
               {!itemData ? <Skeleton count={5} /> : (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card.Root>
                     <Card.Title size="small">Summary</Card.Title>
                     <div className="flex flex-col gap-y-2">
@@ -266,7 +266,7 @@ const ItemsTab = () => {
                     </div>
                   </Card.Root>
 
-                  <div className="col-span-2">
+                  <div className="col-span-1 sm:col-span-2">
                     <Card.Root>
                       <Card.Title size="small">Trends</Card.Title>
                       <Chart

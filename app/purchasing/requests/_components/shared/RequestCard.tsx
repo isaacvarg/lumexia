@@ -49,7 +49,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       <div
         className='card bg-base-300/50 border-base-300/50 p-2 border-2 hover:cursor-pointer hover:bg-base-300/30 flex flex-col gap-2' >
         <div className='flex justify-end'><button className='btn btn-circle btn-sm btn-warning' onClick={() => setIsStatus(false)}><TbX className="size-2" /></button></div>
-        <div className='grid grid-cols-3 gap-1'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1'>
           {options.statuses.map(s => {
             return (
               <button
@@ -68,7 +68,7 @@ const RequestCard = ({ request }: RequestCardProps) => {
       <div
         className='card bg-base-300/50 border-base-300/50 p-2 border-2 hover:cursor-pointer hover:bg-base-300/30 flex flex-col gap-2' >
         <div className='flex justify-end'><button className='btn btn-circle btn-sm btn-warning' onClick={() => setIsPriority(false)}><TbX className="size-2" /></button></div>
-        <div className='grid grid-cols-3 gap-1'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1'>
           {options.priorities.map(s => {
             return (
               <button

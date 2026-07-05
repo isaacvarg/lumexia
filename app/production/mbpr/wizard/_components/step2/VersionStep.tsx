@@ -44,7 +44,7 @@ const VersionStep = () => {
 
       {isLoading && <div className="skeleton h-32 w-32"></div>}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <div onClick={() => { showDialog('mbprForm'); setDialogMode('create') }} className="card bg-base-200 shadow-sm hover:shadow-md hover:cursor-pointer transition-shadow border-2 border-dashed border-base-300">
           <div className="card-body items-center justify-center flex-row gap-x-4">

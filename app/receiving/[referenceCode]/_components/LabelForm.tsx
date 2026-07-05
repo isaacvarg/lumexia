@@ -57,7 +57,7 @@ const LabelForm = ({ items, onComplete }: { items: PurchaseOrderItem[], onComple
       <form.AppField name="items" mode="array">
         {(field) => {
           return (
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {field.state.value.map((_, i) => {
                 return (
                   <div

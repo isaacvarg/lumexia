@@ -9,7 +9,7 @@ const OverviewTab = () => {
   if (!mbpr) return null
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <BasicsPanel mbpr={mbpr} statuses={statuses} />
       <BatchSizesPanel sizes={mbpr.BatchSize} />
       <BOMPanel bom={mbpr.bom} />

@@ -10,7 +10,7 @@ const AllStepsPanel = ({ steps }: { steps: ExBprBatchStep[] }) => {
         return (
                 <Card.Root>
                         <Card.Title>All Steps</Card.Title>
-                        <div className='grid grid-cols-4 gap-4'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
                                 {sortedSteps.map((step) => <StepCard key={step.id} step={step} isReadOnly={true} isLocked={false} />)}
                         </div>
                 </Card.Root>

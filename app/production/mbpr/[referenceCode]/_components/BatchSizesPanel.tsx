@@ -20,7 +20,7 @@ const BatchSizesPanel = ({ sizes }: { sizes: Mbpr['BatchSize'] }) => {
 
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {sizes.map((size) => (
                     <div key={size.id} className="card card-compact bg-base-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                         <div className="card-body">

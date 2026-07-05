@@ -48,7 +48,7 @@ const AddParameters = () => {
     <div>
       {/*** select how the parameters will be added   ***/}
       {step === 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <button onClick={() => handleMethodSelect('template')} className={modeButtonClass}>Template</button>
           <button onClick={() => handleMethodSelect('single')} className={modeButtonClass}>Single</button>
           {item?.procurementTypeId === procurementTypes.purchased && <button onClick={() => handleMethodSelect('ai')} className={modeButtonClass}>AI</button>}

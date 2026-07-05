@@ -25,7 +25,7 @@ const MbprStep = ({ selectedItemId, onMbprSelection }: { selectedItemId: string 
     getMbprs();
   }, [selectedItemId])
   return (
-    <div className='grid grid-cols-2 gap-4'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
       {mbprs.map(m => <div key={m.id} className='flex flex-col bg-primary/35 rounded-lg p-4 font-poppins font-semibold text-primary-content' onClick={() => handleMbprSelection(m)}>{m.versionLabel}</div>)}
     </div>
   )

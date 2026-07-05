@@ -36,7 +36,7 @@ const SampleSelectedParameter = ({
   const nextRunNumber = (runs[runs.length - 1]?.runNumber ?? 0) + 1;
 
   return (
-    <div className="flex flex-col gap-6 col-span-2">
+    <div className="flex flex-col gap-6 col-span-1 sm:col-span-2">
       <SectionTitle>{parameter.name}</SectionTitle>
 
       <div className="flex flex-col gap-6">

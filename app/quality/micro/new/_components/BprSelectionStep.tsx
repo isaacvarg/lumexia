@@ -50,7 +50,7 @@ const BprSelectionStep = ({ bprs, onSelection }: { bprs: IBprForSSF[], onSelecti
             <Text.SectionTitle>Select a BPR</Text.SectionTitle>
 
 
-            <div className='grid grid-cols-2 gap-8'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-8'>
 
 
                 <Card.Root>
@@ -79,7 +79,7 @@ const BprSelectionStep = ({ bprs, onSelection }: { bprs: IBprForSSF[], onSelecti
                 <Card.Root>
                     <Text.SectionTitle size='small'>Lastest</Text.SectionTitle>
 
-                    <div className='grid grid-cols-3 gap-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
                         {bprs.slice(0, 10).map((bpr) => {
                             return (

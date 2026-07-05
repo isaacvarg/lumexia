@@ -39,7 +39,7 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
     }
   })
   return (
-    <div className="flex flex-col gap-4 col-span-2">
+    <div className="flex flex-col gap-4 col-span-1 sm:col-span-2">
       <div className="flex justify-between items-center">
         <SectionTitle>Item Types</SectionTitle>
 

@@ -8,7 +8,7 @@ const StagedPanel = ({ bom }: { bom: ExBprBom[] }) => {
   return (
     <Card.Root>
       <Card.Title>Staged</Card.Title>
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {bom.filter((bomItem) => bomItem.statusId !== bprBomLineStatuses.pending).map((item) => <ItemCard key={item.id} bomItem={item} />)}
       </div>
 

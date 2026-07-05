@@ -53,7 +53,7 @@ const PaymentMethodDisplay = ({ method, onClick }: { method: PaymentMethod, onCl
     if (type === 'check') {
         return (
             <div
-                className="flex items-center justify-center col-span-2 cursor-pointer"
+                className="flex items-center justify-center col-span-1 sm:col-span-2 cursor-pointer"
                 onClick={handleClick}
             >
                 <BankCheck

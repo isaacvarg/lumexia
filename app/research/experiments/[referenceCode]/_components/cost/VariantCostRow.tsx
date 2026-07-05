@@ -60,7 +60,7 @@ const VariantCostRow = ({ variant, lastExamCostPerLb }: Props) => {
                 <h5 className="font-poppins font-semibold text-base-content/70 mb-1">
                   BOM breakdown
                 </h5>
-                <table className="table table-sm">
+                <div className="w-full overflow-x-auto"><table className="table table-sm">
                   <thead>
                     <tr>
                       <th>Material</th>
@@ -99,7 +99,7 @@ const VariantCostRow = ({ variant, lastExamCostPerLb }: Props) => {
                       </td>
                     </tr>
                   </tfoot>
-                </table>
+                </table></div>
               </div>
 
               {variant.perBatch.length > 0 && (
@@ -107,7 +107,7 @@ const VariantCostRow = ({ variant, lastExamCostPerLb }: Props) => {
                   <h5 className="font-poppins font-semibold text-base-content/70 mb-1">
                     Projected cost per batch
                   </h5>
-                  <table className="table table-sm">
+                  <div className="w-full overflow-x-auto"><table className="table table-sm">
                     <thead>
                       <tr>
                         <th>Batch size</th>
@@ -131,7 +131,7 @@ const VariantCostRow = ({ variant, lastExamCostPerLb }: Props) => {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               )}
             </div>

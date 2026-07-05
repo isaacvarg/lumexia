@@ -23,7 +23,7 @@ const QuantitiesPanel = ({ bomItem, staged }: Props) => {
   const remainingStatus = isStagedAcceptable ? 'completed' : 'incomplete';
 
   return (
-    <div className='grid grid-cols-2 gap-4'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
       <QuantityBox title='Required' quantity={requiredQuantity} />
       <QuantityBox title='Staged Quantity' quantity={stagedQuantity} remainingStatus={remainingStatus} />
 

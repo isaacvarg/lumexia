@@ -42,7 +42,7 @@ const LinkedPosPanel = ({ pos, linkedPosAmounts }: LinkedPosPanelProps) => {
 
 
       <Card.Root>
-        <div className="grow grid grid-cols-2 gap-4">
+        <div className="grow grid grid-cols-1 sm:grid-cols-2 gap-4">
           {pos.map((po) => <LinkedPoCard key={po.id} po={po} />)}
         </div>
 

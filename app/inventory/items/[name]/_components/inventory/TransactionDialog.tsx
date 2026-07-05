@@ -101,7 +101,7 @@ const TransactionDialog = () => {
     <Dialog.Root identifier="transactionDialog">
       <Dialog.Title>Create Transaction</Dialog.Title>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
         <Panels.Root bg="elevated" >
           <SectionTitle size="small">Current Amount</SectionTitle>
           <div className="flex flex-col items-center justify-center">
@@ -127,20 +127,20 @@ const TransactionDialog = () => {
         </Panels.Root>
 
 
-        <div className="flex flex-row gap-x-4 items-center col-span-2">
-          <button className={`btn ${transactionMode === 'set' ? '' : 'btn-outline'} btn-accent min-w-40 `} onClick={() => setTransactionMode('set')}>Set New Amount</button>
-          <button className={`btn ${transactionMode === 'add' ? '' : 'btn-outline'} btn-success min-w-40 `} onClick={() => setTransactionMode('add')}>Add To</button>
-          <button className={`btn ${transactionMode === 'remove' ? '' : 'btn-outline'} btn-error min-w-40 `} onClick={() => setTransactionMode('remove')}>Remove From</button>
-          <button className={`btn ${transactionMode === 'zero' ? '' : 'btn-outline '} btn-warning min-w-40 `} onClick={() => setTransactionMode('zero')}>Deplete Entirely</button>
+        <div className="flex flex-wrap gap-3 items-center col-span-1 sm:col-span-2">
+          <button className={`btn ${transactionMode === 'set' ? '' : 'btn-outline'} btn-accent flex-1 min-w-[8rem] sm:flex-none sm:min-w-40 `} onClick={() => setTransactionMode('set')}>Set New Amount</button>
+          <button className={`btn ${transactionMode === 'add' ? '' : 'btn-outline'} btn-success flex-1 min-w-[8rem] sm:flex-none sm:min-w-40 `} onClick={() => setTransactionMode('add')}>Add To</button>
+          <button className={`btn ${transactionMode === 'remove' ? '' : 'btn-outline'} btn-error flex-1 min-w-[8rem] sm:flex-none sm:min-w-40 `} onClick={() => setTransactionMode('remove')}>Remove From</button>
+          <button className={`btn ${transactionMode === 'zero' ? '' : 'btn-outline '} btn-warning flex-1 min-w-[8rem] sm:flex-none sm:min-w-40 `} onClick={() => setTransactionMode('zero')}>Deplete Entirely</button>
         </div>
 
 
 
-        <div className="col-span-2 w-full">
+        <div className="col-span-1 sm:col-span-2 w-full">
           <UnmanagedForm.Number placeholder="0" input={input} onChangeOutput={setInput} />
         </div>
 
-        <div className=" col-span-2 flex justify-end gap-x-4 items-center">
+        <div className=" col-span-1 sm:col-span-2 flex justify-end gap-x-4 items-center">
 
           <button className="btn btn-warning btn-outline" onClick={() => handleCancel()}>Cancel</button>
 

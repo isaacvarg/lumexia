@@ -22,13 +22,13 @@ const AwaitingVerificationPanel = ({ bomItems, bomNeedingSecondary }: { bomItems
 
       <Card.Title>{isSecondaryVerificationMode ? 'Awaiting Secondary Verification' : 'Awaiting Primary Verification'}</Card.Title>
       {!isSecondaryVerificationMode &&
-        <div className='grid grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {bomItems.map((item) => <EntryCard key={item.id} bomItem={item} />)}
         </div>
       }
 
       {isSecondaryVerificationMode &&
-        <div className='grid grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
           {bomNeedingSecondary.map((item) => <EntryCard key={item.id} bomItem={item} />)}
         </div>
       }

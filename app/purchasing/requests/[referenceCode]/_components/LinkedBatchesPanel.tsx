@@ -36,7 +36,7 @@ const LinkedBatchesPanel = ({ bprs, linkedBprAmounts }: LinkedBprsPanelProps) =>
       <Card.Root>
 
 
-        <div className="grow grid grid-cols-2 gap-4">
+        <div className="grow grid grid-cols-1 sm:grid-cols-2 gap-4">
           {bprs.map((bpr) => (
             <LinkedBprCard key={bpr.id} bpr={bpr} />
           ))}

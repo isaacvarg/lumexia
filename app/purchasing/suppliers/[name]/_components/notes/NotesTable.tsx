@@ -41,7 +41,7 @@ const NotesTable = () => {
     <div className="flex flex-col gap-6">
       <NotesForm supplier={supplier} />
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Notes list - 1/3 */}
         <div className="col-span-1 flex flex-col gap-6">
           <div className="flex justify-between items-center">
@@ -73,7 +73,7 @@ const NotesTable = () => {
         </div>
 
         {/* Note detail - 2/3 */}
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           {activeNote ? (
             <div className="flex flex-col gap-6">
               <NoteEditForm supplier={supplier} note={activeNote} />

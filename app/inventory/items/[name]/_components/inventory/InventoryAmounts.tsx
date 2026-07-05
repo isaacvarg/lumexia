@@ -13,7 +13,7 @@ const InventoryAmounts = () => {
   if (!inventory) return false
 
   return (
-    <div className="col-span-3 grid grid-cols-2 gap-6">
+    <div className="col-span-1 sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
       <Card.Root>
         <div className="flex justify-between items-center">
           <Card.Title>On Hand</Card.Title>

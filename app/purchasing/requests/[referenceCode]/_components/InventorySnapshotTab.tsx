@@ -11,7 +11,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
     <div className='flex flex-col gap-y-4 '>
       <p>The inventory at the time the request was created.</p>
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 
         <div className='card bg-base-200'>
 
@@ -36,7 +36,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
 
             <div className='card-title'>Allocated Bprs</div>
 
-            <div className='grid grid-cols-2 gap-2'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
               {bprs.map((bpr) => {
                 return (
                   <div key={bpr?.id} className='card bg-accent/40'>
@@ -59,7 +59,7 @@ const InventorySnapshotTab = ({ snapshot, bprs, pos }: { snapshot: InventorySnap
 
             <div className='card-title'>Pending Purchse Orders</div>
 
-            <div className='grid grid-cols-2 gap-2'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
               {pos.map((po) => {
                 return (
                   <div key={po?.id} className='card bg-base-100 border border-base-300'>

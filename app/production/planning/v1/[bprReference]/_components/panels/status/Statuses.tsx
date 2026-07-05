@@ -25,7 +25,7 @@ const Statuses = () => {
             <div
                 onClick={() => handleStatusClick()}
                 style={{ backgroundColor: bpr?.status.bgColor }}
-                className="flex flex-col h-full items-center justify-center px-4 py-2 rounded-xl col-span-2 hover:!bg-lilac-300 hover:cursor-pointer"
+                className="flex flex-col h-full items-center justify-center px-4 py-2 rounded-xl col-span-1 sm:col-span-2 hover:!bg-lilac-300 hover:cursor-pointer"
             >
                 <p style={{ color: bpr?.status.textColor }} className=" font-poppins text-3xl font-semibold">
                     {bpr?.status.name || 'None'}

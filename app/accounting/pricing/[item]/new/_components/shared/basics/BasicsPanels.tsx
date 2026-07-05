@@ -9,7 +9,7 @@ import TotalCostPerLbProduced from "./TotalCostPerLbProduced"
 const BasicsPanels = () => {
 
   const { isProduced } = usePricingSharedSelection()
-  const layout = isProduced ? 'grid-cols-3' : 'grid-cols-2';
+  const layout = isProduced ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2';
 
 
   return (

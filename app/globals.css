@@ -21,5 +21,48 @@
 }
 
 .react-datepicker__input-container input {
-    @apply bg-transparent 
+    @apply bg-transparent
+}
+
+/* Card-stack layout for DataTable list tables on phones (< sm).
+   Each row becomes a bordered card and each cell shows its column label
+   (from the data-label attribute) beside the value. Tablet and up keep the
+   normal table (which scrolls horizontally in its overflow-x-auto wrapper). */
+@media (max-width: 639px) {
+  table.responsive-table thead {
+    display: none;
+  }
+  table.responsive-table,
+  table.responsive-table tbody,
+  table.responsive-table tr,
+  table.responsive-table td {
+    display: block;
+    width: 100%;
+  }
+  table.responsive-table tr {
+    @apply border border-base-300 rounded-lg;
+    margin-bottom: 1rem;
+    padding: 0.25rem 0.75rem;
+  }
+  table.responsive-table td {
+    @apply border-b border-base-300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    text-align: right;
+    padding: 0.5rem 0;
+  }
+  table.responsive-table tr td:last-child {
+    border-bottom: none;
+  }
+  table.responsive-table td::before {
+    content: attr(data-label);
+    @apply font-semibold text-base-content;
+    text-align: left;
+    padding-right: 1rem;
+  }
+  table.responsive-table td:empty {
+    display: none;
+  }
 }

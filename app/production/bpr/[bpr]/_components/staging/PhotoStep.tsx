@@ -41,7 +41,7 @@ const PhotoStep = ({ currentStep, onImagesSubmit }: { currentStep: number, onIma
   return (
     <div className="flex flex-col gap-6">
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
         <Uploader
           span={images.length !== 0 ? 'default' : 2}
@@ -58,7 +58,7 @@ const PhotoStep = ({ currentStep, onImagesSubmit }: { currentStep: number, onIma
 
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {images.map(image => {
           return (

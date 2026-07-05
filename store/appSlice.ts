@@ -8,6 +8,8 @@ type State = {
   user: User | null
   language: Language
   isSidebarCollapsed: boolean
+  // Controls the off-canvas sidebar drawer on mobile (< md). Desktop ignores this.
+  isMobileSidebarOpen: boolean
 
 }
 
@@ -16,6 +18,8 @@ type Actions = {
     getUser: () => void;
     getLanguage: () => void;
     toggleSidebarCollapse: () => void;
+    toggleMobileSidebar: () => void;
+    closeMobileSidebar: () => void;
   }
 }
 
@@ -23,6 +27,7 @@ export const useAppSelection = create<State & Actions>((set, get) => ({
   user: null,
   language: 'en' as Language,
   isSidebarCollapsed: false,
+  isMobileSidebarOpen: false,
 
   actions: {
     getUser: async () => {
@@ -51,6 +56,14 @@ export const useAppSelection = create<State & Actions>((set, get) => ({
 
     toggleSidebarCollapse: () => {
       set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed }))
+    },
+
+    toggleMobileSidebar: () => {
+      set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen }))
+    },
+
+    closeMobileSidebar: () => {
+      set(() => ({ isMobileSidebarOpen: false }))
     }
 
   },

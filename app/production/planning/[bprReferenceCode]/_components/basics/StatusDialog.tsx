@@ -28,7 +28,7 @@ const StatusDialog = () => {
     <Dialog.Root identifier="changeBprStatus">
       <Dialog.Title>Change Status To...</Dialog.Title>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {options.bprStatuses.map((status) => {
           return (
             <button key={status.id} style={{ backgroundColor: status.bgColor, color: status.textColor }} className='btn btn-neutral' onClick={() => handleClick(status.id)}>{status.name}</button>

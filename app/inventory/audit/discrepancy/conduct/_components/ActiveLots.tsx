@@ -67,7 +67,7 @@ const ActiveLots = () => {
 
         <SectionTitle size="small">Lots</SectionTitle>
 
-        <div className="grid grid-cols-3 gap-6  border-b border-neutral-200 pb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6  border-b border-neutral-200 pb-6">
 
 
           <div className="flex flex-col gap-y-2 bg-lilac-100  rounded-xl items-center p-8 ">
@@ -108,7 +108,7 @@ const ActiveLots = () => {
         </div>
 
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {onHandLots.map(lot => <LotCard key={lot.id} lot={lot} />)}
 
         </div>

@@ -46,7 +46,7 @@ const PricingDetailsPage = async ({ searchParams }: PricingDetailsProps) => {
       </div>
 
 
-      <div className='grid grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
         <BasicsPanel exam={examination} />
 
         <NotesPanel pricingExaminationId={examId} notes={examination.PricingExaminationNote} noteTypes={noteTypes} />

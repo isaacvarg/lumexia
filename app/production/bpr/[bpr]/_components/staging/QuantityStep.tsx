@@ -53,8 +53,8 @@ const QuantityStep = ({ currentStep, onQuantitySubmit }: { currentStep: number, 
   };
 
   return (
-    <div className='grid grid-cols-3 gap-2'>
-      <div className='flex justify-between col-span-3 p-4 bg-base-300/50 rounded-lg'>
+    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2'>
+      <div className='flex justify-between col-span-1 sm:col-span-2 lg:col-span-3 p-4 bg-base-300/50 rounded-lg'>
         <div className='flex font-semibold text-2xl font-poppins'>{inputValue || '0'}</div>
         <button onClick={handleDeleteButton} className='text-3xl'>
           <TbBackspace />

@@ -7,7 +7,7 @@ const styles = "flex flex-col gap-y-4 p-8 items-center justify-center rounded-xl
 
 const ModeSelector = ({ setMode }: { setMode: Dispatch<SetStateAction<'manual' | 'ai' | null>> }) => {
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             <div onClick={() => setMode('manual')} className={`${styles} bg-lilac-100 hover:bg-lilac-200`}>
                 <span className="text-4xl"><LuTextCursorInput /></span>

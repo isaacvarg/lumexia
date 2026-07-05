@@ -10,7 +10,7 @@ const BOMPanel = ({ bom }: { bom: MbprBom[]}) => {
 
 
     return (
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
             <Card.Root>
 
                 <div className="flex flex-col gap-y-8">

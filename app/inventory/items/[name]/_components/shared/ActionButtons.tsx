@@ -30,7 +30,7 @@ const ActionButtons = () => {
   if (!item) return false
 
   return (
-    <div className="flex gap-x-6">
+    <div className="flex flex-wrap gap-3">
       <AuditDialog itemId={item.id} />
 
       <button

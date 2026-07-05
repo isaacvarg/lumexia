@@ -10,7 +10,7 @@ const FinishedProductsPanel = ({ finishedProducts }: { finishedProducts: SingleP
     <div className='flex flex-col gap-6'>
       <SectionTitle>Finished Products</SectionTitle>
 
-      <div className='grid grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
 
         {finishedProducts.map((fp) => {
 

@@ -22,8 +22,8 @@ const BatchSize = () => {
     <Panels.Root>
       <Text.SectionTitle size="small">Batch Size</Text.SectionTitle>
 
-      <div className="grid grid-cols-2 gap-x-4">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+        <div className="col-span-1 sm:col-span-2">
 
           <div className="px-4 py-2 font-poppins text-4xl font-semibold flex items-center justify-center gap-x-2">
             <p className="text-base-content">

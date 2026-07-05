@@ -38,7 +38,7 @@ const ItemPricingDashboard = async ({ searchParams }: ItemPricingDashboardProps)
 
       <ActionBar itemId={item.id} itemName={item.name} />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <LastExaminedPanel lastExamination={examinations[0] || null} />
         {!isProduced && <OverallItemPriceChart pricingExaminations={examinations} />}
         {isProduced && <OverallMbprPricingChart examinations={producedExaminations} />}

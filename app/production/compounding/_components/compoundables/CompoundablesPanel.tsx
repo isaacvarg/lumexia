@@ -33,7 +33,7 @@ const CompoundablesPanel = ({ compoundables }: CompoundablesPanelProps) => {
 
       <SectionTitle>{t(translations, 'compoundablesTitle')}</SectionTitle>
       <Card.Root bg='elevated'>
-        <div className='grid grid-cols-4 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
           {compoundables.map((bpr) => <BprCard isInactive={true} bg='darker' key={bpr.id} bpr={bpr} />)}
         </div>
       </Card.Root>

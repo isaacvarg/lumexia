@@ -134,7 +134,7 @@ const MeasurementsByParameter = ({ onRowClick }: Props) => {
 
   return (
     <div className="flex flex-col gap-y-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {parameterOptions.map((opt) => {
           const isActive = selectedId === opt.id;
           return (

@@ -43,6 +43,19 @@ type DataTableDefaultProps = {
   onSelectionChange?: (rows: any[]) => void;
 };
 
+// Derives a plain-text label for a column, used as the data-label on each cell
+// so the mobile card-stack layout (see globals.css .responsive-table) can show
+// which field each value belongs to. Handles plain-string headers and the
+// SortableHeaderType(...) component (whose displayName carries the title).
+const getColumnLabel = (header: any): string => {
+  if (typeof header === "string") return header;
+  if (typeof header === "function" && typeof header.displayName === "string") {
+    const match = header.displayName.match(/^SortableHeaderType\((.*)\)$/);
+    if (match) return match[1];
+  }
+  return "";
+};
+
 const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
   const search = String(filterValue).toLowerCase();
 
@@ -175,7 +188,8 @@ const Default = ({
         searchBg={searchBg || 'elevated'}
       />}
       <div className="w-full">
-        <table className="min-w-full text-left text-lg font-light">
+        <div className="w-full overflow-x-auto">
+        <table className="responsive-table min-w-full text-left text-base md:text-lg font-light">
           <thead className="border-b font-medium border-accent/35 text-base-content">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr className="px-2" key={headerGroup.id}>
@@ -201,7 +215,11 @@ const Default = ({
                     className="border-b border-accent/35 hover:bg-accent/25 hover:cursor-pointer hover:text-accent-content"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td className="py-4 px-2 text-base-content" key={cell.id}>
+                      <td
+                        className="py-4 px-2 text-base-content"
+                        data-label={getColumnLabel(cell.column.columnDef.header)}
+                        key={cell.id}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -221,7 +239,8 @@ const Default = ({
             ))}
           </tbody>
         </table>
-        {!disablePagination && <div className="flex flex-row justify-between mt-6">
+        </div>
+        {!disablePagination && <div className="flex flex-col gap-4 mt-6 md:flex-row md:items-center md:justify-between">
           <div>
             <span className="flex text-base-content font-inter font-semibold items-center gap-1">
               Jump To Page:
@@ -240,7 +259,7 @@ const Default = ({
             </span>
           </div>
 
-          <div className="flex gap-x-4 text-3xl">
+          <div className="flex items-center gap-x-2 md:gap-x-4 text-xl md:text-3xl">
             <button
               className="py-1 px-2 rounded-lg text-2xl text-accent-content bg-accent/35 disabled:opacity-40 font-inter font-semibold hover:bg-accent"
               onClick={() => table.setPageIndex(0)}

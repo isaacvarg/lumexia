@@ -30,7 +30,7 @@ const RecordVerdict = () => {
 
       <Card.Root>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <button
             className="btn btn-success btn-xl min-h-40"
             onClick={() => handleComplete(true)}

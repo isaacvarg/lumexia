@@ -30,7 +30,7 @@ const InputDefinitions = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 col-span-3">
+    <div className="flex flex-col gap-4 col-span-1 sm:col-span-2 lg:col-span-3">
       <div className="flex items-center justify-between">
         <SectionTitle>Input Definitions</SectionTitle>
 
@@ -38,7 +38,7 @@ const InputDefinitions = () => {
 
       </div>
       <Card.Root>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {parameterInputDefinitions.map(def => <InputDefCard key={def.id} inputDefinition={def} />)}
 
 
@@ -46,7 +46,7 @@ const InputDefinitions = () => {
 
         {parameterInputDefinitions.length === 0 && (
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="min-h-[400px] skeleton" />
 
             <div className="min-h-[400px] skeleton" />

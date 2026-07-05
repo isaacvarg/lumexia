@@ -39,7 +39,7 @@ const PricingPage = async () => {
 
         <Tabs.ContentContainer>
           <Tabs.Content value="overview">
-            <div className='grid grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
               <Card.Root>
                 <Card.Title>Queue</Card.Title>
                 <QueueList />

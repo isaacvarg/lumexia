@@ -27,7 +27,7 @@ const ByStatusPanel = ({ statuses, bprs }: Props) => {
         onQueryComplete={setSearchResults}
       />
 
-      <div className='grid grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
         {statusCounts.filter((s) => s.count !== 0).map((status) => {
 
           if (status.id === bprStatuses.failed) {
@@ -41,7 +41,7 @@ const ByStatusPanel = ({ statuses, bprs }: Props) => {
             <div
               key={status.id}
               style={{ backgroundColor: status.bgColor }}
-              className={`p-6 rounded-lg shadow-xl ${status.id === bprStatuses.released ? 'col-span-2' : ''}`}
+              className={`p-6 rounded-lg shadow-xl ${status.id === bprStatuses.released ? 'col-span-1 sm:col-span-2' : ''}`}
             >
               <div className='flex flex-col gap-y-6'>
                 <div
@@ -49,7 +49,7 @@ const ByStatusPanel = ({ statuses, bprs }: Props) => {
                   className='font-poppins text-xl font-semibold'>
                   {status.name}
                 </div>
-                <div className='grid grid-cols-3 max-h-80 overflow-y-auto gap-6'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-h-80 overflow-y-auto gap-6'>
                   {bprsForStatus.map((bpr) => <BprCard key={bpr.id} statuses={statuses} bpr={bpr} />)}
                 </div>
               </div>

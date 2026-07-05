@@ -73,7 +73,7 @@ const Cost = ({ experimentId }: Props) => {
         </Card.Root>
       ) : (
         <Card.Root>
-          <table className="table">
+          <div className="w-full overflow-x-auto"><table className="table">
             <thead>
               <tr>
                 <th className="w-8"></th>
@@ -92,7 +92,7 @@ const Cost = ({ experimentId }: Props) => {
                 />
               ))}
             </tbody>
-          </table>
+          </table></div>
           <p className="font-poppins text-xs text-base-content/50 mt-2">
             Projected = BOM × (1 + {data.settings.overheadPercent}% overhead) +{" "}
             {fmtMoney(data.settings.overheadPerLb)}/lb. Click a variant to expand.

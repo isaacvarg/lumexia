@@ -60,7 +60,7 @@ const ActionablesPanel = () => {
 
 
   return (
-    <div className='p-4 bg-cararra-50 rounded-lg h-full flex flex-col gap-y-4 col-span-2'>
+    <div className='p-4 bg-cararra-50 rounded-lg h-full flex flex-col gap-y-4 col-span-1 sm:col-span-2'>
 
       <ActionableTypeForm userRoles={userRoles} />
       <ActionableForm actionableTypes={actionableTypes} />
@@ -73,7 +73,7 @@ const ActionablesPanel = () => {
         </span>
       </div>
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
         {
           stepActionables.map((sa) => <ActionableCard key={sa.id} actionable={sa} />)
         }

@@ -20,7 +20,7 @@ const InventoryPanel = async ({ requestId, itemId, notes , noteTypes}: { request
 
 
     return (
-        <div className='col-span-2'>
+        <div className='col-span-1 sm:col-span-2'>
             <InventoryTabs
                 lastAuditRequests={lastAuditRequests}
                 snapshot={snapshot}

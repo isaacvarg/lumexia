@@ -14,15 +14,19 @@ const PricingOption = ({ exam }: { exam: ReviewablePricingExams }) => {
   return (
     <div
       onClick={() => router.push(path)}
-      className="flex justify-between items-center py-2 px-4 rounded-xl bg-base-300/75 hover:cursor-pointer hover:bg-base-200">
+      className="flex flex-col gap-2 py-3 px-4 rounded-xl bg-base-300/75 hover:cursor-pointer hover:bg-base-200">
 
-      <h1 className="font-poppins text-base text-base-content font-medium">{exam.examinedItem.name}</h1>
+      <h1 className="font-poppins text-base text-base-content font-medium break-words">{exam.examinedItem.name}</h1>
 
-      <div className="flex gap-x-2">
-        <h2 className="text-center items-center flex rounded-xl px-2 py-1 font-semibold bg-secondary/70 text-secondary-content text-sm font-poppins">
-          {DateTime.fromJSDate(exam.createdAt).toFormat(dateFormatString)}
-        </h2>
-        <UserIcon image={exam.user.image ?? undefined} name={exam.user.name ?? undefined} />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-center items-center flex rounded-xl px-2 py-1 font-semibold bg-secondary/70 text-secondary-content text-sm font-poppins whitespace-nowrap">
+            {DateTime.fromJSDate(exam.createdAt).toFormat(dateFormatString)}
+          </h2>
+        </div>
+        <span className="shrink-0">
+          <UserIcon image={exam.user.image ?? undefined} name={exam.user.name ?? undefined} />
+        </span>
       </div>
 
     </div>

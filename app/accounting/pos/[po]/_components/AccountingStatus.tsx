@@ -78,7 +78,7 @@ const ChooseStatusMode = ({
         <button onClick={() => resetStatusMode(false)} className="btn btn-error btn-outline btn-md">Cancel</button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {statuses.map((status) => {
           return (
             <button key={status.id} style={{ backgroundColor: status.bgColor, color: status.textColor }} className='btn btn-neutral' onClick={() => handleClick(status.id, status.name)}>{status.name}</button>

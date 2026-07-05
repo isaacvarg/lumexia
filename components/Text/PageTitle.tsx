@@ -9,7 +9,7 @@ const classes = {
 
 const PageTitle: React.FC<{ title?: string, children?: React.ReactNode, color?: keyof typeof classes.color }> = ({ title, children, color = 'default' }) => {
   return (
-    <h1 className={`text-4xl font-poppins font-semibold ${classes.color[color]}`}>{title || children}</h1>
+    <h1 className={`text-3xl md:text-4xl font-poppins font-semibold ${classes.color[color]}`}>{title || children}</h1>
   );
 };
 

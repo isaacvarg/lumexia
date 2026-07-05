@@ -56,7 +56,7 @@ const MaterialsPanel = () => {
         <ActionButton onClick={() => showDialog('AddBomItemDialog')}><TbPlus /></ActionButton>
       </Layout.Row>
 
-      <div className='grid grid-cols-2 gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
         {stepBomMaterials.map((material: ExBillOfMaterials) => {
           return <MaterialCard key={material.id} material={material} />
         })}

@@ -12,7 +12,7 @@ const Notes = () => {
       <InternalNotes />
 
       <SectionTitle>Public Notes</SectionTitle>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
         <PublicNotes />
         <PoSupplierNotes />

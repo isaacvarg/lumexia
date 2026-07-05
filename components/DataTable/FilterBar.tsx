@@ -79,35 +79,29 @@ export default function FilterBar<TData>({
 
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-1 items-center space-x-2">
-        <div className="flex items-center justify-between py-4 ">
-
-
-          <div className={`flex ${classes.searchBg[searchBg]} w-full px-4 py-2 min-w-20 rounded-xl`}>
-            <DebouncedInput
-              value={globalFilterValue}
-              onChange={(value) => handleFilterChange(value)}
-              onKeyDown={handleEnterPress}
-              placeholder="Search all"
-              className='w-full focus:outline-none '
-            />
-            {globalFilterValue ? (
-              <button
-                onClick={() => handleFilterChange("")}
-                className="text-base-content hover:text-accent-content"
-                aria-label="Clear search"
-              >
-                <RxCross2 className="h-6 w-6" />
-              </button>
-            ) : (<div className="w-6 h-6" />)}
-          </div>
-
-
+    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+        <div className={`flex ${classes.searchBg[searchBg]} w-full sm:w-auto sm:min-w-[16rem] md:min-w-[20rem] px-4 py-2 rounded-xl`}>
+          <DebouncedInput
+            value={globalFilterValue}
+            onChange={(value) => handleFilterChange(value)}
+            onKeyDown={handleEnterPress}
+            placeholder="Search all"
+            className='w-full focus:outline-none '
+          />
+          {globalFilterValue ? (
+            <button
+              onClick={() => handleFilterChange("")}
+              className="text-base-content hover:text-accent-content"
+              aria-label="Clear search"
+            >
+              <RxCross2 className="h-6 w-6" />
+            </button>
+          ) : (<div className="w-6 h-6" />)}
         </div>
 
         {filters && (
-          <div className="flex flex-row items-center gap-x-4">
+          <div className="flex flex-wrap items-center gap-2">
             {filters.map((filter, index) => (
               <FacetedFilter
                 key={index}
@@ -131,11 +125,13 @@ export default function FilterBar<TData>({
         )}
       </div>
       {dialogIdentifier && (
-        <ActionButton
-          color="neutral"
-          label={actionButtonTitle ?? "Add"}
-          onClick={() => showDialog(dialogIdentifier)}
-        />
+        <div className="w-full md:w-auto shrink-0">
+          <ActionButton
+            color="neutral"
+            label={actionButtonTitle ?? "Add"}
+            onClick={() => showDialog(dialogIdentifier)}
+          />
+        </div>
       )}
     </div>
   );

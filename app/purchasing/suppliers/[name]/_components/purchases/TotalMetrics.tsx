@@ -63,7 +63,7 @@ const TotalMetrics = () => {
         </ActionButton>
       </Layout.Row>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <DataCard>
           <DataCardText size="small" color="light">Purchase Orders</DataCardText>
           <DataCardText>{filteredPurchases?.filteredPurchases.length ?? 0}</DataCardText>

@@ -25,7 +25,7 @@ const MiniTable = ({ data, columns, emptyMessage }: { data: any[], columns: any[
   }
 
   return (
-    <table className="min-w-full text-left text-sm font-light">
+    <div className="w-full overflow-x-auto"><table className="min-w-full text-left text-sm font-light">
       <thead className="border-b font-medium border-accent/35 text-base-content">
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>
@@ -48,7 +48,7 @@ const MiniTable = ({ data, columns, emptyMessage }: { data: any[], columns: any[
           </tr>
         ))}
       </tbody>
-    </table>
+    </table></div>
   )
 }
 

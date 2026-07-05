@@ -17,7 +17,7 @@ const MaterialList = () => {
     sorted.filter(item => item.statusId === bprBomLineStatuses.secondaryVerified);
 
   return (
-    <div className="flex flex-col gap-6 col-span-2">
+    <div className="flex flex-col gap-6 col-span-1 sm:col-span-2">
       <div className="flex flex-col gap-4">
         <SectionTitle >{qualityMode === 'primary' ? 'To Verify' : 'To Secondary Verify'}</SectionTitle>
         <Card.Root>

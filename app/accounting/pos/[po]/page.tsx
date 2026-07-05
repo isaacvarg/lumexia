@@ -57,7 +57,7 @@ const PoAccountingDetailsPage = async ({ searchParams }: { searchParams: { id: s
         <div className="pt-4">
           <Tabs.ContentContainer>
             <Tabs.Content value="details">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
                 <AccountingDetails po={po} />
                 <PoDetails referenceCode={po.referenceCode} supplier={po.supplier.name} status={{

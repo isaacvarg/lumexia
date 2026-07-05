@@ -48,7 +48,7 @@ const NoteTypesAddMode = ({ setMode, }: { setMode: Dispatch<SetStateAction<'addT
                 <Form.Text fieldName="description" label="Description" form={form} required />
 
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Form.Color fieldName="bgColor" label="Background Color" form={form} />
 
                     <Form.Color fieldName="textColor" label="Text Color" form={form} />

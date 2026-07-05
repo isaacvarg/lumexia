@@ -129,7 +129,7 @@ const PriceAltering = () => {
           Alter By
         </h1>
 
-        <div className='grid grid-cols-2 gap-2'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
           <AlterModeButton alterModeId='consumerPrice' currentMode={alterMode} label='Consumer Price' onSelect={setAlterMode} />
           <AlterModeButton alterModeId='markup' currentMode={alterMode} label='Markup Percentage' onSelect={setAlterMode} />
           <AlterModeButton alterModeId='profit' currentMode={alterMode} label='Profit' onSelect={setAlterMode} />

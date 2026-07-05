@@ -22,7 +22,7 @@ const StepDetails = () => {
         <Card.Title>Step {selectedBatchStep.phase}.{selectedBatchStep.sequence}  {selectedBatchStep.label && ` - ${toProperCase(selectedBatchStep.label)}`}</Card.Title>
       </div>
 
-      <div className='grid grid-cols-2 gap-4 h-full'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 h-full'>
         <MaterialsPanel />
 
         <InstructionsPanel />

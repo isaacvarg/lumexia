@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Poppins, Roboto } from "next/font/google";
 import "./globals.css";
 import Providers from "@/context/Providers";
@@ -31,6 +31,13 @@ export const metadata: Metadata = {
   description: "",
 };
 
+// Ensures mobile breakpoints behave; without width=device-width the viewport
+// defaults to desktop width and md:/lg: utilities never engage on phones.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +56,7 @@ export default async function RootLayout({
               <div className="flex flex-row h-full">
                 <Sidebar />
 
-                <div className="flex flex-col w-full bg-base-200 px-28 pt-2 pb-8 gap-y-8">
+                <div className="flex flex-col w-full min-w-0 overflow-x-clip bg-base-200 px-4 md:px-10 lg:px-28 pt-2 pb-8 gap-y-6 md:gap-y-8">
                   <TopBar />
                   <CommandPallet />
                   {children}

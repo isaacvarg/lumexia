@@ -135,7 +135,7 @@ const SamplePreparationBody = ({ sample, variant }: Props) => {
                     {phaseKey ?? "Unphased"}
                   </h4>
                 )}
-                <table className="table">
+                <div className="w-full overflow-x-auto"><table className="table">
                   <thead>
                     <tr>
                       <th className="w-12"></th>
@@ -172,7 +172,7 @@ const SamplePreparationBody = ({ sample, variant }: Props) => {
                       );
                     })}
                   </tbody>
-                </table>
+                </table></div>
               </Card.Root>
               );
             })}

@@ -6,14 +6,15 @@ import { sidebarElements } from "./sidebar.config";
 import SidebarGroupTitle from "./SidebarGroupTitle";
 import SidebarButton from "./SidebarButton";
 import SidebarHeader from "./SidebarHeader";
-import { useAppSelection } from "@/store/appSlice";
+import { useAppSelection, useAppActions } from "@/store/appSlice";
 import { motion } from "framer-motion";
 
 const Sidebar = () => {
 
   const { data: auditRequests } = useAuditRequest();
   const { data: purchasingRequests } = useAllPurchasingRequests();
-  const { isSidebarCollapsed } = useAppSelection()
+  const { isSidebarCollapsed, isMobileSidebarOpen } = useAppSelection()
+  const { closeMobileSidebar } = useAppActions()
 
   const sidebarVariants = {
     expanded: {
@@ -33,15 +34,23 @@ const Sidebar = () => {
   };
 
   return (
-    <motion.div
-      variants={sidebarVariants}
-      animate={isSidebarCollapsed ? "collapsed" : "expanded"}
-      className="pt-2 pb-8 shadow-xl bg-base-100 shadow-base-300 z-40 min-h-dvh"
-    >
+    <>
+      {/* Mobile-only backdrop; tapping it closes the drawer. */}
+      <div
+        onClick={closeMobileSidebar}
+        className={`fixed inset-0 z-40 bg-base-300/70 md:hidden ${isMobileSidebarOpen ? "block" : "hidden"}`}
+      />
 
-      <SidebarHeader isSidebarCollapsed={isSidebarCollapsed} />
+      <motion.div
+        variants={sidebarVariants}
+        animate={isSidebarCollapsed ? "collapsed" : "expanded"}
+        className={`fixed inset-y-0 left-0 z-50 overflow-y-auto pt-2 pb-8 shadow-xl bg-base-100 shadow-base-300 min-h-dvh transition-transform duration-300 md:static md:z-40 md:translate-x-0 ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
 
-      <div className="flex flex-col gap-y-8 px-4">
+        <SidebarHeader isSidebarCollapsed={isSidebarCollapsed} />
+
+        {/* Closing on nav click keeps the mobile drawer from lingering after navigation. */}
+        <div onClick={closeMobileSidebar} className="flex flex-col gap-y-8 px-4">
 
         {sidebarElements.map((group) => {
 
@@ -72,11 +81,12 @@ const Sidebar = () => {
             </div>
 
 
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
 
-    </motion.div>
+      </motion.div>
+    </>
 
   );
 };

@@ -7,6 +7,6 @@ interface ListProps {
   className?: string;
 }
 export const List = ({ children, className = '' }: ListProps) => {
-  return <div className={`flex items-center justify-start gap-6 ${className}`}>{children}</div>;
+  return <div className={`flex items-center justify-start gap-6 overflow-x-auto ${className}`}>{children}</div>;
 };
 List.displayName = "Tabs.List";

@@ -17,7 +17,7 @@ const TransactionsTable = ({ transactions }: { transactions: Transaction[] }) =>
 
   return (
     <Card.Root>
-      <table className="min-w-full">
+      <div className="w-full overflow-x-auto"><table className="min-w-full">
         <thead>
           <tr className="border-b border-zinc-800">
             <th className="text-left text-xs font-medium text-zinc-400 font-poppins pb-3">Lot</th>
@@ -54,7 +54,7 @@ const TransactionsTable = ({ transactions }: { transactions: Transaction[] }) =>
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
     </Card.Root>
   )
 }

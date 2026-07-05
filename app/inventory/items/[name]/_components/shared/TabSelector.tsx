@@ -27,7 +27,7 @@ const TabSelector = () => {
   }
 
   return (
-    <div className="flex items-center justify-start gap-x-6">
+    <div className="flex flex-wrap items-center gap-3">
 
       {tabs.map(tab => <TabButton key={tab} tab={tab} />)}
     </div>
@@ -36,7 +36,7 @@ const TabSelector = () => {
 
 const Skeleton = () => {
   return (
-    <div className="flex items-center justify-start gap-x-6">
+    <div className="flex flex-wrap items-center gap-3">
       <button className="skeleton btn w-40"></button>
       <button className="skeleton btn w-40"></button>
       <button className="skeleton btn w-40"></button>

@@ -14,7 +14,7 @@ const PlanningView = ({ purchaseOrder, items, orderItems }: PlanningViewProps) =
     <Card.Root>
       <Card.Title>Items</Card.Title>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {orderItems.map((item) => <PoItemCard key={item.id} poItem={item} />)}
 
       </div>

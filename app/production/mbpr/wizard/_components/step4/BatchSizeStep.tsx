@@ -40,7 +40,7 @@ const BatchSizeStep = () => {
                 <button className='btn btn-success' onClick={() => location.reload()}>Complete</button>
             </div>
 
-            <div className='grid grid-cols-2 gap-8'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-8'>
                 <div className='bg-[#EDEDE9] h-full rounded-xl p-6 flex flex-col gap-y-6'>
 
                     <Heading>Batch Sizes</Heading>

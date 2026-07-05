@@ -41,7 +41,7 @@ const NewAuditDialog = ({ itemTypes }: { itemTypes: ItemType[] }) => {
 
       <Dialog.Title>New Discrepancy Audit</Dialog.Title>
 
-      {!isLoading ? (<div className="grid grid-cols-3 gap-4">
+      {!isLoading ? (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <button className="btn btn-neutral btn-soft" onClick={() => handleClick(null)}>All</button>
         {itemTypes.map(it => {

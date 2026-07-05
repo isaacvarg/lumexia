@@ -34,7 +34,7 @@ const GroupsTab = ({ groups }: Props) => {
 
   return (
     <div className="flex flex-col gap-y-6 pb-8">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <button
           className={`btn-lg btn ${
             !selectedStatusId ? "btn-secondary" : "btn-soft"

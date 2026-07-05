@@ -9,14 +9,12 @@ const LinkButton = ({ icon, title, path }: { icon: JSX.Element, title: string, p
   const router = useRouter()
 
   return (
-    <button className="btn btn-lg h-32">
-      <div
-        className="flex flex-col gap-y-2 items-center justify-center"
-        onClick={() => router.push(path)}
-      >
-        <span className="text-4xl">{icon}</span>
-        <p className="text-2xl">{title}</p>
-      </div>
+    <button
+      onClick={() => router.push(path)}
+      className="btn btn-lg w-full h-28 flex flex-col items-center justify-center gap-2"
+    >
+      <span className="text-3xl">{icon}</span>
+      <p className="text-lg font-medium">{title}</p>
     </button>
 
   )
@@ -25,7 +23,7 @@ const LinkButton = ({ icon, title, path }: { icon: JSX.Element, title: string, p
 const Links = () => {
   return (
     <Panel title="Quick Links">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <LinkButton icon={<BsBox2Heart />} title='Request Item' path="/purchasing/requests/new" />
       </div>
     </Panel>

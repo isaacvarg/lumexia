@@ -15,7 +15,7 @@ const TimelineWeek = ({ days, bprs }: { days: WeekDay[]; bprs: ProducibleBpr[] }
   return (
     <div className='flex flex-col gap-2'>
       {/* Day header */}
-      <div className='grid grid-cols-4 gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2'>
         {days.map(day => (
           <div key={day.day} className={`rounded-md px-3 py-2 ${day.bg}`}>
             <span className='flex flex-row gap-x-2 font-poppins font-semibold text-xl'>
@@ -32,7 +32,7 @@ const TimelineWeek = ({ days, bprs }: { days: WeekDay[]; bprs: ProducibleBpr[] }
 
       {/* One row per BPR, bar positioned across the covered columns */}
       {rows.map(({ bpr, range }) => (
-        <div key={bpr.id} className='grid grid-cols-4 gap-2'>
+        <div key={bpr.id} className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2'>
           <div style={{ gridColumn: `${range.startIdx + 1} / ${range.endIdx + 2}` }}>
             <BprCard bpr={bpr} />
           </div>

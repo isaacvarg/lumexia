@@ -168,7 +168,7 @@ const BatchSizeForm = () => {
           />
           <Heading>Compounding Vessel</Heading>
 
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             {compoundingVessels.filter((cv) => parseFloat(sizeInput) <= cv.capacityMaximum && parseFloat(sizeInput) >= cv.capacityMinimum).map((cv) => {
               const isSelected = cv.id === selectedCompoundingVessel?.id;
               return (

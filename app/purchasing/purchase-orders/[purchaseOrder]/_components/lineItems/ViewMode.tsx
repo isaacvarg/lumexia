@@ -41,7 +41,7 @@ const ViewMode = () => {
 
       <Card.Root>
         <div>
-          <table className="table table-zebra">
+          <div className="w-full overflow-x-auto"><table className="table table-zebra">
             <thead>
               <tr>
                 <th>IID</th>
@@ -98,12 +98,12 @@ const ViewMode = () => {
 
             </tbody>
 
-          </table>
+          </table></div>
 
         </div>
       </Card.Root>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
         <div />
         <div />

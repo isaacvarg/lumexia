@@ -143,7 +143,7 @@ const BasicDetailsPanel = ({ suppliers, supplierTags, requestingUser, priorityId
               </button>
             </div>
 
-            <div className='grid grid-cols-2 gap-1'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-1'>
 
               {supplierTags.map(s => {
                 return (
@@ -195,7 +195,7 @@ const BasicDetailsPanel = ({ suppliers, supplierTags, requestingUser, priorityId
             <div className='flex justify-end'>
               <button className='btn btn-outline btn-error' onClick={() => setIsEditStatus(false)}><TbX className='size-5' /> </button>
             </div>
-            <div className='grid grid-cols-2 gap-2'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
               {allStatuses.map(s => {
                 return (
                   <button key={s.id} className='btn btn-h-20' onClick={() => handleStatusOptions(s.id)}>
@@ -212,7 +212,7 @@ const BasicDetailsPanel = ({ suppliers, supplierTags, requestingUser, priorityId
             <div className='flex justify-end'>
               <button className='btn btn-outline btn-error' onClick={() => setIsEditPriority(false)}><TbX className='size-5' /> </button>
             </div>
-            <div className='grid grid-cols-2 gap-2'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
               {allPriorities.map(p => {
                 return (
                   <button key={p.id} className='btn btn-h-20' onClick={() => handlePriorityOption(p.id)}>

@@ -61,7 +61,7 @@ const RequestDetailsPage = async ({ searchParams }: RequestDetailsProps) => {
       <HelperSetter section="request-details" />
       <RequestDetailsPageTitle request={request} />
 
-      <div className='grid grid-cols-2 gap-8'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-8'>
 
         <BasicDetailsPanel
           suppliers={suppliers}

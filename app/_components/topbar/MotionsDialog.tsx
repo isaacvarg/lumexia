@@ -78,7 +78,7 @@ const MotionsDialog = ({ segments }: { segments: string[] }) => {
                 <p className="font-poppins text-lg text-base-content">{m.description}</p>
               </div>
               <div
-                className="grid grid-cols-2 gap-2"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-2"
               >
                 {m.motions.map(k => {
                   return (

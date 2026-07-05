@@ -70,7 +70,7 @@ const MaterialAllocationPanels = ({
 
           {isLoading ? <div className="skeleton h-32 w-32"></div> : null}
 
-          {requests.length > 0 ? (<div className='grid grid-cols-3 gap-4'>
+          {requests.length > 0 ? (<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
             <div className="card bg-base-300 hover:cursor-pointer hover:bg-lilac-200 " onClick={() => handleNewRequest()}>
               <div className="card-body flex flex-col justify-center items-center">
                 <div className='card-title'><div className='flex gap-x-2'><span className='text-2xl'><TbPlus /></span>New Purchase Request</div></div>
@@ -106,7 +106,7 @@ const MaterialAllocationPanels = ({
                 </div>
               )
             })}
-          </div>) : (<div className='grid grid-cols-3 gap-4'>
+          </div>) : (<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
             <div className="card bg-base-300 hover:cursor-pointer hover:bg-lilac-200 " onClick={() => handleNewRequest()}>
               <div className="card-body">
                 <div className='card-title'><div className='flex gap-x-2'><span className='text-2xl'><TbPlus /></span>New Purchase Request</div></div>

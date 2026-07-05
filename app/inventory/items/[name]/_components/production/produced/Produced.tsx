@@ -23,7 +23,7 @@ const Produced = () => {
           <CheckMaterialsButton />
         </div>
 
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
           <ActiveMbprBom />
           <ActiveMbpr />
@@ -32,7 +32,7 @@ const Produced = () => {
 
         <SectionTitle>Produced Batches</SectionTitle>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
           <BatchesChart />
           <BatchesStats />

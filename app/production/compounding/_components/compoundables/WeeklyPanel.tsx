@@ -63,7 +63,7 @@ const WeeklyPanel = ({ bprs }: { bprs: BatchProductionRecord[] }) => {
       <SectionTitle>        {t(translations, 'weekTitle')}
       </SectionTitle>
 
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {productionDaysOfWeek.map((day) => (
           <DayPanel
             key={day.day}
@@ -79,7 +79,7 @@ const WeeklyPanel = ({ bprs }: { bprs: BatchProductionRecord[] }) => {
       <SectionTitle>        {t(translations, 'nextWeekTitle')}
       </SectionTitle>
 
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {nextProductionDaysOfWeek.map((day) => (
           <DayPanel
             key={day.day}

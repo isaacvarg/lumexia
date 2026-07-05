@@ -180,7 +180,7 @@ const FileDetailsView = ({ details }: { details: FileDetails }) => {
             <div className="divider my-0" />
 
             {/* Properties */}
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm font-poppins">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm font-poppins">
               <dt className="text-base-content/50">Size</dt>
               <dd className="text-base-content font-medium">{formatBytes(file.size)}</dd>
 

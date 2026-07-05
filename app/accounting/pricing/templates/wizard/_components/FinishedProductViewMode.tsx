@@ -16,7 +16,7 @@ const FinishedProductViewMode = () => {
 
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <Panels.Root bg="white">
         <div className="flex justify-between items-center">
           <Text.SectionTitle size="small">Finished Product Details</Text.SectionTitle>

@@ -61,7 +61,7 @@ const VariantSamplesCard = ({
             No samples yet for this variant.
           </p>
         ) : (
-          <table className="table">
+          <div className="w-full overflow-x-auto"><table className="table">
             <thead>
               <tr>
                 <th className="w-24">Reference</th>
@@ -84,7 +84,7 @@ const VariantSamplesCard = ({
                 />
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 

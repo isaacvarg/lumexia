@@ -68,7 +68,7 @@ const StepDetailsPanel = () => {
 
 
     return (
-        <div className='flex flex-col gap-y-6 col-span-2'>
+        <div className='flex flex-col gap-y-6 col-span-1 sm:col-span-2'>
             <h1 className='font-poppins text-lg font-semibold'>
                 {selectedStep ? `Step ${selectedStep.sequence} - ${selectedStep.label} ` : 'Selected Step'}
             </h1>
@@ -78,7 +78,7 @@ const StepDetailsPanel = () => {
                 <div>
                     <Heading>Materials</Heading>
 
-                    <div className='grid grid-cols-2 gap-2'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                         <NewButton onClick={handleNewMaterial} label='Add Material' />
 
                         {selectedMbprBomItems.filter((bi) => bi.stepId === selectedStep.id && bi.recordStatusId !== recordStatuses.archived).map((material) => <MaterialCard key={material.id} material={material} />)}

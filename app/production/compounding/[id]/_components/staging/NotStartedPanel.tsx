@@ -14,7 +14,7 @@ const NotStartedPanel = ({ bom }: { bom: ExBprBom[] }) => {
       <Card.Title>Not Started</Card.Title>
       {notStartedBomItems.length === 0 && <Confetti />}
 
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {notStartedBomItems.map((item) => <ItemCard key={item.id} bomItem={item} />)}
 
       </div>

@@ -38,7 +38,7 @@ const Step2 = () => {
         <ActionButton onClick={() => showDialog('mbprNew')}>New</ActionButton>
       </Layout.Row>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {mbprs.map((mbpr: MasterBatchProductionRecord) => <MbprCard key={mbpr.id} mbpr={mbpr} />)}
       </div>

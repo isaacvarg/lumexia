@@ -54,7 +54,7 @@ const BatchSizeStep = ({ selectedMbprId, selectedItem }: { selectedMbprId: strin
   return (
     <div>
       <Dialog.Title>Select Batch Size</Dialog.Title>
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
         {sizes.map(s => <div key={s.id} className='flex flex-col bg-primary/45 rounded-lg p-4 font-poppins font-semibold text-primary-content' onClick={() => handleSizeSelection(s)}>
           <div className='flex  gap-y-2'><p>{s.quantity}</p><p>{s.uom.abbreviation}</p></div></div>)}
       </div>

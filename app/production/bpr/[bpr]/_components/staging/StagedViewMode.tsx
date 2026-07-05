@@ -43,7 +43,7 @@ const StagedViewMode = () => {
         <Card.Root>
           <Card.Title>{t(translations, 'stagedEntriesTitle')}</Card.Title>
 
-          <div className="grid grid-cols-2 gap-4 mt-4" >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4" >
 
 
             {stagings.map((staging) => (

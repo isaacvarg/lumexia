@@ -29,7 +29,7 @@ const Root = <T extends object>({ data, columns }: ColumnNavigatorProps<T>) => {
 
   return (
     <div>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-x-auto">
         {columnData.map((col, colIndex) => (
           <Column key={colIndex} column={col} colIndex={colIndex} />
         ))}

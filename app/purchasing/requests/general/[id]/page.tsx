@@ -22,7 +22,7 @@ const GeneralRequestPage = async ({ searchParams }: { searchParams: { id: string
         <PageWrapper pageTitle={'General Request'} >
 
             <div className="flex items-center px-40 w-full">
-                <div className="grid grid-cols-2 gap-8 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
 
                     <BasicsPanel title={request.title} user={request.user} createdAt={request.createdAt} />
                     <StatusPanel requestId={request.id} status={request.status} statuses={statuses} />

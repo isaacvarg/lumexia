@@ -30,7 +30,7 @@ const StepColors = ({ setColors, nextStep, step, colors, }: { colors: PaymentMet
 
             <div className="flex items-center justify-center flex-col">
 
-                <div className="grid grid-cols-2 gap-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
                     <Form.Color form={form} fieldName="bgColorA" label="Background A" />
                     <Form.Color form={form} fieldName="bgColorB" label="Background B" />
                     <Form.Color form={form} fieldName="circleColorA" label="Circle A" />

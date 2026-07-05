@@ -23,7 +23,7 @@ const Lots = () => {
     <>
       <CreateLotDialog />
 
-      <div className="col-span-3">
+      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
 
         <div className="flex flex-col gap-y-6">
           <div className="flex flex-row items-center justify-between">

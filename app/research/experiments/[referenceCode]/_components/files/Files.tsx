@@ -55,7 +55,7 @@ const Files = ({ entries }: Props) => {
         </Card.Root>
       ) : (
         <Card.Root>
-          <table className="table">
+          <div className="w-full overflow-x-auto"><table className="table">
             <thead>
               <tr>
                 <th>File</th>
@@ -100,7 +100,7 @@ const Files = ({ entries }: Props) => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </Card.Root>
       )}
     </div>

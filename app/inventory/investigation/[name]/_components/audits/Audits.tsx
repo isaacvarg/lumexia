@@ -92,7 +92,7 @@ const Audits = () => {
         </div>
 
         <div className="w-full">
-          <table className="min-w-full text-left text-lg font-light">
+          <div className="w-full overflow-x-auto"><table className="min-w-full text-left text-lg font-light">
             <thead className="border-b font-medium border-accent/35 text-base-content">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr className="px-2" key={headerGroup.id}>
@@ -128,10 +128,10 @@ const Audits = () => {
                 </>
               ))}
             </tbody>
-          </table>
+          </table></div>
 
           {combinedAudits.length > 0 && (
-            <div className="flex flex-row justify-between mt-6">
+            <div className="flex flex-col gap-4 mt-6 md:flex-row md:items-center md:justify-between">
               <div>
                 <span className="flex text-base-content font-inter font-semibold items-center gap-1">
                   Jump To Page:
@@ -149,7 +149,7 @@ const Audits = () => {
                   />
                 </span>
               </div>
-              <div className="flex gap-x-4 text-3xl">
+              <div className="flex items-center gap-x-2 md:gap-x-4 text-xl md:text-3xl">
                 <button className="py-1 px-2 rounded-lg text-2xl text-accent-content bg-accent/35 disabled:opacity-40 font-inter font-semibold hover:bg-accent" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
                   <FiChevronsLeft />
                 </button>

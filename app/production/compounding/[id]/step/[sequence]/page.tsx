@@ -75,18 +75,18 @@ const StepPage = async ({ searchParams }: StepPageProps) => {
       <div className='flex flex-col gap-y-4'>
         <h1 className='font-poppins font-bold text-base-content text-4xl flex justify-center'>Step &gt; {step.batchStep.label}</h1>
 
-        <div className='grid grid-cols-2 gap-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
 
           {!isActuallyReadOnly && <StepActionsPanel isVerificationRequired={isVerificationRequired} isStepCompleted={isStepCompleted} bprBatchStep={step} />}
 
-          {!isActuallyReadOnly && !isActuallyLocked ? (<div className='col-span-2'>
+          {!isActuallyReadOnly && !isActuallyLocked ? (<div className='col-span-1 sm:col-span-2'>
             <Card.Root>
               <Card.Title><span className='flex gap-x-2 items-center'><TbClipboardCheck /> <p>Actionables</p></span></Card.Title>
 
               {actionables.map((actionable) => <ActionableCard key={actionable.id} userRole={userRole[0]} actionable={actionable as any} />)}
 
             </Card.Root>
-          </div>) : <div className='col-span-2' />
+          </div>) : <div className='col-span-1 sm:col-span-2' />
           }
 
           <Card.Root>

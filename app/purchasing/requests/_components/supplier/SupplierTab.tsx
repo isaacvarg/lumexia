@@ -77,7 +77,7 @@ const SupplierTab = () => {
         setInput={setSearchInput}
         onQueryComplete={setSearchResults}
       />
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <button
           className={`btn-lg btn ${!selectedSupplierId ? 'btn-secondary' : 'btn-soft'} flex w-full  justify-between`}
           onClick={() => setSelectedSupplierId(null)}
@@ -92,7 +92,7 @@ const SupplierTab = () => {
       </div>
 
       {selectedSupplierId && Array.isArray(displayRequests) && displayRequests.length !== 0 && (
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayRequests.map(r => <RequestCard key={r.id} request={r} />)}
         </div>
       )}

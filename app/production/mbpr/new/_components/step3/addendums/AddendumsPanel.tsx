@@ -55,7 +55,7 @@ const AddendumsPanel = () => {
         <ActionButton color='neutral' onClick={() => showDialog('addNewAddendum')}><TbPlus /></ActionButton>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {stepAddendums.map((a) => <AddendumCard key={a.id} addendum={a} />)}
       </div>
 

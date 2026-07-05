@@ -18,8 +18,8 @@ const DiscreteConversionForm = async ({ searchParams }: { searchParams: { itemId
   const uomB = uomsMap.get(purchasedUomId)
 
   return (
-    <div className="grid grid-cols-3 gap-12">
-      <div className="flex col-span-2 flex-col gap-6 ">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+      <div className="flex col-span-1 sm:col-span-2 flex-col gap-6 ">
         <PageTitle>New Discrete Conversion</PageTitle>
 
         {(uomA && uomB && supplier) && (

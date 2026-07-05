@@ -55,7 +55,7 @@ const EquipmentPanel = () => {
         <ActionButton color='neutral' onClick={() => showDialog('addStepEquipment')}><TbPlus /></ActionButton>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {stepEquipment.map((se: StepEquipment) => <EquipmentCard key={se.id} equipment={se} />)}
       </div>

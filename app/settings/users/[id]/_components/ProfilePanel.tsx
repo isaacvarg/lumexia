@@ -47,7 +47,7 @@ const ProfilePanel = ({ user, allRoles }: { user: UserWithRolesDetail, allRoles:
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Row label="User ID" value={user.id} />
           <Row label="Linked accounts" value={providers.length ? providers.join(', ') : 'None'} />
           <Row label="Created" value={new Date(user.createdAt).toLocaleString()} />

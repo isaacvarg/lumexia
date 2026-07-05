@@ -28,7 +28,7 @@ const ResultsView = ({ itemParameters, results, examinationTypeId }: Props) => {
   const inputDefs = selected?.parameter.inputDefinitions ?? [];
 
   return (
-    <div className="grid grid-cols-3 gap-y-6 gap-x-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
       <div className="flex flex-col gap-4">
         <SectionTitle>Parameters</SectionTitle>
 
@@ -52,7 +52,7 @@ const ResultsView = ({ itemParameters, results, examinationTypeId }: Props) => {
         </Card.Root>
       </div>
 
-      <div className="flex flex-col gap-6 col-span-2">
+      <div className="flex flex-col gap-6 col-span-1 sm:col-span-2">
         <SectionTitle>
           {selected?.parameter.name || "Please select a parameter"}
         </SectionTitle>

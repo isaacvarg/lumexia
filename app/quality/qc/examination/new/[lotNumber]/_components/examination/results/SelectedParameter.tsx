@@ -30,7 +30,7 @@ const SelectedParameter = () => {
   const inputDefs = selectedItemParameter?.parameter.inputDefinitions ?? []
 
   return (
-    <div className="flex flex-col gap-6 col-span-2">
+    <div className="flex flex-col gap-6 col-span-1 sm:col-span-2">
       <SectionTitle>{selectedItemParameter?.parameter.name || 'Please select a parameter'}</SectionTitle>
 
       <div className="flex flex-col gap-6">

@@ -120,7 +120,7 @@ const View = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {shownFiles.map(file => {
             const extType = file.file.mimeType === 'application/pdf' ? 'pdf'
               : file.file.mimeType.startsWith('image/') ? 'image'

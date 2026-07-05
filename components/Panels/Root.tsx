@@ -6,15 +6,15 @@ const classes = {
     elevated: 'bg-base-300',
 
   },
-  base: 'flex flex-col p-6 rounded-lg',
+  base: 'flex flex-col p-4 md:p-6 rounded-lg',
   gap: {
     default: 'gap-y-4',
     noGap: ''
   },
   span: {
     1: 'col-span-1',
-    2: 'col-span-2',
-    3: 'col-span-3',
+    2: 'col-span-1 sm:col-span-2',
+    3: 'col-span-1 sm:col-span-2 lg:col-span-3',
   },
   border: {
     none: '',

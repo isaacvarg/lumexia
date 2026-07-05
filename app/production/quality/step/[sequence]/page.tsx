@@ -51,12 +51,12 @@ const StepQualityPage = async ({ searchParams }: Props) => {
 
       <QualityStepActionsPanel actionables={actionables as any} bprBatchStep={step} />
 
-      <div className='grid grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 gap-6'>
 
-        {/*<div className='col-span-2'>
+        {/*<div className='col-span-1 sm:col-span-2'>
                     <Card.Root>
                         <Card.Title><span className='flex gap-x-2 items-center'><TbClipboardCheck /> <p>Quality Actionables</p></span></Card.Title>
-                        <div className='grid grid-cols-3'>
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'>
                             {qualityActionables.map((actionable) => <ActionableCard key={actionable.id} userRole={userRole[0]} actionable={actionable as any} />)}
                         </div>
 
@@ -64,10 +64,10 @@ const StepQualityPage = async ({ searchParams }: Props) => {
                 </div>
                 */}
 
-        <div className='col-span-2'>
+        <div className='col-span-1 sm:col-span-2'>
           <Card.Root>
             <Card.Title><span className='flex gap-x-2 items-center'><TbClipboardCheck /> <p>Completed Actionables</p></span></Card.Title>
-            <div className='grid grid-cols-3'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'>
               {completedActionables.map((actionable) => <CompletedActionableCard key={actionable.id} actionable={actionable as any} />)}
             </div>
 

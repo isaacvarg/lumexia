@@ -62,7 +62,7 @@ const AccountingFiles = ({ files, poId, fileTypes, span = 2 }: { files: Accounti
       <div className="flex flex-col gap-2">
         <Card.Root>
           <SectionTitle size="small">Files</SectionTitle>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 
             {files.map(file => {
               return (

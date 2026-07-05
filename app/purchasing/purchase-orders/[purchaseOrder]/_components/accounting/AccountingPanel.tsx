@@ -37,7 +37,7 @@ const AccountingPanel = () => {
         <div className="pt-4">
           <Tabs.ContentContainer>
             <Tabs.Content value="details">
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AccountingDetails po={accounting} title="Process" />
                 <AccountingStatus po={accounting} statuses={options.accountingStatuses} />
                 <PaymentMethodPanel poId={accounting.id} paymentMethod={accounting.poAccountingDetail?.paymentMethod} allMethods={options.paymentMethods} accountingDetailId={accounting.poAccountingDetail?.id} />

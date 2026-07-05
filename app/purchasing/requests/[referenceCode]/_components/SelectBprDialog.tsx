@@ -29,7 +29,7 @@ const SelectBprDialog = ({ requestId, linkableBprs }: { requestId: string, linka
                 <p> These are batches on the Production docket that contain this material. Select a BPR to link to this Purchasing Request</p>
 
 
-                <div className="grid grid-cols-4 gap-4 overflow-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto">
                     {linkableBprs.map((bpr) => {
                         return (
                             <div

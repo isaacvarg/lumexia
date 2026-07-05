@@ -73,7 +73,7 @@ const NewPurchaseOrderDialog = ({ suppliers, requestId, itemId, linkablePOs }: N
       <div className="flex flex-col gap-y-8 h-[400px]">
         <div className="flex flex-col gap-y-4">
           <span className="text-xl font-poppins text-base-content">Suggested</span>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {uniqueSuggestedSuppliers.map((supplier) => {
               return (
                 <div

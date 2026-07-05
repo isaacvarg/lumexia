@@ -24,7 +24,7 @@ const SelectPoDialog = ({ requestId, linkablePos }: { requestId: string, linkabl
         <p> These are purchase orders that contain this material. Select a PO to link to this Purchasing Request</p>
 
 
-        <div className="grid grid-cols-4 gap-4 overflow-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-auto">
           {linkablePos.map((po) => {
             return (
               <div

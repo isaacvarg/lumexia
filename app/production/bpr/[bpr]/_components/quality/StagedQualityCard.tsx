@@ -101,7 +101,7 @@ const StagedQualityCard = ({ staged }: { staged: BprStagingItem }) => {
 
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <button onClick={handleApprove} className="btn btn-success min-h-28">
               <TbCheck className="size-8 text-success-content" />
 

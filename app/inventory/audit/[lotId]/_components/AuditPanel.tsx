@@ -24,7 +24,7 @@ const AuditPanel = ({ allLots }: AuditPanelProps) => {
 
         <span className="text-xl font-poppins font-bold">Total: {toFracitonalDigits.weight(total)} lbs</span>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isShowAll ? (
           allLots.map((lot: LotWithData) => (
             <LotCard key={lot.id} lot={lot} />

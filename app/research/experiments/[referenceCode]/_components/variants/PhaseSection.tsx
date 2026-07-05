@@ -135,7 +135,7 @@ const PhaseSection = ({
           No materials in this phase.
         </p>
       ) : (
-        <table className="table">
+        <div className="w-full overflow-x-auto"><table className="table">
           <thead>
             <tr>
               <th className="w-8"></th>
@@ -158,7 +158,7 @@ const PhaseSection = ({
               ))}
             </SortableContext>
           </tbody>
-        </table>
+        </table></div>
       )}
 
       <div>

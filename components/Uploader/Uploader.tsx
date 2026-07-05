@@ -8,7 +8,7 @@ import { TbCheck, TbPhoto, TbX } from 'react-icons/tb';
 const classes = {
   span: {
     default: '',
-    2: 'col-span-2',
+    2: 'col-span-1 sm:col-span-2',
   }
 }
 

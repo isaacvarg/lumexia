@@ -44,11 +44,11 @@ const CommandDialog = () => {
 
       {isOpen && (
         <FloatingOverlay
-          className='z-50 flex items-center justify-center backdrop-blur-sm'
+          className='z-50 flex items-center justify-center p-4 backdrop-blur-sm'
         >
           <FloatingFocusManager context={context}>
             <div
-              className='bg-white p-6 rounded-lg flex flex-col min-w-[600px] min-h-[400px] shadow-xl border '
+              className='bg-white p-4 md:p-6 rounded-lg flex flex-col w-full max-w-[600px] sm:min-w-[600px] min-h-[400px] shadow-xl border '
               ref={refs.setFloating}
               aria-labelledby={labelId}
               aria-describedby={descriptionId}

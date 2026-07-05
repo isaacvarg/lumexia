@@ -32,7 +32,7 @@ const Receivables = () => {
 
       {isComplete && <p className="font-poppins text-lg font-medium text-base-content">All done 👍🏽👍🏽🫰🏽🫰🏽</p>}
 
-      {!isComplete && <div className="grid grid-cols-1 gap-1 max-h-[250px] overflow-auto">
+      {!isComplete && <div className="grid grid-cols-1 gap-1.5 max-h-[250px] overflow-y-auto">
         {pos.map((po) => {
           return (
             <ReceivableOption key={po.id} po={po} />

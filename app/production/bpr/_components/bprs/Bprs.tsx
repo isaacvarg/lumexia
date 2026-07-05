@@ -63,7 +63,7 @@ const WeekSection = ({
     {mode === 'timeline' ? (
       <TimelineWeek days={days} bprs={bprs} />
     ) : (
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         {days.map(day => {
           const entries = bprs
             .filter(bpr => coversDate(bpr, day.date))

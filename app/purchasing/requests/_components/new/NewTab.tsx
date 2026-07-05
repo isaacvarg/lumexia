@@ -11,7 +11,7 @@ const NewTab = () => {
   const newRequests = requests.filter(r => r.statusId === requestStatuses.requested);
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
       <div className="flex flex-col gap-4">
 
@@ -23,7 +23,7 @@ const NewTab = () => {
               No new in-system requests
             </div>
           ) : (
-            <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
               {newRequests.map((request) => <RequestCard key={request.id} request={request} />)}
             </div>
           )}
@@ -42,7 +42,7 @@ const NewTab = () => {
               No general requests
             </div>
           ) : (
-            <div className='grid grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto'>
               {generalRequests.map((request) => <GeneralRequestCard key={request.id} request={request} />)}
             </div>
           )}

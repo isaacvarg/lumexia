@@ -67,7 +67,7 @@ const SampleMeasurementBody = ({ sample }: Props) => {
     parameters.find((p) => p.id === selectedParameterId) ?? parameters[0];
 
   return (
-    <div className="grid grid-cols-3 gap-6 items-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
       <Card.Root>
         <div className="flex flex-col gap-1">
           {parameters.map((p) => {

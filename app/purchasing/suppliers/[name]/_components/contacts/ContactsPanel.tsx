@@ -37,7 +37,7 @@ const ContactsPanel = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Contact list - 1/3 */}
         <div className="col-span-1">
           <Card.Root>
@@ -65,7 +65,7 @@ const ContactsPanel = () => {
         </div>
 
         {/* Contact detail - 2/3 */}
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           {activeContact ? (
             <Card.Root>
               <EditContactForm contact={activeContact} />

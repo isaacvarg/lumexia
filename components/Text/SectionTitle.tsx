@@ -1,8 +1,8 @@
 import React from 'react';
 
 const sizes = {
-  default: "text-3xl",
-  normal: 'text-xl uppercase',
+  default: "text-2xl md:text-3xl",
+  normal: 'text-lg md:text-xl uppercase',
   small: "text-base uppercase"
 };
 

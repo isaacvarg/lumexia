@@ -77,7 +77,7 @@ const Options = () => {
   return (
     <div className="">
       <Card.Root>
-        <div className="grid col-span-4 ">
+        <div className="grid col-span-1 sm:col-span-2 lg:col-span-4 ">
           <div className="flex gap-4 items-center justify-center">
             <button className="btn btn-primary min-w-60 btn-lg min-h-30 btn-outline" onClick={() => handleDuplicate()}>
               Duplicate

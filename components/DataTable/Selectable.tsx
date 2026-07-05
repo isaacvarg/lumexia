@@ -64,7 +64,7 @@ const Selectable = <TData extends object>({ data, columns, onSelectionChange, sh
 
   return (
     <div className={`w-full ${overflowVisible ? 'overflow-visible' : 'overflow-x-auto'}`}>
-      <table className="table min-w-full text-left text-lg font-light">
+      <table className="table min-w-full text-left text-base md:text-lg font-light">
         <thead
           className="font-semibold text-xl border-accent/35 text-base-content"
         >

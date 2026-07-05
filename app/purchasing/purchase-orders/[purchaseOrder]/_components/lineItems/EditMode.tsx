@@ -32,7 +32,7 @@ const LineItemRow = ({ form, index, options, itemName }: {
     <div className="flex flex-col gap-1 w-full">
       <label className="font-medium text-xl text-base-content">{itemName}</label>
 
-      <div className='grid grid-cols-5 w-full gap-2'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 w-full gap-2'>
         <form.AppField
           name={`items[${index}].quantity`} >
           {(subField: any) => (
