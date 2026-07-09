@@ -1,16 +1,25 @@
 "use server"
 
-import { s3 } from "@/lib/s3";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { signFileToken } from "@/lib/fileUrlSigning";
 
-// gets presigned url
+// Validity window for a file link, in seconds. Kept at 1 hour to match the
+// previous presigned-URL behaviour.
+const URL_TTL_SECONDS = 3600;
+
+// Returns a same-origin, time-limited URL for an object in the store. The bytes
+// are served by the proxy route at app/api/files/route.ts (which streams from
+// RustFS server-side), so the browser never needs to reach the object store
+// directly — this is what makes files work behind the Cloudflare tunnel.
 export const getFileUrl = async (bucketName: string, objectName: string) => {
-    const url = await getSignedUrl(
-        s3,
-        new GetObjectCommand({ Bucket: bucketName, Key: objectName }),
-        { expiresIn: 3600 }
-    );
+    const exp = Math.floor(Date.now() / 1000) + URL_TTL_SECONDS;
+    const sig = signFileToken(bucketName, objectName, exp);
 
-    return url
+    const params = new URLSearchParams({
+        b: bucketName,
+        k: objectName,
+        e: String(exp),
+        s: sig,
+    });
+
+    return `/api/files?${params.toString()}`;
 }
