@@ -1,0 +1,10 @@
+docs
+node_modules
+.next
+.git
+
+# NOTE: unlike the standard .dockerignore, this legacy build DELIBERATELY includes
+# configs/staticRecords/* in the build context. update-legacy.sh generates those
+# files from a copy of the live instance's database (real, per-instance row IDs)
+# and this Dockerfile.legacy skips the deterministic scaffold step, so the
+# generated configs must reach the image. See scripts/update/update-legacy.sh.

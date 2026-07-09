@@ -1,6 +1,6 @@
 {
   "name": "lumexia",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -23,7 +23,8 @@
     "db:dev:start": "./scripts/db/dev-start.sh",
     "db:demo:start": "./scripts/db/demo-start.sh",
     "import-staging": "tsx ./utils/importer/modules/staging/main.ts",
-    "docker:update": "./scripts/update/update.sh"
+    "docker:update": "./scripts/update/update.sh",
+    "docker:update:legacy": "./scripts/update/update-legacy.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed/seed.ts"

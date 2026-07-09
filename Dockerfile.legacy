@@ -1,0 +1,35 @@
+FROM node:24
+
+WORKDIR /app
+
+# Install Ghostscript and GraphicsMagick
+RUN apt-get update && apt-get install -y \
+    ghostscript \
+    graphicsmagick \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package*.json ./
+
+# Legacy build: unlike the standard Dockerfile, the static records are NOT
+# scaffolded here. This build context INCLUDES pre-generated configs/staticRecords/*
+# (see Dockerfile.legacy.dockerignore) that were produced by `npm run
+# generate-static-records` against a copy of the target instance's own database.
+# The baked-in IDs therefore match that DB's existing (random) reference-row IDs,
+# which is required for instances seeded before the switch to deterministic IDs.
+# See scripts/update/update-legacy.sh.
+COPY . .
+
+RUN npm install
+
+RUN npm run build
+
+# Ensure the boot entrypoint is executable regardless of the host's file mode.
+RUN chmod +x scripts/docker/entrypoint.sh
+
+EXPOSE 3000
+
+# Boot: apply migrations, seed an empty DB if needed, then start. The image
+# already carries configs matching the live DB, so the container never builds at
+# runtime. See scripts/docker/entrypoint.sh.
+ENTRYPOINT ["scripts/docker/entrypoint.sh"]
