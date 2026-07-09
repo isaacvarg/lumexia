@@ -35,7 +35,7 @@ const FileButton2 = ({ file, onDeleteClick }: { file: FileWithThumbnail, onDelet
         <div
           className="bg-primary/20 hover:bg-primary/40 hover:cursor-pointer shadow-lg flex p-6 rounded-lg flex-row justify-items-start items-center gap-x-6 h-full"
         >
-          <Image className="w-24 h-32 rounded-lg object-cover" src={file.thumbnailUrl || ''} alt={file.file.name} width={400} height={600} />
+          <Image className="w-24 h-32 rounded-lg object-cover" src={file.thumbnailUrl || ''} alt={file.file.name} width={400} height={600} unoptimized />
 
           <div className="flex flex-col gap-2 h-full w-full justify-start">
 
@@ -61,7 +61,7 @@ const FileButton2 = ({ file, onDeleteClick }: { file: FileWithThumbnail, onDelet
                 </div>
 
 
-                {(uploadedByName && uploadedByImage) && <div className="tooltip" data-tip={uploadedByName} ><Image src={uploadedByImage} className="rounded-full h-12 w-12 " alt={uploadedByName} width={48} height={48} /></div>}
+                {(uploadedByName && uploadedByImage) && <div className="tooltip" data-tip={uploadedByName} ><Image src={uploadedByImage} className="rounded-full h-12 w-12 " alt={uploadedByName} width={48} height={48} unoptimized /></div>}
 
               </div>
 

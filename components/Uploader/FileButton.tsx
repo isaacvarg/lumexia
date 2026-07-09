@@ -61,17 +61,17 @@ const FileButton = ({ label, url, mimeType, size = 'default', color = 'default',
                     <div className={`${classes.shape[shape]} ${classes.size[size]} ${classes.color[color]}`} >
                         <div className={`${shape === 'default' ? classes.buttonSpacing.default : classes.buttonSpacing.vertical}`}>
 
-                            {isPdf && thumbnailUrl && <Image className="w-16 h-16 rounded-lg object-cover" src={thumbnailUrl} alt={label} width={64} height={64} />}
+                            {isPdf && thumbnailUrl && <Image className="w-16 h-16 rounded-lg object-cover" src={thumbnailUrl} alt={label} width={64} height={64} unoptimized />}
                             {isPdf && !thumbnailUrl && (<div className="flex items-center justify-center rounded-full w-16 h-16 bg-neutral-400 p-6">
                                 <span className="text-5xl text-white"><TbFileTypePdf /></span>
                             </div>)}
-                            {!isPdf && <Image className="w-16 h-16 rounded-full object-cover" src={imageUrl} alt={label} width={64} height={64} />}
+                            {!isPdf && <Image className="w-16 h-16 rounded-full object-cover" src={imageUrl} alt={label} width={64} height={64} unoptimized />}
                             <p className={`${classes.textBase}`}>{label}</p>
 
 
                             <div className="flex gap-x-2 items-center justify-center">
                                 {fileTag && <Tag tooltip={fileTag?.tooltip || fileTag.label} bgColor={fileTag.bgColor} textColor={fileTag.textColor} label={fileTag.label} />}
-                                {(uploadedByName && uploadedByImage) && <div className="tooltip" data-tip={uploadedByName} ><Image src={uploadedByImage} className="rounded-full h-12 w-12 " alt={uploadedByName} width={48} height={48} /></div>}
+                                {(uploadedByName && uploadedByImage) && <div className="tooltip" data-tip={uploadedByName} ><Image src={uploadedByImage} className="rounded-full h-12 w-12 " alt={uploadedByName} width={48} height={48} unoptimized /></div>}
                             </div>
                         </div>
 

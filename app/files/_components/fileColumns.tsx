@@ -54,6 +54,7 @@ export const getFileColumns = () => [
             width={32}
             height={32}
             className="h-8 w-8 rounded object-cover shrink-0"
+            unoptimized
           />
         ) : (
           <div className="h-8 w-8 rounded bg-base-300 flex items-center justify-center shrink-0">
@@ -129,7 +130,7 @@ export const getFileColumns = () => [
       return (
         <div className="flex items-center gap-2">
           {image && (
-            <Image src={image} alt={name} width={24} height={24} className="rounded-full h-6 w-6" />
+            <Image src={image} alt={name} width={24} height={24} className="rounded-full h-6 w-6" unoptimized />
           )}
           <span>{name}</span>
         </div>

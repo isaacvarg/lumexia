@@ -31,6 +31,7 @@ const FileCard = ({ entry }: { entry: UnifiedFileEntry }) => {
             alt={entry.name}
             width={128}
             height={160}
+            unoptimized
           />
         ) : (
           <div className="h-full w-full bg-base-300 flex items-center justify-center">
@@ -82,6 +83,7 @@ const FileCard = ({ entry }: { entry: UnifiedFileEntry }) => {
                 alt={uploaderName}
                 width={28}
                 height={28}
+                unoptimized
               />
             </div>
           </div>

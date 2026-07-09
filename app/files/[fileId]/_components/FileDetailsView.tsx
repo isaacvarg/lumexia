@@ -92,6 +92,7 @@ const FileDetailsView = ({ details }: { details: FileDetails }) => {
               width={1200}
               height={800}
               className="max-h-[80vh] w-auto object-contain rounded-lg shadow-sm"
+              unoptimized
             />
           </div>
         )}
@@ -215,6 +216,7 @@ const FileDetailsView = ({ details }: { details: FileDetails }) => {
                         width={20}
                         height={20}
                         className="rounded-full"
+                        unoptimized
                       />
                     )}
                     <span className="text-base-content font-medium">{file.uploadedBy.name}</span>
