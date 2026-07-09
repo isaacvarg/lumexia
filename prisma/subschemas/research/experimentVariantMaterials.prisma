@@ -12,6 +12,5 @@ model ExperimentVariantMaterial {
     item              Item                              @relation(fields: [itemId], references: [id])
     preparationSteps  ExperimentSamplePreparationStep[]
 
-    @@unique([experimentVariantId, itemId])
     @@map("experiment_variant_materials")
 }

@@ -4,7 +4,6 @@ import Card from "@/components/Card";
 import useDialog from "@/hooks/useDialog";
 import { ExperimentVariantWithMaterials } from "@/actions/research/variants/getAllByExperiment";
 import { Item } from "@/actions/inventory/getAllItems";
-import { MbprByItem } from "@/actions/production/getMbprsByItem";
 import VariantCard from "./VariantCard";
 import AddVariantDialog from "./AddVariantDialog";
 import AddAnalogDialog from "./AddAnalogDialog";
@@ -13,12 +12,10 @@ type Props = {
   experimentId: string;
   variants: ExperimentVariantWithMaterials[];
   items: Item[];
-  mbprs: MbprByItem[];
 };
 
-const Variants = ({ experimentId, variants, items, mbprs }: Props) => {
+const Variants = ({ experimentId, variants, items }: Props) => {
   const { showDialog } = useDialog();
-  const showAnalog = mbprs.length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,15 +24,13 @@ const Variants = ({ experimentId, variants, items, mbprs }: Props) => {
           Variants
         </h2>
         <div className="flex gap-2">
-          {showAnalog && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => showDialog("addAnalog")}
-            >
-              <TbCopy /> Add Analog
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => showDialog("addAnalog")}
+          >
+            <TbCopy /> Add Analog
+          </button>
           <button
             type="button"
             className="btn btn-primary"
@@ -61,7 +56,7 @@ const Variants = ({ experimentId, variants, items, mbprs }: Props) => {
       )}
 
       <AddVariantDialog experimentId={experimentId} />
-      {showAnalog && <AddAnalogDialog experimentId={experimentId} mbprs={mbprs} />}
+      <AddAnalogDialog experimentId={experimentId} items={items} />
     </div>
   );
 };

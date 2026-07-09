@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Thu Jul 02 2026 09:38:08 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Thu Jul 09 2026 08:22:42 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -3089,7 +3089,6 @@ model ExperimentVariantMaterial {
   item              Item                              @relation(fields: [itemId], references: [id])
   preparationSteps  ExperimentSamplePreparationStep[]
 
-  @@unique([experimentVariantId, itemId])
   @@map("experiment_variant_materials")
 }
 

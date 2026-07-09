@@ -57,7 +57,6 @@ export const createExperimentVariantAnalog = async ({
           sequence: i,
           phase: bom.step.phase || null,
         })),
-        skipDuplicates: true,
       });
     }
 

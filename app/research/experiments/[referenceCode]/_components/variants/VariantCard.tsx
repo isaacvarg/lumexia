@@ -42,8 +42,18 @@ const VariantCard = ({ variant, items }: Props) => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [localMaterials, setLocalMaterials] = useState<Material[]>(variant.materials);
+  // User-created phases that don't have any materials yet. A phase is only
+  // stored on materials, so these are ephemeral until a material is added.
+  const [extraPhases, setExtraPhases] = useState<string[]>([]);
   useEffect(() => {
     setLocalMaterials(variant.materials);
+    // Drop any pending empty phase that now exists as a real material phase.
+    const materialPhases = new Set(
+      variant.materials
+        .map((m) => (m.phase && m.phase.trim() ? m.phase : null))
+        .filter((p): p is string => p !== null),
+    );
+    setExtraPhases((prev) => prev.filter((p) => !materialPhases.has(p)));
   }, [variant.materials]);
 
   const [isRenaming, setIsRenaming] = useState(false);
@@ -95,10 +105,19 @@ const VariantCard = ({ variant, items }: Props) => {
     }
   };
 
-  const { groups, orderedKeys } = useMemo(
-    () => groupVariantMaterialsByPhase(localMaterials),
-    [localMaterials],
-  );
+  const { groups, orderedKeys } = useMemo(() => {
+    const base = groupVariantMaterialsByPhase(localMaterials);
+    const phased = base.orderedKeys.filter((k): k is string => k !== null);
+    const hasUnphased = base.orderedKeys.includes(null);
+    for (const name of extraPhases) {
+      if (!base.groups.has(name)) {
+        base.groups.set(name, []);
+        phased.push(name);
+      }
+    }
+    const merged: (string | null)[] = hasUnphased ? [...phased, null] : phased;
+    return { groups: base.groups, orderedKeys: merged };
+  }, [localMaterials, extraPhases]);
 
   const hasAnyPhases = orderedKeys.some((k) => k !== null);
   const availablePhases = orderedKeys.filter((k): k is string => k !== null);
@@ -147,13 +166,13 @@ const VariantCard = ({ variant, items }: Props) => {
     setTargetPhase(phase);
   };
 
-  const existingItemIds = localMaterials.map((m) => m.itemId);
-
-  const handleNewPhase = async () => {
+  const handleNewPhase = () => {
     const name = window.prompt("New phase name");
-    if (!name?.trim()) return;
-    setTargetPhase(name.trim());
-    showDialog(`addMaterial-${variant.id}`);
+    const trimmed = name?.trim();
+    if (!trimmed) return;
+    setExtraPhases((prev) =>
+      prev.includes(trimmed) || groups.has(trimmed) ? prev : [...prev, trimmed],
+    );
   };
 
   return (
@@ -218,7 +237,7 @@ const VariantCard = ({ variant, items }: Props) => {
       </div>
 
       <div className="mt-4 flex flex-col gap-6">
-        {localMaterials.length === 0 ? (
+        {localMaterials.length === 0 && extraPhases.length === 0 ? (
           <p className="italic text-base-content/50 font-poppins">No materials yet.</p>
         ) : (
           <DndContext
@@ -270,7 +289,6 @@ const VariantCard = ({ variant, items }: Props) => {
       <AddMaterialDialog
         variantId={variant.id}
         items={items}
-        existingItemIds={existingItemIds}
         phase={targetPhase}
       />
 

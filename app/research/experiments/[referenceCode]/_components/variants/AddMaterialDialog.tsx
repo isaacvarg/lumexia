@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TbArrowLeft } from "react-icons/tb";
 import Dialog from "@/components/Dialog";
@@ -12,11 +12,10 @@ import { percentToFraction } from "@/utils/general/concentration";
 type Props = {
   variantId: string;
   items: Item[];
-  existingItemIds: string[];
   phase?: string | null;
 };
 
-const AddMaterialDialog = ({ variantId, items, existingItemIds, phase }: Props) => {
+const AddMaterialDialog = ({ variantId, items, phase }: Props) => {
   const router = useRouter();
   const { resetDialogContext } = useDialog();
 
@@ -25,11 +24,6 @@ const AddMaterialDialog = ({ variantId, items, existingItemIds, phase }: Props) 
   const [selected, setSelected] = useState<Item | null>(null);
   const [pct, setPct] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const available = useMemo(
-    () => items.filter((it) => !existingItemIds.includes(it.id)),
-    [items, existingItemIds],
-  );
 
   const handleClose = () => {
     setInput("");
@@ -66,7 +60,7 @@ const AddMaterialDialog = ({ variantId, items, existingItemIds, phase }: Props) 
       {!selected ? (
         <>
           <SearcherUnmanaged
-            data={available}
+            data={items}
             keys={["name", "flatAliases", "referenceCode"]}
             input={input}
             setInput={setInput}

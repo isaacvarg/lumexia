@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { researchActions } from "@/actions/research";
 import { inventoryActions } from "@/actions/inventory";
-import { getMbprsByItem } from "@/actions/production/getMbprsByItem";
-import { procurementTypes } from "@/configs/staticRecords/procurementTypes";
 import Header from "./_components/Header";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
@@ -48,11 +46,6 @@ const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
 
   if (!experiment) return notFound();
 
-  const mbprs =
-    experiment.primarySubject.procurementTypeId === procurementTypes.produced
-      ? await getMbprsByItem(experiment.primarySubject.id)
-      : [];
-
   return (
     <div className="p-6 flex flex-col gap-6">
       <Header
@@ -69,7 +62,6 @@ const ExperimentDetailPage = async ({ searchParams }: PageProps) => {
         statuses={statuses}
         variants={variants}
         items={items}
-        mbprs={mbprs}
         samples={samples}
         uoms={uoms}
         noteTypes={noteTypes}

@@ -7,7 +7,6 @@ import { ExperimentGroup } from "@/actions/research/getAllExperimentGroups";
 import { ExperimentStatus } from "@/actions/research/getAllExperimentStatuses";
 import { ExperimentVariantWithMaterials } from "@/actions/research/variants/getAllByExperiment";
 import { Item } from "@/actions/inventory/getAllItems";
-import { MbprByItem } from "@/actions/production/getMbprsByItem";
 import { ExperimentSampleRow } from "@/actions/research/samples/getAllByExperiment";
 import { Uom } from "@/actions/inventory/getAllUom";
 import { ExperimentNoteTypeRow } from "@/actions/research/experimentNoteTypes/getAll";
@@ -28,7 +27,6 @@ type TabsContainerProps = {
   statuses: ExperimentStatus[];
   variants: ExperimentVariantWithMaterials[];
   items: Item[];
-  mbprs: MbprByItem[];
   samples: ExperimentSampleRow[];
   uoms: Uom[];
   noteTypes: ExperimentNoteTypeRow[];
@@ -45,7 +43,6 @@ const TabsContainer = ({
   statuses,
   variants,
   items,
-  mbprs,
   samples,
   uoms,
   noteTypes,
@@ -89,7 +86,6 @@ const TabsContainer = ({
             experimentId={experiment.id}
             variants={variants}
             items={items}
-            mbprs={mbprs}
           />
         )}
         {currentTab === "samples" && (
