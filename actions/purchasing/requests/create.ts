@@ -16,7 +16,7 @@ export const createRequest = async (material: BprBomItemInventory, priorityId: s
 
   const requestingUserId = await getUserId()
   const allocatedBprIds = material.allocated.map((bprBom) => bprBom.bpr.id);
-  const pendingPoIds = material.purchases.filter((po) => po.purchaseOrderStatusId !== purchaseOrderStatuses.received).map((po) => po.id)
+  const pendingPoIds = material.purchases.filter((po) => po.purchaseOrderStatusId !== purchaseOrderStatuses.received && po.purchaseOrderStatusId !== purchaseOrderStatuses.cancelled).map((po) => po.id)
   const week = DateTime.now().toFormat("WW")
 
   const purchasingRequest = await prisma.purchasingRequest.create({
@@ -71,7 +71,7 @@ export const createPurchasingRequestForRule = async (
 
   const allocatedBprIds = inventory.allocated.map((a: any) => a.bpr.id)
   const pendingPoIds = inventory.purchases
-    .filter((po) => po.purchaseOrderStatusId !== purchaseOrderStatuses.received)
+    .filter((po) => po.purchaseOrderStatusId !== purchaseOrderStatuses.received && po.purchaseOrderStatusId !== purchaseOrderStatuses.cancelled)
     .map((po) => po.id)
   const week = DateTime.now().toFormat("WW")
 

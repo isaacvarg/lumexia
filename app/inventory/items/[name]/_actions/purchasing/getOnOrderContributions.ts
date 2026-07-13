@@ -8,7 +8,7 @@ export const getOnOrderContributions = async (itemId: string) => {
     where: {
       itemId,
       purchaseOrderStatusId: {
-        notIn: [purchaseOrderStatuses.received],
+        notIn: [purchaseOrderStatuses.received, purchaseOrderStatuses.cancelled],
       },
     },
     include: {

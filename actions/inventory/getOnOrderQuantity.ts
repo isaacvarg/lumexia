@@ -8,7 +8,7 @@ export const getOnOrderQuantity = async (itemId: string): Promise<number> => {
     where: {
       itemId,
       purchaseOrderStatusId: {
-        notIn: [purchaseOrderStatuses.received],
+        notIn: [purchaseOrderStatuses.received, purchaseOrderStatuses.cancelled],
       },
     },
     select: {

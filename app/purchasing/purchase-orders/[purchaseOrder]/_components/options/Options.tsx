@@ -7,11 +7,11 @@ import Alert from "@/components/Alert"
 import Card from "@/components/Card"
 import { poAccountingStatuses } from "@/configs/staticRecords/poAccountingStatuses"
 import { purchaseOrderStatuses } from "@/configs/staticRecords/purchaseOrderStatuses"
-import { recordStatuses } from "@/configs/staticRecords/recordStatuses"
 import useDialog from "@/hooks/useDialog"
 import { usePurchasingActions, usePurchasingSelection } from "@/store/purchasingSlice"
 import { useTabActions } from "@/store/tabSlice"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
+import { cancelPurchaseOrder } from "../../../_functions/cancelPurchaseOrder"
 import { useRouter } from "next/navigation"
 
 const Options = () => {
@@ -61,14 +61,11 @@ const Options = () => {
     setActiveTab('purchasing', 'items')
   }
 
-  const handleArchive = async () => {
+  const handleCancel = async () => {
     if (!purchaseOrder) return;
 
-    await purchaseOrderActions.update({ id: purchaseOrder.id }, {
-      recordStatusId: recordStatuses.archived,
-    });
+    await cancelPurchaseOrder(purchaseOrder.id)
 
-    await createActivityLog('Archived PO', 'purchaseOrder', purchaseOrder.id, { context: 'The PO was archived.' })
     router.push("/purchasing/purchase-orders")
     router.refresh();
     resetDialogContext()
@@ -83,8 +80,8 @@ const Options = () => {
               Duplicate
             </button>
 
-            <button className="btn btn-lg min-h-30 min-w-60 btn-error btn-outline" onClick={() => showDialog('archivePurchaseOrder')}>
-              Archive
+            <button className="btn btn-lg min-h-30 min-w-60 btn-error btn-outline" onClick={() => showDialog('cancelPurchaseOrder')}>
+              Cancel
             </button>
 
           </div>
@@ -93,15 +90,15 @@ const Options = () => {
 
       </Card.Root>
 
-      <Alert.Root identifier="archivePurchaseOrder">
+      <Alert.Root identifier="cancelPurchaseOrder">
         <Alert.Content
-          title="Archive Purchase Order"
-          action={handleArchive}
-          actionLabel="Archive"
+          title="Cancel Purchase Order"
+          action={handleCancel}
+          actionLabel="Cancel Purchase Order"
           actionColor="error"
           cancelAction={resetDialogContext}
         >
-          Are you sure you want to archive this purchase order? This action cannot be undone.
+          Are you sure you want to cancel this purchase order? Its open line items will be cancelled and removed from on-order quantities. This action cannot be undone.
         </Alert.Content>
       </Alert.Root>
 

@@ -32,6 +32,12 @@ export const data = {
       "sequence": 4,
       "bgColor": "#D1D8BE",
       "textColor": "#333333"
+    },
+    {
+      "name": "Cancelled",
+      "sequence": 6,
+      "bgColor": "#FECACA",
+      "textColor": "#333333"
     }
   ]
 };
