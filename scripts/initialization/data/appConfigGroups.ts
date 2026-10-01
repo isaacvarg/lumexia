@@ -18,6 +18,10 @@ export const data = {
     {
       "name": "inventoryAudits",
       "description": "Thresholds and toggles for the weekly inventory audit trigger cron"
+    },
+    {
+      "name": "purchasing",
+      "description": "Purchasing configuration (global PO notes)"
     }
   ],
 };

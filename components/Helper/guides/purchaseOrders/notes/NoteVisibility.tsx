@@ -28,6 +28,12 @@ const NoteVisibility = () => {
         Use supplier notes for standing instructions that apply to a vendor across all
         orders, and public notes for something specific to a single order.
       </GuideTypo.Note>
+
+      <GuideTypo.Note>
+        Notes that print on every order regardless of supplier (like receiving hours)
+        are global notes, managed by system admins in Settings → Purchasing. They
+        print before public and supplier notes.
+      </GuideTypo.Note>
     </GuideTypo.Wrapper>
   );
 };

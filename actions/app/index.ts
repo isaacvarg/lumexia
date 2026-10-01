@@ -3,6 +3,7 @@ import { getConfigByGroup } from "./configs/getByGroup";
 import { ensureInventoryAuditConfigs, getInventoryAuditConfig } from "./configs/getInventoryAuditConfig";
 import { updateManyConfigs } from "./configs/updateMany";
 import { updateCompanyConfigs } from "./configs/updateCompanyConfigs";
+import { ensurePurchasingConfigs, getGlobalPoNotes, updateGlobalPoNotes } from "./configs/purchasingConfigs";
 import { updateCompanyImage } from "./images/updateCompanyImage";
 import { getCompanyPdfImages } from "./images/getCompanyPdfImages";
 import { getCompanyImageUrls } from "./images/getCompanyImageUrls";
@@ -22,6 +23,9 @@ export const appActions = {
     updateCompany: updateCompanyConfigs,
     ensureInventoryAuditConfigs,
     getInventoryAuditConfig,
+    ensurePurchasing: ensurePurchasingConfigs,
+    getGlobalPoNotes,
+    updateGlobalPoNotes,
   },
   images: {
     updateCompany: updateCompanyImage,

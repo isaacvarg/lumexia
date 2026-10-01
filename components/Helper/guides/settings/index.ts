@@ -2,6 +2,7 @@ import { GuideSection } from "../types";
 import { settingsLandingSection } from "./landing";
 import { settingsCompanyInfoSection } from "./company/info";
 import { settingsCompanyImagesSection } from "./company/images";
+import { settingsPurchasingSection } from "./purchasing";
 import { settingsInventoryTriggersSection } from "./inventory/triggers";
 import { settingsInventoryConfigurationSection } from "./inventory/configuration";
 import { settingsInventoryUnitsSection } from "./inventory/units";
@@ -20,6 +21,7 @@ export const settingsSections: GuideSection[] = [
   settingsLandingSection,
   settingsCompanyInfoSection,
   settingsCompanyImagesSection,
+  settingsPurchasingSection,
   settingsInventoryTriggersSection,
   settingsInventoryConfigurationSection,
   settingsInventoryUnitsSection,

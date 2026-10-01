@@ -28,6 +28,9 @@ const Overview = () => {
         <GuideTypo.Item term="Company Settings">
           company info and images — system-admin only.
         </GuideTypo.Item>
+        <GuideTypo.Item term="Purchasing">
+          global notes printed on every purchase order PDF — system-admin only.
+        </GuideTypo.Item>
         <GuideTypo.Item term="Fixes">
           a maintenance panel for repairing missing pricing data, PO accounting
           detail, and PO consumption links — a data-repair tool, not day-to-day

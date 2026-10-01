@@ -11,11 +11,11 @@ import { usePurchasingSelection } from "@/store/purchasingSlice";
 
 const PrintButton = ({ purchaseOrder, orderItems, company }: { purchaseOrder: PurchaseOrderDetails, orderItems: FlattenedOrderItem[], company: Config[] }) => {
 
-  const { publicNotes, poSupplierNotes } = usePurchasingSelection()
+  const { publicNotes, poSupplierNotes, options } = usePurchasingSelection()
 
   const handleClick = async () => {
 
-    await createPurchaseOrder(purchaseOrder.referenceCode, purchaseOrder.updatedAt, purchaseOrder.supplier, orderItems, company, publicNotes, poSupplierNotes);
+    await createPurchaseOrder(purchaseOrder.referenceCode, purchaseOrder.updatedAt, purchaseOrder.supplier, orderItems, company, options.globalPoNotes, publicNotes, poSupplierNotes);
 
     await createActivityLog('downloadPurchaseOrderPDF', 'purchaseOrder', purchaseOrder.id, { context: 'po pdf downloaded' })
   };

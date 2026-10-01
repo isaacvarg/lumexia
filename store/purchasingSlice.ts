@@ -27,6 +27,7 @@ import { Uom, getAllUom } from "@/actions/inventory/getAllUom"
 
 type Options = {
   company: Config[]
+  globalPoNotes: string[]
   fileTypes: AccountingFileTypes[]
   poStatuses: PurchaseOrderStatus[]
   paymentMethods: PaymentMethod[]
@@ -76,6 +77,7 @@ export const usePurchasingSelection = create<State & Actions>((set) => ({
   lineItemsMode: 'view' as LineItemsMode,
   options: {
     company: [],
+    globalPoNotes: [],
     poStatuses: [],
     fileTypes: [],
     paymentMethods: [],
@@ -102,6 +104,7 @@ export const usePurchasingSelection = create<State & Actions>((set) => ({
 
       const [
         company,
+        globalPoNotes,
         poStatuses,
         fileTypes,
         paymentMethods,
@@ -113,6 +116,7 @@ export const usePurchasingSelection = create<State & Actions>((set) => ({
         uoms,
       ] = await Promise.all([
         await appActions.configs.getByGroup('company'),
+        await appActions.configs.getGlobalPoNotes(),
         await purchaseOrderStatusActions.getAll(),
         await getAccountingFileTags(),
         await accountingActions.paymentMethods.getAll(),
@@ -127,6 +131,7 @@ export const usePurchasingSelection = create<State & Actions>((set) => ({
       set(() => ({
         options: {
           company,
+          globalPoNotes,
           poStatuses,
           fileTypes,
           paymentMethods,
