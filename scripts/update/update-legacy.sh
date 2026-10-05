@@ -25,6 +25,13 @@ set +a
 echo "⚠️  Legacy build. Generating static records from: $DATABASE_URL"
 echo "    This must be a RESTORE of the live DB, not production itself."
 
+# Bring the restore up to this release's schema first. Migrations can add static-record
+# tables and their rows (e.g. canon lookups), which must exist before generating so the
+# baked-in configs include them. This only touches the scratch restore; the live instance
+# applies the same migrations itself on boot (see scripts/docker/entrypoint.sh).
+echo "Applying pending migrations to the restore..."
+npx prisma migrate deploy
+
 echo "Generating static records from the database..."
 npm run generate-static-records
 
