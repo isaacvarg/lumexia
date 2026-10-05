@@ -1,0 +1,14 @@
+// A named group of users used only for Canon permissions.
+// Deliberately separate from UserRole, which drives operational (floor) access.
+model CanonTeam {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    members     CanonTeamMember[]
+    permissions CanonDataTypeTeamPermission[]
+
+    @@map("canon_teams")
+}

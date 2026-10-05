@@ -1,0 +1,43 @@
+// A kind of canonical data (Ingredient Listing, Website Sprites, Supplier INCI, Official BOM...).
+// Authored types store their value in CanonArtifactVersion.
+// Linked types (resolverKey set) read live from Lumexia through a code-defined resolver
+// and are reviewed after the fact.
+model CanonDataType {
+    id                        String   @id @default(uuid())
+    name                      String   @unique
+    description               String?
+    shapeId                   String   @map("shape_id")
+    subjectTypeId             String   @map("subject_type_id")
+    // JSON options for the shape, e.g. the allowed sprite vocabulary for a tag set
+    shapeConfig               Json?    @map("shape_config")
+    // null = authored; otherwise the key of a resolver in lib/canon/resolvers
+    resolverKey               String?  @map("resolver_key")
+    // where this lives on the website (Woo meta key / ACF field), for a future sync
+    externalKey               String?  @map("external_key")
+    requiredApprovals         Int      @default(1) @map("required_approvals")
+    requiresDifferentReviewer Boolean  @default(false) @map("requires_different_reviewer")
+    requiresEvidence          Boolean  @default(false) @map("requires_evidence")
+    // a version expires this many days after its source date; null = never
+    reverifyAfterDays         Int?     @map("reverify_after_days")
+    // null = applies to every procurement type
+    procurementTypeId         String?  @map("procurement_type_id")
+    recordStatusId            String   @map("record_status_id")
+    canvasX                   Float    @default(0) @map("canvas_x")
+    canvasY                   Float    @default(0) @map("canvas_y")
+    createdAt                 DateTime @default(now()) @map("created_at")
+    updatedAt                 DateTime @updatedAt @map("updated_at")
+
+    shape           CanonShape       @relation(fields: [shapeId], references: [id])
+    subjectType     CanonSubjectType @relation(fields: [subjectTypeId], references: [id])
+    procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id])
+    recordStatus    RecordStatus     @relation(fields: [recordStatusId], references: [id])
+
+    itemTypes    CanonDataTypeItemType[]
+    userPermissions CanonDataTypeUserPermission[]
+    teamPermissions CanonDataTypeTeamPermission[]
+    parents      CanonDataTypeDependency[] @relation("CanonDependencyChild")
+    children     CanonDataTypeDependency[] @relation("CanonDependencyParent")
+    artifacts    CanonArtifact[]
+
+    @@map("canon_data_types")
+}

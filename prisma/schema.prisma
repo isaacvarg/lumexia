@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Thu Jul 09 2026 08:22:42 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Mon Oct 05 2026 13:05:08 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -155,6 +155,7 @@ model FinishedProduct {
   auxiliaries                     FinishedProductAuxiliary[]
   FinishedProductArchive          FinishedProductArchive[]
   FinishedProductAuxiliaryArchive FinishedProductAuxiliaryArchive[]
+  CanonArtifact                   CanonArtifact[]
 
   @@map("finished_products")
 }
@@ -629,6 +630,7 @@ model File {
   experimentFiles                  ExperimentFile[]
   experimentSampleNoteFiles        ExperimentSampleNoteFile[]
   experimentSampleFiles            ExperimentSampleFile[]
+  CanonChangeRequestSource         CanonChangeRequestSource[]
 
   @@map("files")
 }
@@ -653,6 +655,7 @@ model RecordStatus {
   billOfMaterials             BillOfMaterial[]
   stepEquipment               StepEquipment[]
   FinishedProduct             FinishedProduct[]
+  CanonDataType               CanonDataType[]
   BatchSize                   BatchSize[]
   MasterBatchProductionRecord MasterBatchProductionRecord[]
 
@@ -704,6 +707,445 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// Timeline entries that are not versions: CR opened/rejected, marked stale,
+// unreviewed source change detected, re-verification expired, conflict raised/resolved.
+model CanonArtifactEvent {
+  id              String   @id @default(uuid())
+  artifactId      String   @map("artifact_id")
+  eventTypeId     String   @map("event_type_id")
+  userId          String?  @map("user_id")
+  versionId       String?  @map("version_id")
+  changeRequestId String?  @map("change_request_id")
+  // e.g. { upstreamArtifactId, upstreamVersionId } for a stale event
+  payload         Json?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  artifact      CanonArtifact         @relation(fields: [artifactId], references: [id])
+  eventType     CanonEventType        @relation(fields: [eventTypeId], references: [id])
+  user          User?                 @relation(fields: [userId], references: [id])
+  version       CanonArtifactVersion? @relation(fields: [versionId], references: [id])
+  changeRequest CanonChangeRequest?   @relation(fields: [changeRequestId], references: [id])
+
+  @@index([artifactId, createdAt])
+  @@map("canon_artifact_events")
+}
+
+model CanonArtifactStatus {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  textColor   String   @default("#333333") @map("text_color")
+  bgColor     String   @default("#E3E9DD") @map("bg_color")
+  sequence    Int      @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  artifacts CanonArtifact[]
+
+  @@map("canon_artifact_statuses")
+}
+
+// Append-only. Never updated or deleted; a new version replaces the current one.
+// Every version comes from exactly one approved change request (edit, stale confirmation,
+// or source acceptance), which holds the requester, reviews, reason and evidence.
+model CanonArtifactVersion {
+  id              String    @id @default(uuid())
+  artifactId      String    @map("artifact_id")
+  versionNumber   Int       @map("version_number")
+  changeRequestId String    @unique @map("change_request_id")
+  // content shape is defined by the data type's shape (see lib/canon/shapes)
+  content         Json
+  // linked types: the resolver marker this snapshot was accepted at
+  sourceMarker    String?   @map("source_marker")
+  // date of the evidence, which may predate entry
+  sourceDate      DateTime? @map("source_date")
+  reverifyAt      DateTime? @map("reverify_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  artifact      CanonArtifact      @relation("CanonArtifactVersions", fields: [artifactId], references: [id])
+  changeRequest CanonChangeRequest @relation("CanonChangeRequestVersion", fields: [changeRequestId], references: [id])
+  currentOf     CanonArtifact?     @relation("CanonArtifactCurrentVersion")
+
+  // upstream versions this version was checked against at approval time
+  upstream   CanonVersionLineage[] @relation("CanonLineageDownstream")
+  downstream CanonVersionLineage[] @relation("CanonLineageUpstream")
+  events     CanonArtifactEvent[]
+
+  @@unique([artifactId, versionNumber])
+  @@map("canon_artifact_versions")
+}
+
+// One data type for one subject. Created lazily on the first change request,
+// so "missing" artifacts are a coverage query, not rows.
+model CanonArtifact {
+  id                String    @id @default(uuid())
+  dataTypeId        String    @map("data_type_id")
+  // Postgres treats NULLs as distinct in unique indexes, so uniqueness uses this key instead:
+  // "item:<id>", "fp:<id>" or "item:<id>|supplier:<id>"
+  subjectKey        String    @map("subject_key")
+  itemId            String?   @map("item_id")
+  finishedProductId String?   @map("finished_product_id")
+  supplierId        String?   @map("supplier_id")
+  statusId          String    @map("status_id")
+  currentVersionId  String?   @unique @map("current_version_id")
+  // linked types: last marker seen from the resolver (accepted marker lives on the version)
+  observedMarker    String?   @map("observed_marker")
+  observedAt        DateTime? @map("observed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  dataType        CanonDataType         @relation(fields: [dataTypeId], references: [id])
+  item            Item?                 @relation(fields: [itemId], references: [id])
+  finishedProduct FinishedProduct?      @relation(fields: [finishedProductId], references: [id])
+  supplier        Supplier?             @relation(fields: [supplierId], references: [id])
+  status          CanonArtifactStatus   @relation(fields: [statusId], references: [id])
+  currentVersion  CanonArtifactVersion? @relation("CanonArtifactCurrentVersion", fields: [currentVersionId], references: [id])
+
+  versions       CanonArtifactVersion[] @relation("CanonArtifactVersions")
+  changeRequests CanonChangeRequest[]
+  events         CanonArtifactEvent[]
+
+  @@unique([dataTypeId, subjectKey])
+  @@index([itemId])
+  @@index([finishedProductId])
+  @@map("canon_artifacts")
+}
+
+model CanonCapability {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  userPermissions CanonDataTypeUserPermission[]
+  teamPermissions CanonDataTypeTeamPermission[]
+
+  @@map("canon_capabilities")
+}
+
+model CanonChangeRequestKind {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  changeRequests CanonChangeRequest[]
+
+  @@map("canon_change_request_kinds")
+}
+
+// One decision per reviewer per CR. Approved once distinct approvals >= requiredApprovals
+// (excluding the requester when requiresDifferentReviewer); any rejection rejects the CR.
+model CanonChangeRequestReview {
+  id              String   @id @default(uuid())
+  changeRequestId String   @map("change_request_id")
+  reviewerId      String   @map("reviewer_id")
+  approved        Boolean
+  comment         String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+  reviewer      User               @relation(fields: [reviewerId], references: [id])
+
+  @@unique([changeRequestId, reviewerId])
+  @@map("canon_change_request_reviews")
+}
+
+// Evidence behind a proposed value: where it came from and when.
+// fileId can point at a file already attached to the item (e.g. its SDS) or a new upload.
+model CanonChangeRequestSource {
+  id              String    @id @default(uuid())
+  changeRequestId String    @map("change_request_id")
+  sourceTypeId    String    @map("source_type_id")
+  fileId          String?   @map("file_id")
+  url             String?
+  note            String?
+  sourceDate      DateTime? @map("source_date")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+  sourceType    CanonSourceType    @relation(fields: [sourceTypeId], references: [id])
+  file          File?              @relation(fields: [fileId], references: [id])
+
+  @@map("canon_change_request_sources")
+}
+
+model CanonChangeRequestStatus {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  textColor   String   @default("#333333") @map("text_color")
+  bgColor     String   @default("#E3E9DD") @map("bg_color")
+  sequence    Int      @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  changeRequests CanonChangeRequest[]
+
+  @@map("canon_change_request_statuses")
+}
+
+// A proposal for a new artifact version. kind:
+//   edit               - new content (owner edits are CRs too, possibly self-approved)
+//   staleConfirmation  - upstream changed, content stays the same, lineage moves forward
+//   sourceAcceptance   - linked type: accept the resolver's new value as canon
+model CanonChangeRequest {
+  id              String    @id @default(uuid())
+  referenceCode   Int       @unique @default(autoincrement()) @map("reference_code")
+  artifactId      String    @map("artifact_id")
+  kindId          String    @map("kind_id")
+  statusId        String    @map("status_id")
+  requestedById   String    @map("requested_by_id")
+  // the current version when the CR was opened; if it changed before approval the CR is outdated
+  baseVersionId   String?   @map("base_version_id")
+  proposedContent Json?     @map("proposed_content")
+  // sourceAcceptance: the resolver marker being accepted
+  proposedMarker  String?   @map("proposed_marker")
+  reason          String
+  resolvedAt      DateTime? @map("resolved_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  artifact    CanonArtifact            @relation(fields: [artifactId], references: [id])
+  kind        CanonChangeRequestKind   @relation(fields: [kindId], references: [id])
+  status      CanonChangeRequestStatus @relation(fields: [statusId], references: [id])
+  requestedBy User                     @relation(fields: [requestedById], references: [id])
+
+  reviews CanonChangeRequestReview[]
+  sources CanonChangeRequestSource[]
+  version CanonArtifactVersion?      @relation("CanonChangeRequestVersion")
+  events  CanonArtifactEvent[]
+
+  @@index([artifactId])
+  @@map("canon_change_requests")
+}
+
+// An edge on the canvas: child depends on parent.
+// kind decides how a child artifact finds its parent artifacts:
+//   sameSubject - same item / finished product
+//   activeBom   - every material in the child item's active MBPR BOM
+//   suppliers   - every item+supplier artifact for the child item
+//   filledItem  - the item a finished product is filled with
+// Cycles are rejected in code when an edge is created.
+model CanonDataTypeDependency {
+  id        String   @id @default(uuid())
+  parentId  String   @map("parent_id")
+  childId   String   @map("child_id")
+  kindId    String   @map("kind_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parent CanonDataType       @relation("CanonDependencyParent", fields: [parentId], references: [id], onDelete: Cascade)
+  child  CanonDataType       @relation("CanonDependencyChild", fields: [childId], references: [id], onDelete: Cascade)
+  kind   CanonDependencyKind @relation(fields: [kindId], references: [id])
+
+  @@unique([parentId, childId])
+  @@map("canon_data_type_dependencies")
+}
+
+// Restricts a data type to certain item types. No rows = applies to every item type.
+model CanonDataTypeItemType {
+  id         String   @id @default(uuid())
+  dataTypeId String   @map("data_type_id")
+  itemTypeId String   @map("item_type_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  dataType CanonDataType @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+  itemType ItemType      @relation(fields: [itemTypeId], references: [id])
+
+  @@unique([dataTypeId, itemTypeId])
+  @@map("canon_data_type_item_types")
+}
+
+// Grants every member of a Canon team edit or review rights on a data type.
+model CanonDataTypeTeamPermission {
+  id           String   @id @default(uuid())
+  dataTypeId   String   @map("data_type_id")
+  capabilityId String   @map("capability_id")
+  teamId       String   @map("team_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dataType   CanonDataType   @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+  capability CanonCapability @relation(fields: [capabilityId], references: [id])
+  team       CanonTeam       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([dataTypeId, capabilityId, teamId])
+  @@map("canon_data_type_team_permissions")
+}
+
+// Grants one user edit or review rights on a data type.
+// Split from team grants so each row has exactly one required grantee.
+model CanonDataTypeUserPermission {
+  id           String   @id @default(uuid())
+  dataTypeId   String   @map("data_type_id")
+  capabilityId String   @map("capability_id")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dataType   CanonDataType   @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+  capability CanonCapability @relation(fields: [capabilityId], references: [id])
+  user       User            @relation(fields: [userId], references: [id])
+
+  @@unique([dataTypeId, capabilityId, userId])
+  @@map("canon_data_type_user_permissions")
+}
+
+// A kind of canonical data (Ingredient Listing, Website Sprites, Supplier INCI, Official BOM...).
+// Authored types store their value in CanonArtifactVersion.
+// Linked types (resolverKey set) read live from Lumexia through a code-defined resolver
+// and are reviewed after the fact.
+model CanonDataType {
+  id                        String   @id @default(uuid())
+  name                      String   @unique
+  description               String?
+  shapeId                   String   @map("shape_id")
+  subjectTypeId             String   @map("subject_type_id")
+  // JSON options for the shape, e.g. the allowed sprite vocabulary for a tag set
+  shapeConfig               Json?    @map("shape_config")
+  // null = authored; otherwise the key of a resolver in lib/canon/resolvers
+  resolverKey               String?  @map("resolver_key")
+  // where this lives on the website (Woo meta key / ACF field), for a future sync
+  externalKey               String?  @map("external_key")
+  requiredApprovals         Int      @default(1) @map("required_approvals")
+  requiresDifferentReviewer Boolean  @default(false) @map("requires_different_reviewer")
+  requiresEvidence          Boolean  @default(false) @map("requires_evidence")
+  // a version expires this many days after its source date; null = never
+  reverifyAfterDays         Int?     @map("reverify_after_days")
+  // null = applies to every procurement type
+  procurementTypeId         String?  @map("procurement_type_id")
+  recordStatusId            String   @map("record_status_id")
+  canvasX                   Float    @default(0) @map("canvas_x")
+  canvasY                   Float    @default(0) @map("canvas_y")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  shape           CanonShape       @relation(fields: [shapeId], references: [id])
+  subjectType     CanonSubjectType @relation(fields: [subjectTypeId], references: [id])
+  procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id])
+  recordStatus    RecordStatus     @relation(fields: [recordStatusId], references: [id])
+
+  itemTypes       CanonDataTypeItemType[]
+  userPermissions CanonDataTypeUserPermission[]
+  teamPermissions CanonDataTypeTeamPermission[]
+  parents         CanonDataTypeDependency[]     @relation("CanonDependencyChild")
+  children        CanonDataTypeDependency[]     @relation("CanonDependencyParent")
+  artifacts       CanonArtifact[]
+
+  @@map("canon_data_types")
+}
+
+model CanonDependencyKind {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dependencies CanonDataTypeDependency[]
+
+  @@map("canon_dependency_kinds")
+}
+
+model CanonEventType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  events CanonArtifactEvent[]
+
+  @@map("canon_event_types")
+}
+
+model CanonShape {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dataTypes CanonDataType[]
+
+  @@map("canon_shapes")
+}
+
+model CanonSourceType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  sources CanonChangeRequestSource[]
+
+  @@map("canon_source_types")
+}
+
+model CanonSubjectType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dataTypes CanonDataType[]
+
+  @@map("canon_subject_types")
+}
+
+model CanonTeamMember {
+  id        String   @id @default(uuid())
+  teamId    String   @map("team_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  team CanonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("canon_team_members")
+}
+
+// A named group of users used only for Canon permissions.
+// Deliberately separate from UserRole, which drives operational (floor) access.
+model CanonTeam {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members     CanonTeamMember[]
+  permissions CanonDataTypeTeamPermission[]
+
+  @@map("canon_teams")
+}
+
+// "Version X of the Ingredient Listing was checked against version Y of the Official BOM."
+// An artifact is stale when any parent artifact's current version is newer than its lineage.
+model CanonVersionLineage {
+  id                String   @id @default(uuid())
+  versionId         String   @map("version_id")
+  upstreamVersionId String   @map("upstream_version_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  version         CanonArtifactVersion @relation("CanonLineageDownstream", fields: [versionId], references: [id])
+  upstreamVersion CanonArtifactVersion @relation("CanonLineageUpstream", fields: [upstreamVersionId], references: [id])
+
+  @@unique([versionId, upstreamVersionId])
+  @@index([upstreamVersionId])
+  @@map("canon_version_lineage")
 }
 
 model Equipment {
@@ -1253,14 +1695,15 @@ model ItemTypeConfig {
 }
 
 model ItemType {
-  id                String             @id @default(uuid())
-  name              String
-  createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
-  items             Item[]
-  pricingTemplates  PricingTemplate[]
-  discrepancyAudits DiscrepancyAudit[]
-  config            ItemTypeConfig?
+  id                    String                  @id @default(uuid())
+  name                  String
+  createdAt             DateTime                @default(now()) @map("created_at")
+  updatedAt             DateTime                @updatedAt @map("updated_at")
+  items                 Item[]
+  pricingTemplates      PricingTemplate[]
+  discrepancyAudits     DiscrepancyAudit[]
+  config                ItemTypeConfig?
+  CanonDataTypeItemType CanonDataTypeItemType[]
 
   @@map("item_types")
 }
@@ -1305,6 +1748,7 @@ model Item {
   FinishedProduct                      FinishedProduct[]
   ItemConsumerContainer                ItemConsumerContainer[]
   PricingTemplateAuxiliary             PricingTemplateAuxiliary[]
+  CanonArtifact                        CanonArtifact[]
   ItemFile                             ItemFile[]
   ItemNote                             ItemNote[]
   BillOfMaterial                       BillOfMaterial[]
@@ -1314,11 +1758,12 @@ model Item {
 }
 
 model ProcurementType {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  items     Item[]
+  id            String          @id @default(uuid())
+  name          String
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  items         Item[]
+  CanonDataType CanonDataType[]
 
   @@map("procurement_types")
 }
@@ -2499,6 +2944,7 @@ model Supplier {
   SupplierPaymentMethod                SupplierPaymentMethod[]
   poSupplierNotes                      PoSupplierNote[]
   discreteUnitOfMeasurementConversions DiscreteUnitOfMeasurementConversion[]
+  CanonArtifact                        CanonArtifact[]
   PurchasingRequestSupplierTag         PurchasingRequestSupplierTag[]
   SupplierContact                      SupplierContact[]
 
@@ -3283,6 +3729,11 @@ model User {
   experimentSampleMeasurements     ExperimentSampleMeasurement[]     @relation("ExperimentSampleMeasurementCreatedBy")
   PoAccountingNote                 PoAccountingNote[]
   PricingExaminationNote           PricingExaminationNote[]
+  CanonArtifactEvent               CanonArtifactEvent[]
+  CanonChangeRequestReview         CanonChangeRequestReview[]
+  CanonChangeRequest               CanonChangeRequest[]
+  CanonDataTypeUserPermission      CanonDataTypeUserPermission[]
+  CanonTeamMember                  CanonTeamMember[]
   DiscrepancyAuditItemNote         DiscrepancyAuditItemNote[]
   InventoryAudit                   InventoryAudit[]
   LotNote                          LotNote[]

@@ -1,0 +1,29 @@
+// Append-only. Never updated or deleted; a new version replaces the current one.
+// Every version comes from exactly one approved change request (edit, stale confirmation,
+// or source acceptance), which holds the requester, reviews, reason and evidence.
+model CanonArtifactVersion {
+    id              String    @id @default(uuid())
+    artifactId      String    @map("artifact_id")
+    versionNumber   Int       @map("version_number")
+    changeRequestId String    @unique @map("change_request_id")
+    // content shape is defined by the data type's shape (see lib/canon/shapes)
+    content         Json
+    // linked types: the resolver marker this snapshot was accepted at
+    sourceMarker    String?   @map("source_marker")
+    // date of the evidence, which may predate entry
+    sourceDate      DateTime? @map("source_date")
+    reverifyAt      DateTime? @map("reverify_at")
+    createdAt       DateTime  @default(now()) @map("created_at")
+
+    artifact      CanonArtifact      @relation("CanonArtifactVersions", fields: [artifactId], references: [id])
+    changeRequest CanonChangeRequest @relation("CanonChangeRequestVersion", fields: [changeRequestId], references: [id])
+    currentOf     CanonArtifact?     @relation("CanonArtifactCurrentVersion")
+
+    // upstream versions this version was checked against at approval time
+    upstream   CanonVersionLineage[] @relation("CanonLineageDownstream")
+    downstream CanonVersionLineage[] @relation("CanonLineageUpstream")
+    events     CanonArtifactEvent[]
+
+    @@unique([artifactId, versionNumber])
+    @@map("canon_artifact_versions")
+}

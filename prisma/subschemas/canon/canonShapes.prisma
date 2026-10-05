@@ -1,0 +1,11 @@
+model CanonShape {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    dataTypes CanonDataType[]
+
+    @@map("canon_shapes")
+}

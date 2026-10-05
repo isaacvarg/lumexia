@@ -1,0 +1,14 @@
+model CanonArtifactStatus {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    textColor   String   @default("#333333") @map("text_color")
+    bgColor     String   @default("#E3E9DD") @map("bg_color")
+    sequence    Int      @unique
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    artifacts CanonArtifact[]
+
+    @@map("canon_artifact_statuses")
+}

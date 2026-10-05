@@ -1,0 +1,22 @@
+// An edge on the canvas: child depends on parent.
+// kind decides how a child artifact finds its parent artifacts:
+//   sameSubject - same item / finished product
+//   activeBom   - every material in the child item's active MBPR BOM
+//   suppliers   - every item+supplier artifact for the child item
+//   filledItem  - the item a finished product is filled with
+// Cycles are rejected in code when an edge is created.
+model CanonDataTypeDependency {
+    id         String   @id @default(uuid())
+    parentId   String   @map("parent_id")
+    childId    String   @map("child_id")
+    kindId     String   @map("kind_id")
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+
+    parent CanonDataType       @relation("CanonDependencyParent", fields: [parentId], references: [id], onDelete: Cascade)
+    child  CanonDataType       @relation("CanonDependencyChild", fields: [childId], references: [id], onDelete: Cascade)
+    kind   CanonDependencyKind @relation(fields: [kindId], references: [id])
+
+    @@unique([parentId, childId])
+    @@map("canon_data_type_dependencies")
+}

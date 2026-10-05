@@ -1,0 +1,34 @@
+// A proposal for a new artifact version. kind:
+//   edit               - new content (owner edits are CRs too, possibly self-approved)
+//   staleConfirmation  - upstream changed, content stays the same, lineage moves forward
+//   sourceAcceptance   - linked type: accept the resolver's new value as canon
+model CanonChangeRequest {
+    id              String    @id @default(uuid())
+    referenceCode   Int       @unique @default(autoincrement()) @map("reference_code")
+    artifactId      String    @map("artifact_id")
+    kindId          String    @map("kind_id")
+    statusId        String    @map("status_id")
+    requestedById   String    @map("requested_by_id")
+    // the current version when the CR was opened; if it changed before approval the CR is outdated
+    baseVersionId   String?   @map("base_version_id")
+    proposedContent Json?     @map("proposed_content")
+    // sourceAcceptance: the resolver marker being accepted
+    proposedMarker  String?   @map("proposed_marker")
+    reason          String
+    resolvedAt      DateTime? @map("resolved_at")
+    createdAt       DateTime  @default(now()) @map("created_at")
+    updatedAt       DateTime  @updatedAt @map("updated_at")
+
+    artifact    CanonArtifact            @relation(fields: [artifactId], references: [id])
+    kind        CanonChangeRequestKind   @relation(fields: [kindId], references: [id])
+    status      CanonChangeRequestStatus @relation(fields: [statusId], references: [id])
+    requestedBy User                     @relation(fields: [requestedById], references: [id])
+
+    reviews CanonChangeRequestReview[]
+    sources CanonChangeRequestSource[]
+    version CanonArtifactVersion?        @relation("CanonChangeRequestVersion")
+    events  CanonArtifactEvent[]
+
+    @@index([artifactId])
+    @@map("canon_change_requests")
+}

@@ -1,0 +1,15 @@
+// "Version X of the Ingredient Listing was checked against version Y of the Official BOM."
+// An artifact is stale when any parent artifact's current version is newer than its lineage.
+model CanonVersionLineage {
+    id                  String   @id @default(uuid())
+    versionId           String   @map("version_id")
+    upstreamVersionId   String   @map("upstream_version_id")
+    createdAt           DateTime @default(now()) @map("created_at")
+
+    version         CanonArtifactVersion @relation("CanonLineageDownstream", fields: [versionId], references: [id])
+    upstreamVersion CanonArtifactVersion @relation("CanonLineageUpstream", fields: [upstreamVersionId], references: [id])
+
+    @@unique([versionId, upstreamVersionId])
+    @@index([upstreamVersionId])
+    @@map("canon_version_lineage")
+}
