@@ -184,3 +184,59 @@ export const refreshAllArtifacts = async () => {
   }
   return artifacts.length;
 };
+
+// Data types where the user holds a capability, directly or through a team.
+const dataTypeIdsFor = async (userId: string, capabilityId: string): Promise<string[]> => {
+  const [direct, viaTeam] = await Promise.all([
+    prisma.canonDataTypeUserPermission.findMany({ where: { userId, capabilityId }, select: { dataTypeId: true } }),
+    prisma.canonDataTypeTeamPermission.findMany({
+      where: { capabilityId, team: { members: { some: { userId } } } },
+      select: { dataTypeId: true },
+    }),
+  ]);
+  return Array.from(new Set([...direct, ...viaTeam].map((p) => p.dataTypeId)));
+};
+
+const subjectSelect = {
+  item: { select: { id: true, name: true, referenceCode: true } },
+  supplier: { select: { name: true } },
+  finishedProduct: { select: { name: true, filledWithItem: { select: { id: true, name: true, referenceCode: true } } } },
+} as const;
+
+// What a user should act on: change requests waiting for their decision, and artifacts
+// they edit or review that need attention.
+export const getReviewQueue = async (userId: string) => {
+  const [reviewTypeIds, editTypeIds] = await Promise.all([
+    dataTypeIdsFor(userId, canonCapabilities.review),
+    dataTypeIdsFor(userId, canonCapabilities.edit),
+  ]);
+
+  const changeRequests = await prisma.canonChangeRequest.findMany({
+    where: {
+      statusId: canonChangeRequestStatuses.underReview,
+      artifact: { dataTypeId: { in: reviewTypeIds } },
+      reviews: { none: { reviewerId: userId } },
+      // their own CR can't be approved by them when the type needs a different reviewer
+      NOT: { requestedById: userId, artifact: { dataType: { requiresDifferentReviewer: true } } },
+    },
+    include: {
+      kind: { select: { name: true } },
+      requestedBy: { select: { name: true, image: true } },
+      artifact: { include: { dataType: { select: { name: true } }, ...subjectSelect } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const attention = await prisma.canonArtifact.findMany({
+    where: {
+      dataTypeId: { in: Array.from(new Set([...reviewTypeIds, ...editTypeIds])) },
+      OR: [{ isStale: true }, { hasUnreviewedChange: true }, { isExpired: true }, { hasConflict: true }],
+    },
+    include: { status: true, dataType: { select: { name: true } }, ...subjectSelect },
+    orderBy: { updatedAt: "asc" },
+  });
+
+  return { changeRequests, attention };
+};
+
+export type ReviewQueue = Awaited<ReturnType<typeof getReviewQueue>>;

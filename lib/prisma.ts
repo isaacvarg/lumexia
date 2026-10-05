@@ -8,8 +8,11 @@ declare const globalThis: {
   prismaGlobal: ReturnType<typeof prismaClientSingleton>;
 } & typeof global;
 
+// Always reuse the client from globalThis. In dev, hot reloads re-run this module, and a
+// new client per reload leaks its whole connection pool until Postgres refuses connections.
+// In production the module loads once, so caching is a no-op there.
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 
 export default prisma
 
-if (process.env.ENVIRONMENT !== 'production') globalThis.prismaGlobal = prisma
+globalThis.prismaGlobal = prisma

@@ -8,6 +8,20 @@ const DEMO_EMAIL = '@demo.lumexia';
 const WIPE_ORDER: string[] = [
   // activity feed (entityId is a plain string, no FK — safe to wipe first)
   'activityLog',
+  // canon (references items, finished products, suppliers, files and users, so it goes first;
+  // deleting versions nulls canon_artifacts.current_version_id)
+  'canonArtifactEvent',
+  'canonVersionLineage',
+  'canonArtifactVersion',
+  'canonChangeRequest', // cascades its reviews and sources
+  'canonArtifact',
+  'canonDataTypeUserPermission',
+  'canonDataTypeTeamPermission',
+  'canonDataTypeDependency',
+  'canonDataTypeItemType',
+  'canonDataType',
+  'canonTeamMember',
+  'canonTeam',
   // quality / QC (children first; must precede purchaseOrderItem, lot, batchProductionRecord, item)
   'qcParameterInputResult',
   'qcParameterResult',

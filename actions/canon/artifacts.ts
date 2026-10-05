@@ -3,7 +3,13 @@
 import { getUserId } from "@/actions/users/getUserId";
 import prisma from "@/lib/prisma";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
-import { getArtifactHistory, getItemCanon, getSupplierCanonEntries, refreshAllArtifacts } from "@/lib/canon/queries";
+import {
+  getArtifactHistory,
+  getItemCanon,
+  getReviewQueue,
+  getSupplierCanonEntries,
+  refreshAllArtifacts,
+} from "@/lib/canon/queries";
 
 export const getCanonForItem = async (itemId: string) => {
   const userId = await getUserId();
@@ -22,6 +28,11 @@ export const getCanonSupplierOptions = async () => {
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
+};
+
+export const getCanonReviewQueue = async () => {
+  const userId = await getUserId();
+  return getReviewQueue(userId);
 };
 
 export const getCanonArtifactHistory = async (artifactId: string) => {

@@ -25,6 +25,7 @@ import {
 import {
   getCanonArtifactHistory,
   getCanonForItem,
+  getCanonReviewQueue,
   getCanonSupplierEntries,
   getCanonSupplierOptions,
   refreshAllCanonArtifacts,
@@ -69,6 +70,7 @@ export const canonActions = {
   },
   artifacts: {
     getForItem: getCanonForItem,
+    getReviewQueue: getCanonReviewQueue,
     getSupplierEntries: getCanonSupplierEntries,
     getSupplierOptions: getCanonSupplierOptions,
     getHistory: getCanonArtifactHistory,
