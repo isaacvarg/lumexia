@@ -9,10 +9,15 @@ const labels: Record<string, { label: string; className: string; hint: string }>
   [canonArtifactStatuses.conflict]: { label: "Conflict", className: "badge-error", hint: "Supplier statements disagree." },
 }
 
-const StatusBadge = ({ statusId }: { statusId: string | null }) => {
+// tooltip=false uses a native title instead, for scrolling containers the tooltip would overflow
+const StatusBadge = ({ statusId, tooltip = true }: { statusId: string | null; tooltip?: boolean }) => {
   const status = statusId ? labels[statusId] : { label: "Not set", className: "badge-ghost", hint: "No value has been proposed yet." }
-  return (
+  return tooltip ? (
     <span className={`badge badge-soft tooltip tooltip-bottom ${status.className}`} data-tip={status.hint}>
+      {status.label}
+    </span>
+  ) : (
+    <span className={`badge badge-soft ${status.className}`} title={status.hint}>
       {status.label}
     </span>
   )

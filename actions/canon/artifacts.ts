@@ -2,6 +2,7 @@
 
 import { getUserId } from "@/actions/users/getUserId";
 import prisma from "@/lib/prisma";
+import { getCanonDashboard as getDashboard } from "@/lib/canon/dashboard";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 import {
   getArtifactHistory,
@@ -33,6 +34,11 @@ export const getCanonSupplierOptions = async () => {
 export const getCanonReviewQueue = async () => {
   const userId = await getUserId();
   return getReviewQueue(userId);
+};
+
+export const getCanonDashboard = async () => {
+  const userId = await getUserId();
+  return getDashboard(userId);
 };
 
 export const getCanonArtifactHistory = async (artifactId: string) => {

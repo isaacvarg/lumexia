@@ -24,6 +24,7 @@ import {
 } from "./permissions";
 import {
   getCanonArtifactHistory,
+  getCanonDashboard,
   getCanonForItem,
   getCanonReviewQueue,
   getCanonSupplierEntries,
@@ -69,6 +70,7 @@ export const canonActions = {
     revokeTeam: revokeCanonTeamPermission,
   },
   artifacts: {
+    getDashboard: getCanonDashboard,
     getForItem: getCanonForItem,
     getReviewQueue: getCanonReviewQueue,
     getSupplierEntries: getCanonSupplierEntries,

@@ -11,6 +11,7 @@ import { InventorySettingsTab } from '@/app/settings/inventory/_components/share
 import { ProductionSettingsTab } from '@/app/settings/production/_components/shared/TabSelector';
 import { ResearchSettingsTab } from '@/app/settings/research/_components/shared/TabSelector';
 import { CanonSettingsTab } from '@/app/settings/canon/_components/shared/TabSelector';
+import { CanonDashboardTab } from '@/app/quality/canon/_components/shared/TabSelector';
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -29,6 +30,7 @@ export type TabsConfig = {
   productionSettings: ProductionSettingsTab,
   researchSettings: ResearchSettingsTab,
   canonSettings: CanonSettingsTab,
+  canonDashboard: CanonDashboardTab,
 };
 
 type TabGroupKey = keyof TabsConfig;
@@ -59,6 +61,7 @@ const initialState: TabState = {
     productionSettings: 'equipment',
     researchSettings: 'overhead',
     canonSettings: 'dataTypes',
+    canonDashboard: 'attention',
   },
 }
 
@@ -81,6 +84,11 @@ export const useTabSelection = create<TabState & TabActions>()(
       name: 'active-tab',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ activeTab: state.activeTab }),
+      // layer saved tabs over the defaults, so tab groups added since the session started still have a value
+      merge: (persisted, current) => ({
+        ...current,
+        activeTab: { ...current.activeTab, ...(persisted as Partial<TabState> | undefined)?.activeTab },
+      }),
     },
   ),
 );

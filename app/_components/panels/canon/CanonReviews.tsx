@@ -1,20 +1,9 @@
 'use client'
-import { useRouter } from "next/navigation"
-import { useTabActions } from "@/store/tabSlice"
 import { useCanonReviewQueuePollingQuery } from "@/hooks/appQuery/useCanonReviewQueue"
-import type { ReviewQueue } from "@/lib/canon/queries"
+import useOpenItemCanon, { canonItemOf, canonSubjectLabel } from "@/hooks/useOpenItemCanon"
 import StatusBadge from "@/app/inventory/items/[name]/_components/canon/StatusBadge"
 import UserIcon from "@/components/UI/UserIcon"
 import Panel from "../Panel"
-
-type Subject = ReviewQueue["attention"][number]
-
-// the item page that holds the artifact (finished products live on their filled item)
-const itemOf = (artifact: Pick<Subject, "item" | "finishedProduct">) =>
-  artifact.item ?? artifact.finishedProduct?.filledWithItem ?? null
-
-const subjectLabel = (artifact: Pick<Subject, "item" | "finishedProduct" | "supplier">) =>
-  [artifact.finishedProduct?.name ?? artifact.item?.name, artifact.supplier?.name].filter(Boolean).join(" · ")
 
 const Row = ({ title, subtitle, onClick, children }: { title: string; subtitle: string; onClick: () => void; children: React.ReactNode }) => (
   <div onClick={onClick} className="flex flex-col gap-2 rounded-xl bg-base-300/75 px-4 py-3 hover:cursor-pointer hover:bg-base-200">
@@ -27,15 +16,8 @@ const Row = ({ title, subtitle, onClick, children }: { title: string; subtitle: 
 )
 
 const CanonReviews = () => {
-  const router = useRouter()
-  const { setActiveTab } = useTabActions()
+  const open = useOpenItemCanon()
   const { data } = useCanonReviewQueuePollingQuery()
-
-  const open = (item: { id: string; referenceCode: string } | null) => {
-    if (!item) return
-    setActiveTab('itemDetails', 'canon')
-    router.push(`/inventory/items/${item.referenceCode}?id=${item.id}`)
-  }
 
   if (!data) {
     return (
@@ -52,7 +34,7 @@ const CanonReviews = () => {
   const isComplete = data.changeRequests.length === 0 && data.attention.length === 0
 
   return (
-    <Panel title="Canon Reviews" titlePath="/settings/canon">
+    <Panel title="Canon Reviews" titlePath="/quality/canon">
       {isComplete && <p className="font-poppins text-lg font-medium text-base-content">All done 👍🏽👍🏽🫰🏽🫰🏽</p>}
 
       {!isComplete && (
@@ -61,8 +43,8 @@ const CanonReviews = () => {
             <Row
               key={cr.id}
               title={`${cr.artifact.dataType.name}: ${cr.kind.name}`}
-              subtitle={subjectLabel(cr.artifact)}
-              onClick={() => open(itemOf(cr.artifact))}
+              subtitle={canonSubjectLabel(cr.artifact)}
+              onClick={() => open(canonItemOf(cr.artifact))}
             >
               <span className="badge badge-warning badge-soft">Waiting for you</span>
               <span className="shrink-0">
@@ -74,10 +56,10 @@ const CanonReviews = () => {
             <Row
               key={artifact.id}
               title={artifact.dataType.name}
-              subtitle={subjectLabel(artifact)}
-              onClick={() => open(itemOf(artifact))}
+              subtitle={canonSubjectLabel(artifact)}
+              onClick={() => open(canonItemOf(artifact))}
             >
-              <StatusBadge statusId={artifact.statusId} />
+              <StatusBadge statusId={artifact.statusId} tooltip={false} />
             </Row>
           ))}
         </div>
