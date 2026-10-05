@@ -1,0 +1,22 @@
+// Timeline entries that are not versions: CR opened/rejected, marked stale,
+// unreviewed source change detected, re-verification expired, conflict raised/resolved.
+model CanonArtifactEvent {
+    id              String   @id @default(uuid())
+    artifactId      String   @map("artifact_id")
+    eventTypeId     String   @map("event_type_id")
+    userId          String?  @map("user_id")
+    versionId       String?  @map("version_id")
+    changeRequestId String?  @map("change_request_id")
+    // e.g. { upstreamArtifactId, upstreamVersionId } for a stale event
+    payload         Json?
+    createdAt       DateTime @default(now()) @map("created_at")
+
+    artifact      CanonArtifact         @relation(fields: [artifactId], references: [id])
+    eventType     CanonEventType        @relation(fields: [eventTypeId], references: [id])
+    user          User?                 @relation(fields: [userId], references: [id])
+    version       CanonArtifactVersion? @relation(fields: [versionId], references: [id])
+    changeRequest CanonChangeRequest?   @relation(fields: [changeRequestId], references: [id])
+
+    @@index([artifactId, createdAt])
+    @@map("canon_artifact_events")
+}

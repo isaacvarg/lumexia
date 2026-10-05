@@ -7,7 +7,7 @@ import { procurementTypes } from "@/configs/staticRecords/procurementTypes";
 const { produced } = procurementTypes;
 
 // define the tabs
-export type ItemTab = 'basics' | 'inventory' | 'purchasing' | 'pricing' | 'production' | 'rnd' | 'quality' | 'files' | 'danger';
+export type ItemTab = 'basics' | 'inventory' | 'purchasing' | 'pricing' | 'production' | 'rnd' | 'quality' | 'files' | 'canon' | 'danger';
 
 const TabSelector = () => {
 
@@ -15,7 +15,7 @@ const TabSelector = () => {
   const isProduced = item?.procurementTypeId === produced;
 
 
-  const tabs: ItemTab[] = ['basics', 'inventory', 'pricing', 'production', 'rnd', 'quality', 'files',];
+  const tabs: ItemTab[] = ['basics', 'inventory', 'pricing', 'production', 'rnd', 'quality', 'files', 'canon',];
 
   // produced items do not need purchased tab
   if (!isProduced) {

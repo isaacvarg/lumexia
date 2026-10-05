@@ -1,0 +1,16 @@
+// Grants every member of a Canon team edit or review rights on a data type.
+model CanonDataTypeTeamPermission {
+    id           String   @id @default(uuid())
+    dataTypeId   String   @map("data_type_id")
+    capabilityId String   @map("capability_id")
+    teamId       String   @map("team_id")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+
+    dataType   CanonDataType   @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+    capability CanonCapability @relation(fields: [capabilityId], references: [id])
+    team       CanonTeam       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+    @@unique([dataTypeId, capabilityId, teamId])
+    @@map("canon_data_type_team_permissions")
+}

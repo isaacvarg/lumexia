@@ -1,0 +1,17 @@
+// Grants one user edit or review rights on a data type.
+// Split from team grants so each row has exactly one required grantee.
+model CanonDataTypeUserPermission {
+    id           String   @id @default(uuid())
+    dataTypeId   String   @map("data_type_id")
+    capabilityId String   @map("capability_id")
+    userId       String   @map("user_id")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+
+    dataType   CanonDataType   @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+    capability CanonCapability @relation(fields: [capabilityId], references: [id])
+    user       User            @relation(fields: [userId], references: [id])
+
+    @@unique([dataTypeId, capabilityId, userId])
+    @@map("canon_data_type_user_permissions")
+}

@@ -1,0 +1,19 @@
+// Evidence behind a proposed value: where it came from and when.
+// fileId can point at a file already attached to the item (e.g. its SDS) or a new upload.
+model CanonChangeRequestSource {
+    id              String    @id @default(uuid())
+    changeRequestId String    @map("change_request_id")
+    sourceTypeId    String    @map("source_type_id")
+    fileId          String?   @map("file_id")
+    url             String?
+    note            String?
+    sourceDate      DateTime? @map("source_date")
+    createdAt       DateTime  @default(now()) @map("created_at")
+    updatedAt       DateTime  @updatedAt @map("updated_at")
+
+    changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+    sourceType    CanonSourceType    @relation(fields: [sourceTypeId], references: [id])
+    file          File?              @relation(fields: [fileId], references: [id])
+
+    @@map("canon_change_request_sources")
+}

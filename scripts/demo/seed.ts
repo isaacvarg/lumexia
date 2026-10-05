@@ -20,6 +20,7 @@ import { seedPricing } from './layers/pricing';
 import { seedPackUoms } from './layers/uomConversions';
 import { seedConfigs } from './layers/configs';
 import { seedQc } from './layers/qc';
+import { seedCanon } from './layers/canon';
 
 // layers demo data on top of the initialized data (static records)
 // layers run in dependency order; each returns the ids the next layer needs
@@ -119,6 +120,12 @@ export const seedDemo = async (): Promise<void> => {
   // └──────────────────────────┘
   console.log('✨ Quality Examinations');
   await seedQc(items.all, lots, bprLots, users);
+
+  // ┌──────────────┐
+  // │ ＣＡＮＯＮ │
+  // └──────────────┘
+  console.log('✨ Canon');
+  await seedCanon(users, suppliers, items.all, itemTypes);
 
 
   // finally

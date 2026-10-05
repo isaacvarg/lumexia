@@ -82,6 +82,24 @@ Seeding happens on first boot for an empty database, or explicitly via
 `npm run db:start` / `npm run db:demo:start`. See [Deployment](/docs/Deployment)
 for the full flow.
 
+## Adding static records to existing instances
+
+`npm run init` only runs on an **empty** database, so a release that adds a new
+static-record table (or new rows to an existing one) must also ship those rows in
+a **migration**. Otherwise instances that were initialized earlier get the new,
+empty table from `prisma migrate deploy` and the app references IDs that don't
+exist.
+
+Write the migration as `INSERT ... ON CONFLICT DO NOTHING` using the same
+deterministic IDs that `staticRecordId(<file>, <camelCased name>)` produces for the
+data file. Then init (on a fresh database) and the migration (on an existing one)
+write identical rows. `prisma/migrations/20261006120000_seed_canon_lookups` is an
+example, generated from `scripts/initialization/data/canon*.ts`.
+
+Legacy builds (`npm run docker:update:legacy`) apply pending migrations to the
+restored database before generating static records, so rows added this way are
+baked into the legacy image as well.
+
 ## Quick reference
 
 | Script | When | What it does |

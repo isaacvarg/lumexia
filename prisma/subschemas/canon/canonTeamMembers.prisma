@@ -1,0 +1,13 @@
+model CanonTeamMember {
+    id        String   @id @default(uuid())
+    teamId    String   @map("team_id")
+    userId    String   @map("user_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    team CanonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+    user User      @relation(fields: [userId], references: [id])
+
+    @@unique([teamId, userId])
+    @@map("canon_team_members")
+}

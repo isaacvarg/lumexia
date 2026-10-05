@@ -1,0 +1,14 @@
+// Restricts a data type to certain item types. No rows = applies to every item type.
+model CanonDataTypeItemType {
+    id         String   @id @default(uuid())
+    dataTypeId String   @map("data_type_id")
+    itemTypeId String   @map("item_type_id")
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+
+    dataType CanonDataType @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+    itemType ItemType      @relation(fields: [itemTypeId], references: [id])
+
+    @@unique([dataTypeId, itemTypeId])
+    @@map("canon_data_type_item_types")
+}

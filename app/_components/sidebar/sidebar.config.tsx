@@ -5,6 +5,7 @@ import { BiBuildings } from "react-icons/bi";
 import { MdOilBarrel } from "react-icons/md";
 import { FaBacteria } from "react-icons/fa";
 import { HiCheckBadge } from "react-icons/hi2";
+import { TbCertificate } from "react-icons/tb";
 
 
 
@@ -104,6 +105,11 @@ export const sidebarElements = [
         label: "QC",
         icon: <HiCheckBadge />,
         path: "/quality/qc/"
+      },
+      {
+        label: "Canon",
+        icon: <TbCertificate />,
+        path: "/quality/canon"
       }
 
     ]

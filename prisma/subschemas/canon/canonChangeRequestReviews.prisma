@@ -1,0 +1,17 @@
+// One decision per reviewer per CR. Approved once distinct approvals >= requiredApprovals
+// (excluding the requester when requiresDifferentReviewer); any rejection rejects the CR.
+model CanonChangeRequestReview {
+    id              String   @id @default(uuid())
+    changeRequestId String   @map("change_request_id")
+    reviewerId      String   @map("reviewer_id")
+    approved        Boolean
+    comment         String?
+    createdAt       DateTime @default(now()) @map("created_at")
+    updatedAt       DateTime @updatedAt @map("updated_at")
+
+    changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+    reviewer      User               @relation(fields: [reviewerId], references: [id])
+
+    @@unique([changeRequestId, reviewerId])
+    @@map("canon_change_request_reviews")
+}
