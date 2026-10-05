@@ -9,7 +9,12 @@ model CanonArtifact {
     itemId            String?  @map("item_id")
     finishedProductId String?  @map("finished_product_id")
     supplierId        String?  @map("supplier_id")
+    // the displayed status: the most severe of the reason flags below
     statusId          String   @map("status_id")
+    isStale           Boolean  @default(false) @map("is_stale")
+    hasUnreviewedChange Boolean @default(false) @map("has_unreviewed_change")
+    isExpired         Boolean  @default(false) @map("is_expired")
+    hasConflict       Boolean  @default(false) @map("has_conflict")
     currentVersionId  String?  @unique @map("current_version_id")
     // linked types: last marker seen from the resolver (accepted marker lives on the version)
     observedMarker    String?  @map("observed_marker")
