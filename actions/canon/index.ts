@@ -14,6 +14,7 @@ import {
   setCanonDataTypePosition,
   updateCanonDataType,
 } from "./dataTypes";
+import { getCanonLookups } from "./lookups";
 import { createCanonDependency, deleteCanonDependency } from "./dependencies";
 import {
   grantCanonTeamPermission,
@@ -31,6 +32,9 @@ import {
 } from "./changeRequests";
 
 export const canonActions = {
+  lookups: {
+    getAll: getCanonLookups,
+  },
   teams: {
     getAll: getAllCanonTeams,
     create: createCanonTeam,

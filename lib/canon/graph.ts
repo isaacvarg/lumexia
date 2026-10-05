@@ -1,6 +1,5 @@
 import { CanonArtifact } from "@prisma/client";
 import { canonDependencyKinds } from "@/configs/staticRecords/canonDependencyKinds";
-import { canonSubjectTypes } from "@/configs/staticRecords/canonSubjectTypes";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
 import { Db } from "./db";
 import { CanonSubject, toSubjectKey } from "./subjectKey";
@@ -11,14 +10,6 @@ export const subjectOf = (artifact: Pick<CanonArtifact, "itemId" | "finishedProd
   if (artifact.finishedProductId) return { kind: "finishedProduct", finishedProductId: artifact.finishedProductId };
   if (artifact.supplierId) return { kind: "itemSupplier", itemId: artifact.itemId!, supplierId: artifact.supplierId };
   return { kind: "item", itemId: artifact.itemId! };
-};
-
-// Which subject types each dependency kind connects (parent → child).
-export const dependencyKindSubjects: Record<keyof typeof canonDependencyKinds, { parent: string | null; child: string | null }> = {
-  sameSubject: { parent: null, child: null }, // any, but parent and child must match
-  activeBom: { parent: canonSubjectTypes.item, child: canonSubjectTypes.item },
-  suppliers: { parent: canonSubjectTypes.itemSupplier, child: canonSubjectTypes.item },
-  filledItem: { parent: canonSubjectTypes.item, child: canonSubjectTypes.finishedProduct },
 };
 
 const activeBomItemIds = async (db: Db, itemId: string): Promise<string[]> => {

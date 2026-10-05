@@ -1,12 +1,8 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { canonDependencyKinds } from "@/configs/staticRecords/canonDependencyKinds";
-import { createsCycle, dependencyKindSubjects } from "@/lib/canon/graph";
-
-const kindKeyById = Object.fromEntries(
-  Object.entries(canonDependencyKinds).map(([key, id]) => [id, key]),
-) as Record<string, keyof typeof canonDependencyKinds>;
+import { createsCycle } from "@/lib/canon/graph";
+import { kindKeyById, validDependencyKinds } from "@/lib/canon/dependencyKinds";
 
 export const createCanonDependency = async (input: { parentId: string; childId: string; kindId: string }) => {
   const [parent, child] = await Promise.all([
@@ -14,15 +10,8 @@ export const createCanonDependency = async (input: { parentId: string; childId: 
     prisma.canonDataType.findUniqueOrThrow({ where: { id: input.childId } }),
   ]);
 
-  const kindKey = kindKeyById[input.kindId];
-  if (!kindKey) throw new Error("Unknown dependency kind.");
-
-  const expected = dependencyKindSubjects[kindKey];
-  const subjectsMatch =
-    kindKey === "sameSubject"
-      ? parent.subjectTypeId === child.subjectTypeId
-      : parent.subjectTypeId === expected.parent && child.subjectTypeId === expected.child;
-  if (!subjectsMatch) {
+  if (!kindKeyById[input.kindId]) throw new Error("Unknown dependency kind.");
+  if (!validDependencyKinds(parent.subjectTypeId, child.subjectTypeId).includes(input.kindId)) {
     throw new Error(`${parent.name} → ${child.name} can't be connected this way; their subjects don't fit.`);
   }
 

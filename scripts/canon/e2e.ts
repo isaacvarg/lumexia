@@ -146,7 +146,7 @@ const main = async () => {
     await expectThrow("supplier fact requires evidence", () =>
       proposeEdit(userA.id, { dataTypeId: supplierVegan.id, subject: { kind: "itemSupplier", itemId: materialId, supplierId: suppliers[0].id }, reason: "x", proposedContent: { value: true } }));
     const ev = [{ sourceTypeId: canonSourceTypes.supplierDocument, note: "TDS", sourceDate: new Date("2025-01-01") }];
-    for (const [i, value] of [true, false].entries()) {
+    for (const [i, value] of [[0, true], [1, false]] as const) {
       const cr = await proposeEdit(userA.id, { dataTypeId: supplierVegan.id, subject: { kind: "itemSupplier", itemId: materialId, supplierId: suppliers[i].id }, reason: "TDS", proposedContent: { value }, sources: ev });
       await reviewChangeRequest(userB.id, { changeRequestId: cr.id, approved: true });
     }
