@@ -11,6 +11,7 @@ import Files from "../files/Files";
 import Quality from "../quality/Quality";
 import { useTabSelection } from "@/store/tabSlice";
 import Danger from "../danger/Danger";
+import Canon from "../canon/Canon";
 
 
 const TabsContainer = () => {
@@ -36,6 +37,7 @@ const TabsContainer = () => {
         {currentTab === 'rnd' && <Rnd />}
         {currentTab === 'quality' && <Quality />}
         {currentTab === 'files' && <Files />}
+        {currentTab === 'canon' && <Canon />}
         {currentTab === 'danger' && <Danger />}
       </motion.div>
     </AnimatePresence>

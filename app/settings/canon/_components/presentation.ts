@@ -33,25 +33,37 @@ export const subjectColors: Record<string, { text: string; bg: string; border: s
   [canonSubjectTypes.itemSupplier]: { text: "text-accent", bg: "bg-accent/10", border: "border-accent", ring: "ring-accent/30" },
 };
 
-export const dependencyKindLabels: Record<string, { label: string; description: string; dashed: boolean }> = {
+type KindLabel = {
+  label: string
+  description: string
+  // the same explanation using the two types being connected, for the picker
+  explain: (parent: string, child: string) => string
+  dashed: boolean
+}
+
+export const dependencyKindLabels: Record<string, KindLabel> = {
   [canonDependencyKinds.sameSubject]: {
     label: "Same subject",
     description: "Each artifact depends on the parent artifact of the same item or finished product.",
+    explain: (parent, child) => `An item's ${child} depends on that same item's ${parent}.`,
     dashed: false,
   },
   [canonDependencyKinds.activeBom]: {
     label: "Via active BOM",
     description: "A product's artifact depends on this artifact for every material in its active BOM.",
+    explain: (parent, child) => `A product's ${child} depends on the ${parent} of every material in its active BOM.`,
     dashed: true,
   },
   [canonDependencyKinds.suppliers]: {
     label: "From suppliers",
     description: "An item's artifact depends on every supplier-stated artifact for that item.",
+    explain: (parent, child) => `An item's ${child} depends on the ${parent} stated by each of its suppliers.`,
     dashed: true,
   },
   [canonDependencyKinds.filledItem]: {
     label: "Filled item",
     description: "A finished product's artifact depends on the artifact of the item it is filled with.",
+    explain: (parent, child) => `A finished product's ${child} depends on the ${parent} of the item it's filled with.`,
     dashed: true,
   },
 };

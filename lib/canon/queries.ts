@@ -77,10 +77,10 @@ export const getItemCanon = async (userId: string, itemId: string) => {
     getApplicableDataTypes(canonSubjectTypes.finishedProduct, item),
   ]);
 
-  // suppliers with a stated fact already, plus any the user can add one for later
+  // suppliers with a stated fact already; the UI can start one for any other supplier
   const supplierArtifacts = await prisma.canonArtifact.findMany({
     where: { itemId, supplierId: { not: null } },
-    select: { supplierId: true },
+    select: { supplier: { select: { id: true, name: true } } },
     distinct: ["supplierId"],
   });
   const finishedProducts = await prisma.finishedProduct.findMany({
@@ -92,12 +92,18 @@ export const getItemCanon = async (userId: string, itemId: string) => {
   return {
     item: await buildEntries(userId, itemTypes, { kind: "item", itemId }),
     suppliers: await Promise.all(
-      supplierArtifacts.map(async ({ supplierId }) => ({
-        supplierId: supplierId!,
-        entries: await buildEntries(userId, supplierTypes, { kind: "itemSupplier", itemId, supplierId: supplierId! }),
+      supplierArtifacts.map(async ({ supplier }) => ({
+        supplier: supplier!,
+        entries: await buildEntries(userId, supplierTypes, { kind: "itemSupplier", itemId, supplierId: supplier!.id }),
       })),
     ),
     supplierDataTypes: supplierTypes,
+    // files on the item, offered as evidence
+    files: await prisma.itemFile.findMany({
+      where: { itemId },
+      select: { fileId: true, file: { select: { name: true } }, fileType: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
     finishedProducts: await Promise.all(
       finishedProducts.map(async (fp) => ({
         finishedProduct: fp,
@@ -105,6 +111,15 @@ export const getItemCanon = async (userId: string, itemId: string) => {
       })),
     ),
   };
+};
+
+export type ItemCanon = Awaited<ReturnType<typeof getItemCanon>>;
+
+// Entries for one supplier that has no statements yet, so the UI can add the first one.
+export const getSupplierCanonEntries = async (userId: string, itemId: string, supplierId: string) => {
+  const item = await prisma.item.findUniqueOrThrow({ where: { id: itemId } });
+  const supplierTypes = await getApplicableDataTypes(canonSubjectTypes.itemSupplier, item);
+  return buildEntries(userId, supplierTypes, { kind: "itemSupplier", itemId, supplierId });
 };
 
 // The full history behind an artifact: every version with its CR, reviews, evidence and lineage,

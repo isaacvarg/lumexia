@@ -22,7 +22,13 @@ import {
   revokeCanonTeamPermission,
   revokeCanonUserPermission,
 } from "./permissions";
-import { getCanonArtifactHistory, getCanonForItem, refreshAllCanonArtifacts } from "./artifacts";
+import {
+  getCanonArtifactHistory,
+  getCanonForItem,
+  getCanonSupplierEntries,
+  getCanonSupplierOptions,
+  refreshAllCanonArtifacts,
+} from "./artifacts";
 import {
   acceptCanonSource,
   confirmCanonStale,
@@ -63,6 +69,8 @@ export const canonActions = {
   },
   artifacts: {
     getForItem: getCanonForItem,
+    getSupplierEntries: getCanonSupplierEntries,
+    getSupplierOptions: getCanonSupplierOptions,
     getHistory: getCanonArtifactHistory,
     refreshAll: refreshAllCanonArtifacts,
   },

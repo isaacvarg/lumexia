@@ -23,7 +23,7 @@ const DependencyKindPicker = ({ parentName, childName, kindIds, onPick, onCancel
               className="rounded-lg border border-base-300 p-3 text-left transition-colors hover:border-primary hover:bg-primary/5"
             >
               <div className="font-medium">{dependencyKindLabels[kindId]?.label}</div>
-              <div className="text-sm text-base-content/60">{dependencyKindLabels[kindId]?.description}</div>
+              <div className="text-sm text-base-content/60">{dependencyKindLabels[kindId]?.explain(parentName, childName)}</div>
             </button>
           ))}
         </div>
