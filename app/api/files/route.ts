@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "@/lib/s3";
 import { verifyFileToken } from "@/lib/fileUrlSigning";
+import { requireApiUser } from "@/lib/requireApiUser";
 
 // The object store (RustFS) is only reachable inside the docker network, so the
 // browser cannot fetch objects directly (see lib/fileUrlSigning.ts). This route
@@ -13,6 +14,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const gate = await requireApiUser();
+  if (gate instanceof Response) return gate;
+
   const { searchParams } = request.nextUrl;
   const bucket = searchParams.get("b");
   const key = searchParams.get("k");

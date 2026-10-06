@@ -1,8 +1,12 @@
 "use server"
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireApiUser } from "@/lib/requireApiUser";
 
 export async function POST(request: Request) {
+    const gate = await requireApiUser();
+    if (gate instanceof Response) return gate;
+
     const { lot_number } = await request.json();
 
     if (!lot_number) {
