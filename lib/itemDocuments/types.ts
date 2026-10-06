@@ -1,4 +1,4 @@
-import { ItemDocumentRequirement } from "@prisma/client";
+import type { ItemDocumentRequirement } from "@prisma/client";
 
 export type RequirementLevel = "required" | "optional" | "excluded";
 export type RequirementScope = "item" | "lot";

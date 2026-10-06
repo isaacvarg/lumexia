@@ -1,6 +1,6 @@
 import { createCertificateOfAnalysis } from "@/utils/pdf/generators/certificateOfAnalysis";
 import { getCoaData } from "./getCoaData";
-import { ensureRegulatoryFileType } from "./ensureRegulatoryFileType";
+import { ensureCoaFileType } from "./ensureCoaFileType";
 import { createItemFile } from "../files/createItemFile";
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog";
 import { DateTime } from "luxon";
@@ -57,8 +57,8 @@ export const generateCoa = async (
 
   const uploadData: FileResponseData = await uploadRes.json();
 
-  // Ensure the "Regulatory" file type exists
-  const fileType = await ensureRegulatoryFileType();
+  // Ensure the COA file type exists
+  const fileType = await ensureCoaFileType();
 
   // Link file to item
   await createItemFile({

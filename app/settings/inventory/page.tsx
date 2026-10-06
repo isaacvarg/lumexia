@@ -7,16 +7,19 @@ import { getAllItemTypes } from "@/actions/inventory/itemTypes/getAll"
 import { getItemFileTypes } from "@/app/inventory/items/[name]/_actions/files/getItemFilesTypes"
 import { getAllUom } from "@/actions/inventory/getAllUom"
 import { getAllUomConversions } from "@/actions/inventory/uomConversions/getAll"
+import procurementTypeActions from "@/actions/inventory/procurementTypeActions"
+import { getAllDocumentRequirements } from "@/actions/inventory/documentRequirements"
 import InventoryAuditSettingsForm from "./_components/InventoryAuditSettingsForm"
 import InventoryConfiguration from "./_components/InventoryConfiguration"
 import UnitsConfiguration from "./_components/UnitsConfiguration"
+import DocumentRequirements from "./_components/documents/DocumentRequirements"
 import TabSelector from "./_components/shared/TabSelector"
 import TabsContainer from "./_components/shared/TabsContainer"
 import InventorySettingsHelper from "./_components/shared/InventorySettingsHelper"
 
 const InventorySettingsPage = async () => {
 
-  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes, uoms, uomConversions] = await Promise.all([
+  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes, uoms, uomConversions, procurementTypes, documentRequirements] = await Promise.all([
     appActions.configs.ensureInventoryAuditConfigs(),
     itemTypeActions.getAll(),
     inventoryTypeActions.getAll(),
@@ -25,6 +28,8 @@ const InventorySettingsPage = async () => {
     getItemFileTypes(),
     getAllUom(),
     getAllUomConversions(),
+    procurementTypeActions.getAll(),
+    getAllDocumentRequirements(),
   ])
 
   return (
@@ -41,6 +46,14 @@ const InventorySettingsPage = async () => {
             inventoryTypes={inventoryTypes}
             itemTypes={itemTypesWithConfig}
             aliasTypes={aliasTypes}
+            fileTypes={fileTypes}
+          />
+        }
+        documents={
+          <DocumentRequirements
+            requirements={documentRequirements}
+            itemTypes={itemTypes}
+            procurementTypes={procurementTypes}
             fileTypes={fileTypes}
           />
         }
