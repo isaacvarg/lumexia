@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Mon Oct 05 2026 13:22:37 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Tue Oct 06 2026 08:59:05 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -954,6 +954,21 @@ model CanonDataTypeDependency {
   @@map("canon_data_type_dependencies")
 }
 
+// User-defined grouping of data types (e.g. "Website", "Regulatory"), used to organise
+// settings, the item Canon tab and the dashboard. Deleting a group ungroups its types.
+model CanonDataTypeGroup {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  sequence    Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  dataTypes CanonDataType[]
+
+  @@map("canon_data_type_groups")
+}
+
 // Restricts a data type to certain item types. No rows = applies to every item type.
 model CanonDataTypeItemType {
   id         String   @id @default(uuid())
@@ -1023,8 +1038,13 @@ model CanonDataType {
   requiredApprovals         Int      @default(1) @map("required_approvals")
   requiresDifferentReviewer Boolean  @default(false) @map("requires_different_reviewer")
   requiresEvidence          Boolean  @default(false) @map("requires_evidence")
+  // item types only: suppliers can also state this fact. Their statements are artifacts of the
+  // same type keyed by item + supplier, and they feed the item value (staleness and conflicts).
+  allowSupplierStatements   Boolean  @default(false) @map("allow_supplier_statements")
   // a version expires this many days after its source date; null = never
   reverifyAfterDays         Int?     @map("reverify_after_days")
+  // optional organisation, e.g. "Website" or "Regulatory"
+  groupId                   String?  @map("group_id")
   // null = applies to every procurement type
   procurementTypeId         String?  @map("procurement_type_id")
   recordStatusId            String   @map("record_status_id")
@@ -1033,10 +1053,11 @@ model CanonDataType {
   createdAt                 DateTime @default(now()) @map("created_at")
   updatedAt                 DateTime @updatedAt @map("updated_at")
 
-  shape           CanonShape       @relation(fields: [shapeId], references: [id])
-  subjectType     CanonSubjectType @relation(fields: [subjectTypeId], references: [id])
-  procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id])
-  recordStatus    RecordStatus     @relation(fields: [recordStatusId], references: [id])
+  group           CanonDataTypeGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  shape           CanonShape          @relation(fields: [shapeId], references: [id])
+  subjectType     CanonSubjectType    @relation(fields: [subjectTypeId], references: [id])
+  procurementType ProcurementType?    @relation(fields: [procurementTypeId], references: [id])
+  recordStatus    RecordStatus        @relation(fields: [recordStatusId], references: [id])
 
   itemTypes       CanonDataTypeItemType[]
   userPermissions CanonDataTypeUserPermission[]

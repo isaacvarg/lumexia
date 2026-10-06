@@ -2,11 +2,11 @@
 
 import TabButton from "./TabButton";
 
-export type CanonSettingsTab = 'dataTypes' | 'teams'
+export type CanonSettingsTab = 'dataTypes' | 'groups' | 'teams'
 
 const TabSelector = () => {
 
-  const tabs: CanonSettingsTab[] = ['dataTypes', 'teams'];
+  const tabs: CanonSettingsTab[] = ['dataTypes', 'groups', 'teams'];
 
   return (
     <div className="flex items-center justify-start gap-6">

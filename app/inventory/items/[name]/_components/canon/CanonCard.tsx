@@ -8,14 +8,33 @@ import StatusBadge from "./StatusBadge"
 
 export type CanonAction = "propose" | "confirm" | "accept" | "history"
 
-const CanonCard = ({ entry, onAction }: { entry: CanonEntry; onAction: (action: CanonAction) => void }) => {
-  const { dataType, artifact, live, canEdit, canReview } = entry
+type Props = {
+  entry: CanonEntry
+  onAction: (action: CanonAction) => void
+  // extra content at the bottom of the card, e.g. supplier statements
+  children?: React.ReactNode
+}
+
+const CanonCard = ({ entry, onAction, children }: Props) => {
+  const { dataType, artifact, live, canEdit, canReview, hasEditors, hasReviewers } = entry
   const [copied, setCopied] = useState(false)
 
   const shapeKey = getShapeKey(dataType.shapeId)
   const isLinked = !!dataType.resolverKey
   const accepted = artifact?.currentVersion?.content ?? null
   const pendingReviews = artifact?._count.changeRequests ?? 0
+  const awaitingAcceptance = isLinked && !!live && (!artifact?.currentVersion || !!artifact?.hasUnreviewedChange)
+
+  // why there's no button: nobody has the capability yet, or this user doesn't
+  const blocker = !isLinked && !canEdit
+    ? hasEditors
+      ? "Only this type's editors can add or change its value."
+      : "Nobody can edit this yet. Add editors in Settings → Canon."
+    : awaitingAcceptance && !canReview
+      ? hasReviewers
+        ? "Waiting for a reviewer to accept the source value."
+        : "Nobody can accept the source value yet. Add reviewers in Settings → Canon."
+      : null
 
   const copy = async () => {
     if (accepted === null) return
@@ -79,7 +98,7 @@ const CanonCard = ({ entry, onAction }: { entry: CanonEntry; onAction: (action: 
             </button>
           )}
 
-          {isLinked && canReview && live && (!artifact?.currentVersion || artifact.hasUnreviewedChange) && (
+          {awaitingAcceptance && canReview && (
             <button onClick={() => onAction("accept")} className="btn btn-sm btn-soft btn-warning">
               <TbShieldCheck className="size-4" /> {artifact?.currentVersion ? "Review source change" : "Accept source"}
             </button>
@@ -92,6 +111,10 @@ const CanonCard = ({ entry, onAction }: { entry: CanonEntry; onAction: (action: 
             </button>
           )}
         </div>
+
+        {blocker && <p className="text-xs text-base-content/50">{blocker}</p>}
+
+        {children}
       </div>
     </div>
   )

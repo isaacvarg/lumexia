@@ -186,7 +186,10 @@ const openChangeRequest = async (
 
   return prisma.$transaction(async (tx) => {
     const dataType = await tx.canonDataType.findUniqueOrThrow({ where: { id: input.dataTypeId } });
-    if (dataType.subjectTypeId !== subjectTypeIdByKind[input.subject.kind]) {
+    // item types that allow supplier statements also take item + supplier subjects
+    const isSupplierStatement =
+      input.subject.kind === "itemSupplier" && dataType.subjectTypeId === canonSubjectTypes.item && dataType.allowSupplierStatements;
+    if (!isSupplierStatement && dataType.subjectTypeId !== subjectTypeIdByKind[input.subject.kind]) {
       throw new Error(`${dataType.name} does not apply to this kind of subject.`);
     }
 

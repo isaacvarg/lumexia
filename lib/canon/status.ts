@@ -50,20 +50,26 @@ export const computeStatusReasons = async (db: Db, artifact: CanonArtifact): Pro
 
   const expired = !!current?.reverifyAt && current.reverifyAt < new Date();
 
-  // supplier-stated facts that disagree with each other
+  // supplier statements that disagree with each other, compared within each data type: statements of
+  // this type (when it allows them) and of any type linked "From suppliers"
   const supplierDependencies = await db.canonDataTypeDependency.findMany({
     where: { childId: artifact.dataTypeId, kindId: canonDependencyKinds.suppliers },
     select: { parentId: true },
   });
-  const supplierParentTypeIds = new Set(supplierDependencies.map((d) => d.parentId));
-  const supplierVersionIds = parents
-    .filter((p) => supplierParentTypeIds.has(p.dataTypeId) && p.currentVersionId)
-    .map((p) => p.currentVersionId!);
-  const supplierContents = await db.canonArtifactVersion.findMany({
-    where: { id: { in: supplierVersionIds } },
-    select: { content: true },
+  const supplierTypeIds = new Set([...supplierDependencies.map((d) => d.parentId), artifact.dataTypeId]);
+  const statements = parents.filter((p) => p.supplierId && supplierTypeIds.has(p.dataTypeId) && p.currentVersionId);
+  const statementVersions = await db.canonArtifactVersion.findMany({
+    where: { id: { in: statements.map((p) => p.currentVersionId!) } },
+    select: { id: true, content: true },
   });
-  const conflict = new Set(supplierContents.map((v) => stableStringify(v.content))).size > 1;
+  const contentByVersion = new Map(statementVersions.map((v) => [v.id, stableStringify(v.content)]));
+  const contentsByType = new Map<string, Set<string>>();
+  for (const p of statements) {
+    const contents = contentsByType.get(p.dataTypeId) ?? new Set<string>();
+    contents.add(contentByVersion.get(p.currentVersionId!) ?? "");
+    contentsByType.set(p.dataTypeId, contents);
+  }
+  const conflict = Array.from(contentsByType.values()).some((contents) => contents.size > 1);
 
   return { pending: !current, stale, unreviewedChange, expired, conflict };
 };

@@ -17,8 +17,13 @@ model CanonDataType {
     requiredApprovals         Int      @default(1) @map("required_approvals")
     requiresDifferentReviewer Boolean  @default(false) @map("requires_different_reviewer")
     requiresEvidence          Boolean  @default(false) @map("requires_evidence")
+    // item types only: suppliers can also state this fact. Their statements are artifacts of the
+    // same type keyed by item + supplier, and they feed the item value (staleness and conflicts).
+    allowSupplierStatements   Boolean  @default(false) @map("allow_supplier_statements")
     // a version expires this many days after its source date; null = never
     reverifyAfterDays         Int?     @map("reverify_after_days")
+    // optional organisation, e.g. "Website" or "Regulatory"
+    groupId                   String?  @map("group_id")
     // null = applies to every procurement type
     procurementTypeId         String?  @map("procurement_type_id")
     recordStatusId            String   @map("record_status_id")
@@ -27,6 +32,7 @@ model CanonDataType {
     createdAt                 DateTime @default(now()) @map("created_at")
     updatedAt                 DateTime @updatedAt @map("updated_at")
 
+    group           CanonDataTypeGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
     shape           CanonShape       @relation(fields: [shapeId], references: [id])
     subjectType     CanonSubjectType @relation(fields: [subjectTypeId], references: [id])
     procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id])

@@ -12,6 +12,11 @@ export const subjectOf = (artifact: Pick<CanonArtifact, "itemId" | "finishedProd
   return { kind: "item", itemId: artifact.itemId! };
 };
 
+const allowsSupplierStatements = async (db: Db, dataTypeId: string) => {
+  const dataType = await db.canonDataType.findUnique({ where: { id: dataTypeId }, select: { allowSupplierStatements: true } });
+  return !!dataType?.allowSupplierStatements;
+};
+
 const activeBomItemIds = async (db: Db, itemId: string): Promise<string[]> => {
   const lines = await db.billOfMaterial.findMany({
     where: {
@@ -41,6 +46,15 @@ export const getParentArtifacts = async (db: Db, child: CanonArtifact) => {
   const dependencies = await db.canonDataTypeDependency.findMany({ where: { childId: child.dataTypeId } });
   const subject = subjectOf(child);
   const parents: CanonArtifact[] = [];
+
+  // an item value depends on the supplier statements of the same type, when the type allows them
+  if (subject.kind === "item" && (await allowsSupplierStatements(db, child.dataTypeId))) {
+    parents.push(
+      ...(await db.canonArtifact.findMany({
+        where: { dataTypeId: child.dataTypeId, itemId: subject.itemId, supplierId: { not: null } },
+      })),
+    );
+  }
 
   for (const dep of dependencies) {
     let subjectKeys: string[] = [];
@@ -81,6 +95,15 @@ export const getChildArtifacts = async (db: Db, parent: CanonArtifact) => {
   const dependencies = await db.canonDataTypeDependency.findMany({ where: { parentId: parent.dataTypeId } });
   const subject = subjectOf(parent);
   const children: CanonArtifact[] = [];
+
+  // a supplier statement feeds the item value of the same type
+  if (subject.kind === "itemSupplier" && (await allowsSupplierStatements(db, parent.dataTypeId))) {
+    children.push(
+      ...(await db.canonArtifact.findMany({
+        where: { dataTypeId: parent.dataTypeId, subjectKey: toSubjectKey({ kind: "item", itemId: subject.itemId }) },
+      })),
+    );
+  }
 
   for (const dep of dependencies) {
     let subjectKeys: string[] = [];

@@ -6,12 +6,14 @@ import procurementTypeActions from "@/actions/inventory/procurementTypeActions";
 import { users as staticUsers } from "@/configs/staticRecords/users";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
-import DataTypeCanvas from "./_components/canvas/DataTypeCanvas";
+import DataTypesView from "./_components/DataTypesView";
+import Groups from "./_components/groups/Groups";
 import Teams from "./_components/teams/Teams";
 
 const CanonSettingsPage = async () => {
-  const [dataTypes, teams, lookups, resolvers, users, itemTypes, procurementTypes] = await Promise.all([
+  const [dataTypes, groups, teams, lookups, resolvers, users, itemTypes, procurementTypes] = await Promise.all([
     canonActions.dataTypes.getAll(),
+    canonActions.groups.getAll(),
     canonActions.teams.getAll(),
     canonActions.lookups.getAll(),
     canonActions.dataTypes.getResolverOptions(),
@@ -31,8 +33,9 @@ const CanonSettingsPage = async () => {
       <TabSelector />
       <TabsContainer
         dataTypes={
-          <DataTypeCanvas
+          <DataTypesView
             dataTypes={dataTypes}
+            groups={groups}
             lookups={lookups}
             resolvers={resolvers}
             teams={teams}
@@ -41,6 +44,7 @@ const CanonSettingsPage = async () => {
             procurementTypes={procurementTypes}
           />
         }
+        groups={<Groups groups={groups} />}
         teams={<Teams teams={teams} users={activeUsers} />}
       />
     </div>

@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { TbPlus, TbUser, TbUsersGroup, TbX } from "react-icons/tb"
+import { TbAlertTriangle, TbPlus, TbUser, TbUsersGroup, TbX } from "react-icons/tb"
 import { canonActions } from "@/actions/canon"
 import { canonCapabilities } from "@/configs/staticRecords/canonCapabilities"
 import { CanonDataTypeRow, CanonSettingsData } from "../types"
@@ -96,10 +96,25 @@ const CapabilityList = ({
 
 const PermissionsPanel = ({ dataType, settings }: { dataType: CanonDataTypeRow; settings: CanonSettingsData }) => {
   const isLinked = !!dataType.resolverKey
+  const has = (capabilityId: string) =>
+    [...dataType.userPermissions, ...dataType.teamPermissions].some((p) => p.capabilityId === capabilityId)
+  // what's missing before anyone can put a value on an item
+  const missing = [
+    !isLinked && !has(canonCapabilities.edit) && "No editors yet, so nobody can add or change values.",
+    !has(canonCapabilities.review) && (isLinked
+      ? "No reviewers yet, so nobody can accept the Lumexia source value."
+      : "No reviewers yet, so proposed changes can't be approved."),
+  ].filter(Boolean) as string[]
 
   return (
     <Section title="Permissions">
       <div className="flex flex-col gap-5">
+        {missing.length > 0 && (
+          <div role="alert" className="alert alert-warning alert-soft text-sm">
+            <TbAlertTriangle className="size-5" />
+            <div>{missing.map((m) => <div key={m}>{m}</div>)}</div>
+          </div>
+        )}
         {!isLinked && (
           <CapabilityList
             title="Editors"

@@ -17,8 +17,10 @@ type DataTypeInput = {
   requiredApprovals?: number;
   requiresDifferentReviewer?: boolean;
   requiresEvidence?: boolean;
+  allowSupplierStatements?: boolean;
   reverifyAfterDays?: number | null;
   procurementTypeId?: string | null;
+  groupId?: string | null;
   itemTypeIds?: string[];
 };
 
@@ -40,6 +42,13 @@ const validateResolver = (input: Pick<DataTypeInput, "resolverKey" | "shapeId" |
   }
 };
 
+// supplier statements are item facts that suppliers can also state, so only authored item types
+const validateSupplierStatements = (input: Pick<DataTypeInput, "allowSupplierStatements" | "subjectTypeId" | "resolverKey">) => {
+  if (input.allowSupplierStatements && (input.subjectTypeId !== canonSubjectTypes.item || input.resolverKey)) {
+    throw new Error("Only authored Item data types can take supplier statements.");
+  }
+};
+
 const validateApprovals = (input: Pick<DataTypeInput, "requiredApprovals">) => {
   if (input.requiredApprovals !== undefined && input.requiredApprovals < 1) {
     throw new Error("A data type needs at least one approval.");
@@ -52,6 +61,7 @@ export const getAllCanonDataTypes = async () => {
     include: {
       shape: true,
       subjectType: true,
+      group: true,
       procurementType: true,
       itemTypes: { include: { itemType: true } },
       userPermissions: { include: { user: { select: { id: true, name: true, image: true } }, capability: true } },
@@ -77,6 +87,7 @@ export const getCanonResolverOptions = async () => {
 
 export const createCanonDataType = async (input: DataTypeInput) => {
   validateResolver(input);
+  validateSupplierStatements(input);
   validateApprovals(input);
 
   const { itemTypeIds = [], shapeConfig, ...data } = input;
@@ -109,6 +120,11 @@ export const updateCanonDataType = async (id: string, input: Partial<DataTypeInp
     subjectTypeId: input.subjectTypeId ?? existing.subjectTypeId,
   });
   validateApprovals(input);
+  validateSupplierStatements({
+    allowSupplierStatements: input.allowSupplierStatements ?? existing.allowSupplierStatements,
+    subjectTypeId: input.subjectTypeId ?? existing.subjectTypeId,
+    resolverKey: input.resolverKey !== undefined ? input.resolverKey : existing.resolverKey,
+  });
 
   const { itemTypeIds, shapeConfig, ...data } = input;
   return prisma.$transaction(async (tx) => {

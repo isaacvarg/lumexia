@@ -3,6 +3,7 @@ import { useTabActions, useTabSelection } from "@/store/tabSlice";
 
 const TAB_LABELS: Record<CanonSettingsTab, string> = {
   dataTypes: 'Data Types',
+  groups: 'Groups',
   teams: 'Teams',
 }
 

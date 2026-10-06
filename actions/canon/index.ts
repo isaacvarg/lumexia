@@ -15,6 +15,7 @@ import {
   updateCanonDataType,
 } from "./dataTypes";
 import { getCanonLookups } from "./lookups";
+import { createCanonGroup, deleteCanonGroup, getAllCanonGroups, reorderCanonGroups, updateCanonGroup } from "./groups";
 import { createCanonDependency, deleteCanonDependency } from "./dependencies";
 import {
   grantCanonTeamPermission,
@@ -27,7 +28,7 @@ import {
   getCanonDashboard,
   getCanonForItem,
   getCanonReviewQueue,
-  getCanonSupplierEntries,
+  getCanonSupplierEntry,
   getCanonSupplierOptions,
   refreshAllCanonArtifacts,
 } from "./artifacts";
@@ -42,6 +43,13 @@ import {
 export const canonActions = {
   lookups: {
     getAll: getCanonLookups,
+  },
+  groups: {
+    getAll: getAllCanonGroups,
+    create: createCanonGroup,
+    update: updateCanonGroup,
+    delete: deleteCanonGroup,
+    reorder: reorderCanonGroups,
   },
   teams: {
     getAll: getAllCanonTeams,
@@ -73,7 +81,7 @@ export const canonActions = {
     getDashboard: getCanonDashboard,
     getForItem: getCanonForItem,
     getReviewQueue: getCanonReviewQueue,
-    getSupplierEntries: getCanonSupplierEntries,
+    getSupplierEntry: getCanonSupplierEntry,
     getSupplierOptions: getCanonSupplierOptions,
     getHistory: getCanonArtifactHistory,
     refreshAll: refreshAllCanonArtifacts,
