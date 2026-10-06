@@ -8,7 +8,7 @@ import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { useDocumentCommands } from "./DocumentMenu"
 import { useFilesActions } from "./FilesContext"
 import { FileIcon } from "./DocumentLibrary"
-import { formatDate, issuerLabel, StatusBadge } from "./presentation"
+import { formatDate, issuerLabel, StatusBadge } from "@/components/ItemDocuments/presentation"
 
 const Detail = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex justify-between gap-4 py-1.5 text-sm">

@@ -3,7 +3,7 @@ import { useState } from "react"
 import { TbMinus } from "react-icons/tb"
 import { useItemSelection } from "@/store/itemSlice"
 import { useFilesActions } from "./FilesContext"
-import { formatDate, issuerLabel, statusDisplay } from "./presentation"
+import { formatDate, issuerLabel, statusDisplay } from "@/components/ItemDocuments/presentation"
 
 const originLabel: Record<string, string> = {
   purchaseOrderReceiving: "Received",

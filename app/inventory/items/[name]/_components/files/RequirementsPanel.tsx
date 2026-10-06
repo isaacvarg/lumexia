@@ -4,7 +4,7 @@ import { TbReplace, TbSettings, TbUpload } from "react-icons/tb"
 import { useItemSelection } from "@/store/itemSlice"
 import { EvaluatedRequirement } from "@/lib/itemDocuments/types"
 import { useFilesActions } from "./FilesContext"
-import { formatDate, issuerLabel, needsAttention, statusDisplay, StatusBadge } from "./presentation"
+import { formatDate, issuerLabel, needsAttention, statusDisplay, StatusBadge } from "@/components/ItemDocuments/presentation"
 
 const RequirementRow = ({ evaluated }: { evaluated: EvaluatedRequirement }) => {
   const { documents: itemDocuments, files } = useItemSelection()

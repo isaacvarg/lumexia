@@ -12,7 +12,7 @@ import DocumentLibrary from "./DocumentLibrary"
 import DocumentPreview from "./DocumentPreview"
 import LotDocumentsPanel from "./LotDocumentsPanel"
 import RequirementsPanel from "./RequirementsPanel"
-import { needsAttention, StatusBadge } from "./presentation"
+import { needsAttention, StatusBadge } from "@/components/ItemDocuments/presentation"
 
 const attentionOrder: RequirementStatus[] = ["missing", "expired", "stale", "undated", "expiring"]
 const rank = (s: DocumentStatus) => ["current", "expiring", "undated", "stale", "expired"].indexOf(s)

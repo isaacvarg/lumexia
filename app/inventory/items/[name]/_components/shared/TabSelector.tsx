@@ -8,6 +8,7 @@ const { produced } = procurementTypes;
 
 // define the tabs
 export type ItemTab = 'basics' | 'inventory' | 'purchasing' | 'pricing' | 'production' | 'rnd' | 'quality' | 'files' | 'canon' | 'danger';
+export const itemTabs: ItemTab[] = ['basics', 'inventory', 'purchasing', 'pricing', 'production', 'rnd', 'quality', 'files', 'canon', 'danger'];
 
 const TabSelector = () => {
 

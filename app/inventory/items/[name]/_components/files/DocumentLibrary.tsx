@@ -6,7 +6,7 @@ import { useItemSelection } from "@/store/itemSlice"
 import { DocumentStatus } from "@/lib/itemDocuments/types"
 import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { useFilesActions } from "./FilesContext"
-import { formatDate, issuerLabel, StatusBadge } from "./presentation"
+import { formatDate, issuerLabel, StatusBadge } from "@/components/ItemDocuments/presentation"
 import DocumentMenu from "./DocumentMenu"
 
 const versionKey = (f: ItemFile) => [f.fileTypeId, f.issuer, f.lotId ?? "", f.supplierId ?? ""].join("|")

@@ -21,6 +21,7 @@ import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
 import { DiscreteConversion } from "@/actions/inventory/items/discreteConversions/getAll";
 import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { QcMeasurementRow } from "../../_actions/quality/getMeasurements";
+import { ItemTab, itemTabs } from "../shared/TabSelector";
 
 type StateSetterProps = {
   activity: ItemActivity[],
@@ -42,6 +43,8 @@ type StateSetterProps = {
   qcMeasurements: QcMeasurementRow[]
   discreteConversions: DiscreteConversion[]
   reorderingRule: ReorderingRule
+  // ?tab=files etc. opens the item on that tab
+  initialTab?: string
 }
 
 
@@ -65,6 +68,7 @@ const StateSetter = ({
   qcMeasurements,
   discreteConversions,
   reorderingRule,
+  initialTab,
 }: StateSetterProps) => {
 
   // state actions
@@ -109,7 +113,7 @@ const StateSetter = ({
     setItem(item)
 
     // clear everything else
-    setCurrentTab('basics');
+    setCurrentTab(itemTabs.includes(initialTab as ItemTab) ? initialTab as ItemTab : 'basics');
     setSelectedAlias(null);
     setLotsViewMode('table');
     setPurchasingFilterMode('yearToDate');

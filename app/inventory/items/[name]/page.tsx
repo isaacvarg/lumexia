@@ -20,7 +20,7 @@ import { getItemMeasurements } from "./_actions/quality/getMeasurements";
 import DangerZoneButton from "./_components/shared/DangerZoneButton";
 import ItemHelper from "./_components/shared/ItemHelper";
 
-const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) => {
+const ItemDetails = async ({ searchParams }: { searchParams: { id: string; tab?: string } }) => {
 
   // all the data fetching
   const item = await inventoryActions.items.getOne(searchParams.id)
@@ -88,6 +88,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
         qcMeasurements={qcMeasurements}
         discreteConversions={discreteConversions}
         reorderingRule={reorderingRule}
+        initialTab={searchParams.tab}
       />
 
       <ItemHelper />
