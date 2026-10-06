@@ -26,6 +26,7 @@ import { QcTemplate } from "@/actions/quality/qc/templates/getAll";
 import { ReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { ItemActivity } from "@/app/inventory/items/[name]/_actions/basics/getActivity";
 import { ItemFile } from "@/app/inventory/items/[name]/_actions/files/getAllItemFiles";
+import { ItemDocuments } from "@/app/inventory/items/[name]/_actions/files/getItemDocuments";
 import { ItemFileType, getItemFileTypes } from "@/app/inventory/items/[name]/_actions/files/getItemFilesTypes";
 import { ItemInventoryAudits } from "@/app/inventory/items/[name]/_actions/inventory/getAudits";
 import { LotTransaction, getTransactionsByLot } from "@/app/inventory/items/[name]/_actions/inventory/getTransactionsByLot";
@@ -66,6 +67,7 @@ type State = {
   currentTab: ItemTab;
   examinations: PricingExamination[],
   files: ItemFile[],
+  documents: ItemDocuments,
   filterPurchaseOrdersYear: string | undefined;
   filteredPurchaseOrders: FilteredPurchaseOrder[];
   item: SingleItem | null;
@@ -106,6 +108,7 @@ type Actions = {
     setCurrentTab: (tab: ItemTab) => void;
     setExaminations: (examinations: PricingExamination[]) => void;
     setFiles: (file: ItemFile[]) => void;
+    setDocuments: (documents: ItemDocuments) => void;
     setItem: (item: SingleItem | null) => void;
     setInventory: (inventory: Inventory | null) => void;
     setLotsViewMode: (mode: LotsViewMode) => void;
@@ -134,6 +137,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
   currentTab: 'basics' as ItemTab,
   examinations: [],
   files: [],
+  documents: { requirements: [], fileTypes: [], orderedFrom: [], lots: [] },
   filteredPurchaseOrders: [],
   item: null,
   inventory: null,
@@ -271,6 +275,10 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
 
     setExaminations: (examinations) => {
       set(() => ({ examinations, }))
+    },
+
+    setDocuments: (documents) => {
+      set(() => ({ documents }))
     },
 
     setFiles: (files) => {

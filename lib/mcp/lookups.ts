@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Db } from "@/lib/canon/db";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -13,14 +14,14 @@ export const findItem = async (identifier: string) => {
 
 // On-hand per lot: initial quantity plus additions minus deductions, summed in the database
 // so items with long transaction histories stay cheap.
-export const getLotQuantities = async (lots: { id: string; initialQuantity: number }[]) => {
+export const getLotQuantities = async (lots: { id: string; initialQuantity: number }[], db: Db = prisma) => {
   const [sums, transactionTypes] = await Promise.all([
-    prisma.transaction.groupBy({
+    db.transaction.groupBy({
       by: ["lotId", "transactionTypeId"],
       where: { lotId: { in: lots.map((l) => l.id) } },
       _sum: { amount: true },
     }),
-    prisma.transactionType.findMany({ select: { id: true, deduction: true } }),
+    db.transactionType.findMany({ select: { id: true, deduction: true } }),
   ]);
 
   const deducts = new Map(transactionTypes.map((t) => [t.id, t.deduction]));

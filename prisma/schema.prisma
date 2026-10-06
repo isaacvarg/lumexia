@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Tue Oct 06 2026 11:01:52 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Tue Oct 06 2026 14:26:56 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -1508,6 +1508,7 @@ model Lot {
   qcRecords         QcRecord[]
   notes             LotNote[]
   purchaseOrderItem PurchaseOrderItem?
+  ItemFile          ItemFile[]
   BprStaging        BprStaging[]
 
   @@map("lots")
@@ -1640,31 +1641,78 @@ model InventoryType {
   @@map("inventory_types")
 }
 
+// Declares which documents items should have. A rule matches on item type, procurement type, or both;
+// for each file type + issuer, the most specific matching rule wins (both > item type > procurement type).
+// level: required | optional | excluded (excluded cancels a broader rule)
+// scope: item (one current document per item) | lot (one per applicable lot)
+// issuer: supplier | internal | any
+model ItemDocumentRequirement {
+  id                String    @id @default(uuid())
+  itemTypeId        String?   @map("item_type_id")
+  procurementTypeId String?   @map("procurement_type_id")
+  fileTypeId        String    @map("file_type_id")
+  level             String
+  scope             String
+  issuer            String
+  validForMonths    Int?      @map("valid_for_months")
+  minIssuedAt       DateTime? @map("min_issued_at")
+  warnDays          Int       @default(60) @map("warn_days")
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  itemType        ItemType?        @relation(fields: [itemTypeId], references: [id], onDelete: Cascade)
+  procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id], onDelete: Cascade)
+  fileType        ItemFileType     @relation(fields: [fileTypeId], references: [id], onDelete: Cascade)
+
+  @@index([itemTypeId])
+  @@index([procurementTypeId])
+  @@map("item_document_requirements")
+}
+
 model ItemFileType {
-  id          String     @id @default(uuid())
-  name        String
-  abbreviaton String?
-  description String?
-  bgColor     String     @map("bg_color")
-  textColor   String     @map("text_color")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  itemFiles   ItemFile[]
+  id                      String                    @id @default(uuid())
+  name                    String
+  abbreviaton             String?
+  description             String?
+  bgColor                 String                    @map("bg_color")
+  textColor               String                    @map("text_color")
+  createdAt               DateTime                  @default(now()) @map("created_at")
+  updatedAt               DateTime                  @updatedAt @map("updated_at")
+  itemFiles               ItemFile[]
+  ItemDocumentRequirement ItemDocumentRequirement[]
 
   @@map("item_file_types")
 }
 
+// issuer: supplier | internal. A newer upload with the same item, file type, issuer, lot and supplier
+// sets supersededAt on the previous one. derivedFrom points an internal (rebranded) document at the
+// supplier document it was based on, so it can be flagged stale when that source is superseded.
 model ItemFile {
-  id         String       @id @default(uuid())
-  fileTypeId String       @map("file_type_id")
-  fileId     String       @map("file_id")
-  itemId     String       @map("item_id")
-  createdAt  DateTime     @default(now()) @map("created_at")
-  updatedAt  DateTime     @updatedAt @map("updated_at")
-  fileType   ItemFileType @relation(fields: [fileTypeId], references: [id])
-  file       File         @relation(fields: [fileId], references: [id])
-  item       Item         @relation(fields: [itemId], references: [id])
+  id            String       @id @default(uuid())
+  fileTypeId    String       @map("file_type_id")
+  fileId        String       @map("file_id")
+  itemId        String       @map("item_id")
+  lotId         String?      @map("lot_id")
+  supplierId    String?      @map("supplier_id")
+  issuer        String       @default("supplier")
+  issuedAt      DateTime?    @map("issued_at")
+  expiresAt     DateTime?    @map("expires_at")
+  revision      String?
+  supersededAt  DateTime?    @map("superseded_at")
+  derivedFromId String?      @map("derived_from_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  fileType      ItemFileType @relation(fields: [fileTypeId], references: [id])
+  file          File         @relation(fields: [fileId], references: [id])
+  item          Item         @relation(fields: [itemId], references: [id])
+  lot           Lot?         @relation(fields: [lotId], references: [id])
+  supplier      Supplier?    @relation(fields: [supplierId], references: [id])
+  derivedFrom   ItemFile?    @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
+  derivatives   ItemFile[]   @relation("ItemFileDerivation")
 
+  @@index([itemId])
+  @@index([lotId])
   @@map("item_files")
 }
 
@@ -1721,15 +1769,16 @@ model ItemTypeConfig {
 }
 
 model ItemType {
-  id                    String                  @id @default(uuid())
-  name                  String
-  createdAt             DateTime                @default(now()) @map("created_at")
-  updatedAt             DateTime                @updatedAt @map("updated_at")
-  items                 Item[]
-  pricingTemplates      PricingTemplate[]
-  discrepancyAudits     DiscrepancyAudit[]
-  config                ItemTypeConfig?
-  CanonDataTypeItemType CanonDataTypeItemType[]
+  id                      String                    @id @default(uuid())
+  name                    String
+  createdAt               DateTime                  @default(now()) @map("created_at")
+  updatedAt               DateTime                  @updatedAt @map("updated_at")
+  items                   Item[]
+  pricingTemplates        PricingTemplate[]
+  discrepancyAudits       DiscrepancyAudit[]
+  config                  ItemTypeConfig?
+  CanonDataTypeItemType   CanonDataTypeItemType[]
+  ItemDocumentRequirement ItemDocumentRequirement[]
 
   @@map("item_types")
 }
@@ -1784,12 +1833,13 @@ model Item {
 }
 
 model ProcurementType {
-  id            String          @id @default(uuid())
-  name          String
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
-  items         Item[]
-  CanonDataType CanonDataType[]
+  id                      String                    @id @default(uuid())
+  name                    String
+  createdAt               DateTime                  @default(now()) @map("created_at")
+  updatedAt               DateTime                  @updatedAt @map("updated_at")
+  items                   Item[]
+  CanonDataType           CanonDataType[]
+  ItemDocumentRequirement ItemDocumentRequirement[]
 
   @@map("procurement_types")
 }
@@ -2971,6 +3021,7 @@ model Supplier {
   poSupplierNotes                      PoSupplierNote[]
   discreteUnitOfMeasurementConversions DiscreteUnitOfMeasurementConversion[]
   CanonArtifact                        CanonArtifact[]
+  ItemFile                             ItemFile[]
   PurchasingRequestSupplierTag         PurchasingRequestSupplierTag[]
   SupplierContact                      SupplierContact[]
 

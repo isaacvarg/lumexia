@@ -2,11 +2,11 @@
 
 import TabButton from "./TabButton";
 
-export type InventorySettingsTab = 'triggers' | 'configuration' | 'units'
+export type InventorySettingsTab = 'triggers' | 'configuration' | 'documents' | 'units'
 
 const TabSelector = () => {
 
-  const tabs: InventorySettingsTab[] = ['triggers', 'configuration', 'units'];
+  const tabs: InventorySettingsTab[] = ['triggers', 'configuration', 'documents', 'units'];
 
   return (
     <div className="flex items-center justify-start gap-6">

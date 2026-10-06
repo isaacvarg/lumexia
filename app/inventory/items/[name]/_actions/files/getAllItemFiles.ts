@@ -10,6 +10,8 @@ export const getAllItemFiles = async (itemId: string) => {
     },
     include: {
       fileType: true,
+      lot: { select: { id: true, lotNumber: true } },
+      supplier: { select: { id: true, name: true } },
       file: {
         include: {
           uploadedBy: true,
@@ -19,7 +21,8 @@ export const getAllItemFiles = async (itemId: string) => {
           },
         }
       }
-    }
+    },
+    orderBy: [{ issuedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
   })
 
   const transformedData = await Promise.all(files.map(async (file) => {

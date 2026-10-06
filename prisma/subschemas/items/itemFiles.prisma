@@ -1,13 +1,30 @@
+// issuer: supplier | internal. A newer upload with the same item, file type, issuer, lot and supplier
+// sets supersededAt on the previous one. derivedFrom points an internal (rebranded) document at the
+// supplier document it was based on, so it can be flagged stale when that source is superseded.
 model ItemFile {
     id              String               @id @default(uuid())
     fileTypeId      String               @map("file_type_id")
     fileId          String               @map("file_id")
     itemId String               @map("item_id")
+    lotId           String?              @map("lot_id")
+    supplierId      String?              @map("supplier_id")
+    issuer          String               @default("supplier")
+    issuedAt        DateTime?            @map("issued_at")
+    expiresAt       DateTime?            @map("expires_at")
+    revision        String?
+    supersededAt    DateTime?            @map("superseded_at")
+    derivedFromId   String?              @map("derived_from_id")
     createdAt       DateTime             @default(now()) @map("created_at")
     updatedAt       DateTime             @updatedAt @map("updated_at")
     fileType        ItemFileType @relation(fields: [fileTypeId], references: [id])
     file            File                 @relation(fields: [fileId], references: [id])
     item   Item        @relation(fields: [itemId], references: [id])
+    lot             Lot?                 @relation(fields: [lotId], references: [id])
+    supplier        Supplier?            @relation(fields: [supplierId], references: [id])
+    derivedFrom     ItemFile?            @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
+    derivatives     ItemFile[]           @relation("ItemFileDerivation")
 
+    @@index([itemId])
+    @@index([lotId])
     @@map("item_files")
 }

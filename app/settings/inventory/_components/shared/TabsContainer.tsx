@@ -6,10 +6,11 @@ import React from "react"
 type Props = {
   triggers: React.ReactNode
   configuration: React.ReactNode
+  documents: React.ReactNode
   units: React.ReactNode
 }
 
-const TabsContainer = ({ triggers, configuration, units }: Props) => {
+const TabsContainer = ({ triggers, configuration, documents, units }: Props) => {
 
   const { activeTab } = useTabSelection()
   const currentTab = activeTab.inventorySettings;
@@ -25,6 +26,7 @@ const TabsContainer = ({ triggers, configuration, units }: Props) => {
       >
         {currentTab === 'triggers' && triggers}
         {currentTab === 'configuration' && configuration}
+        {currentTab === 'documents' && documents}
         {currentTab === 'units' && units}
       </motion.div>
     </AnimatePresence>
