@@ -137,7 +137,7 @@ export const useItemSelection = create<State & Actions>((set, get) => ({
   currentTab: 'basics' as ItemTab,
   examinations: [],
   files: [],
-  documents: { requirements: [], fileTypes: [], lots: [] },
+  documents: { requirements: [], fileTypes: [], orderedFrom: [], lots: [] },
   filteredPurchaseOrders: [],
   item: null,
   inventory: null,

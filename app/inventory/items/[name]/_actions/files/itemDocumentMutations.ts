@@ -29,7 +29,13 @@ const clean = (d: ItemDocumentDetails) => ({
 })
 
 // Files uploaded together share their details; each replaces older current versions of the same document.
-export const createItemDocuments = async (itemId: string, files: { fileId: string; name: string }[], details: ItemDocumentDetails) => {
+// `alsoReplace` are current files the uploader chose to replace even though their supplier differs.
+export const createItemDocuments = async (
+  itemId: string,
+  files: { fileId: string; name: string }[],
+  details: ItemDocumentDetails,
+  alsoReplace: string[] = []
+) => {
   await prisma.$transaction(async (tx) => {
     const created = await Promise.all(
       files.map((f) => tx.itemFile.create({ data: { itemId, fileId: f.fileId, ...clean(details) } }))
@@ -37,6 +43,12 @@ export const createItemDocuments = async (itemId: string, files: { fileId: strin
     const batchIds = created.map((c) => c.id)
     for (const id of batchIds) {
       await supersedeOlderItemFiles(tx, id, { batchIds })
+    }
+    if (alsoReplace.length > 0) {
+      await tx.itemFile.updateMany({
+        where: { id: { in: alsoReplace }, itemId, supersededAt: null },
+        data: { supersededAt: new Date() },
+      })
     }
   })
 

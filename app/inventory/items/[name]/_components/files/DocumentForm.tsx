@@ -1,4 +1,5 @@
 'use client'
+import { useState } from "react"
 import { useItemSelection } from "@/store/itemSlice"
 import { ItemDocumentDetails } from "../../_actions/files/itemDocumentMutations"
 import { formatDate, fromDateInput, toDateInput } from "./presentation"
@@ -100,11 +101,24 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
   const expectations = useDocumentExpectations(value)
   const set = <K extends keyof DocumentFormValue>(key: K, v: DocumentFormValue[K]) => onChange({ ...value, [key]: v })
 
+  // a supplier picked by hand is never overwritten; one that was prefilled is
+  const [supplierPicked, setSupplierPicked] = useState(!!editingId && !!value.supplierId)
+
   const selectLot = (lotId: string) => {
     const lot = documents.lots.find((l) => l.id === lotId)
     // a received lot already knows its supplier
-    onChange({ ...value, lotId, supplierId: value.supplierId || (value.issuer === "supplier" ? lot?.supplier?.id ?? "" : "") })
+    const lotSupplier = value.issuer === "supplier" ? lot?.supplier?.id : undefined
+    onChange({ ...value, lotId, supplierId: !supplierPicked && lotSupplier ? lotSupplier : value.supplierId })
   }
+
+  const orderedFrom = documents.orderedFrom
+  const orderedFromIds = new Set(orderedFrom.map((s) => s.id))
+  const lastOrdered = orderedFrom.find((s) => s.id === value.supplierId)?.lastOrderedAt
+  const supplierHint = lastOrdered
+    ? `Last ordered from them ${formatDate(lastOrdered)}`
+    : value.issuer === "internal"
+      ? "Optional for our own documents"
+      : "Who sent this document"
 
   // our document can point at the supplier version it was made from
   const sourceOptions = files.filter(
@@ -157,10 +171,17 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
       )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <Field label="Supplier" hint={value.issuer === "internal" ? "Optional for our own documents" : "Who sent this document"}>
-          <select className="select select-sm w-full" value={value.supplierId} onChange={(e) => set("supplierId", e.target.value)}>
+        <Field label="Supplier" hint={supplierHint}>
+          <select className="select select-sm w-full" value={value.supplierId} onChange={(e) => { setSupplierPicked(true); set("supplierId", e.target.value) }}>
             <option value="">No supplier</option>
-            {options.suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {orderedFrom.length > 0 && (
+              <optgroup label="This item is ordered from">
+                {orderedFrom.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </optgroup>
+            )}
+            <optgroup label={orderedFrom.length > 0 ? "All suppliers" : "Suppliers"}>
+              {options.suppliers.filter((s) => !orderedFromIds.has(s.id)).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </optgroup>
           </select>
         </Field>
 
