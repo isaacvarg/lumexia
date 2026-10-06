@@ -13,6 +13,7 @@ import { getBomUsage } from "./_actions/production/getUsage";
 import { getActiveMbpr } from "./_actions/production/getActiveMbpr";
 import { getBprs } from "./_actions/production/getBprs";
 import { getAllItemFiles } from "./_actions/files/getAllItemFiles";
+import { getItemDocuments } from "./_actions/files/getItemDocuments";
 import { qualityActions } from "@/actions/quality";
 import { getReorderingRule } from "@/actions/inventory/reorderingRules/get";
 import { getItemMeasurements } from "./_actions/quality/getMeasurements";
@@ -36,6 +37,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
     activeMbpr,
     bprs,
     files,
+    documents,
     qcItemParameters,
     qcRecords,
     qcMeasurements,
@@ -54,6 +56,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
     await getActiveMbpr(item.id),
     await getBprs(item.id),
     await getAllItemFiles(item.id),
+    await getItemDocuments(item.id),
     await qualityActions.qc.itemParameters.getByItem(item.id),
     await qualityActions.qc.records.getAllByItem(item.id),
     await getItemMeasurements(item.id),
@@ -79,6 +82,7 @@ const ItemDetails = async ({ searchParams }: { searchParams: { id: string } }) =
         activeMbpr={activeMbpr}
         bprs={bprs}
         files={files}
+        documents={documents}
         qcItemParameters={qcItemParameters}
         qcRecords={qcRecords}
         qcMeasurements={qcMeasurements}

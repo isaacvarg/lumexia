@@ -2,13 +2,18 @@ import { Db } from "@/lib/canon/db";
 
 // Call after creating an ItemFile. Older current files with the same item, file type, issuer, lot and
 // supplier are marked superseded. If one of them was issued after the new file (back-filling an old
-// revision), the new file is the one marked superseded instead.
-export const supersedeOlderItemFiles = async (db: Db, itemFileId: string, now: Date = new Date()) => {
+// revision), the new file is the one marked superseded instead. `batchIds` are files uploaded together
+// with this one; they never supersede each other.
+export const supersedeOlderItemFiles = async (
+  db: Db,
+  itemFileId: string,
+  { now = new Date(), batchIds = [] }: { now?: Date; batchIds?: string[] } = {}
+) => {
   const file = await db.itemFile.findUniqueOrThrow({ where: { id: itemFileId } });
 
   const siblings = await db.itemFile.findMany({
     where: {
-      id: { not: file.id },
+      id: { notIn: [file.id, ...batchIds] },
       itemId: file.itemId,
       fileTypeId: file.fileTypeId,
       issuer: file.issuer,
