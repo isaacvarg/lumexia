@@ -9,7 +9,7 @@ import {
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
-import { getUserId } from '@/actions/users/getUserId';
+import { requireApiUser } from '@/lib/requireApiUser';
 import prisma from '@/lib/prisma';
 import { fromBuffer } from "pdf2pic"
 
@@ -38,6 +38,9 @@ export type FileResponseData = {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = await requireApiUser();
+  if (gate instanceof Response) return gate;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -147,7 +150,6 @@ export async function POST(request: NextRequest) {
 
 
     // handle posting to our db
-    const userId = await getUserId();
     const fileEntry = await prisma.file.create({
       data: {
         name: responseData.name,
@@ -157,7 +159,7 @@ export async function POST(request: NextRequest) {
         versionId: responseData.versionId,
         size: responseData.size,
         mimeType: responseData.mimetype,
-        uploadedById: userId,
+        uploadedById: gate.userId,
         thumbnailObjectName: responseData.thumbnailObjectName,
         thumbnailBucketName: responseData.thumbnailBucketName,
       }

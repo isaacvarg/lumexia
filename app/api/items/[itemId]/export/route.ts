@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { requireApiUser } from "@/lib/requireApiUser";
 import { s3 } from "@/lib/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { recordStatuses } from "@/configs/staticRecords/recordStatuses";
@@ -17,6 +18,9 @@ export async function GET(
   _req: Request,
   { params }: { params: { itemId: string } }
 ) {
+  const gate = await requireApiUser();
+  if (gate instanceof Response) return gate;
+
   const { itemId } = params;
 
   const [pricingData, lastExamination, finishedProducts, mbpr, itemFiles] =

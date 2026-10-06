@@ -1,8 +1,12 @@
 "use server"
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireApiUser } from "@/lib/requireApiUser";
 
 export async function GET(request: Request) {
+    const gate = await requireApiUser();
+    if (gate instanceof Response) return gate;
+
     const { searchParams } = new URL(request.url);
     const lotNumber = searchParams.get('lot_number');
 
