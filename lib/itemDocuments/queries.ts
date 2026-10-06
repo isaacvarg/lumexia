@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Db } from "@/lib/canon/db";
+import { getLotQuantities } from "@/lib/mcp/lookups";
 import { evaluateItemDocuments } from "./evaluate";
 import { EvaluatedRequirement } from "./types";
 
@@ -40,11 +41,22 @@ export const getItemDocumentStatuses = async (
       },
       lot: {
         where: needsLots ? {} : { id: { in: [] } },
-        select: { id: true, lotNumber: true, lotOrigin: { select: { originType: true } } },
+        select: {
+          id: true,
+          lotNumber: true,
+          initialQuantity: true,
+          createdAt: true,
+          lotOrigin: { select: { originType: true } },
+        },
         orderBy: { createdAt: "desc" },
       },
     },
   });
+
+  const onHand = await getLotQuantities(
+    items.flatMap((i) => i.lot),
+    db
+  );
 
   return items.map((item) => ({
     itemId: item.id,
@@ -56,6 +68,8 @@ export const getItemDocumentStatuses = async (
         id: l.id,
         lotNumber: l.lotNumber,
         originType: l.lotOrigin?.originType ?? null,
+        createdAt: l.createdAt,
+        onHand: onHand.get(l.id) ?? l.initialQuantity,
       })),
       now
     ),

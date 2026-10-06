@@ -149,9 +149,17 @@ describe("evaluateRequirement (item scope)", () => {
 });
 
 describe("evaluateRequirement (lot scope)", () => {
-  const received: LotRecord = { id: "lot-r", lotNumber: "R1", originType: "purchaseOrderReceiving" };
-  const produced: LotRecord = { id: "lot-p", lotNumber: "P1", originType: "batchProduction" };
-  const manual: LotRecord = { id: "lot-m", lotNumber: "M1", originType: "manuallyCreated" };
+  const lot = (overrides: Partial<LotRecord>): LotRecord => ({
+    id: `lot-${++seq}`,
+    lotNumber: `L${seq}`,
+    originType: "purchaseOrderReceiving",
+    createdAt: now,
+    onHand: 0,
+    ...overrides,
+  });
+  const received = lot({ id: "lot-r", lotNumber: "R1" });
+  const produced = lot({ id: "lot-p", lotNumber: "P1", originType: "batchProduction" });
+  const manual = lot({ id: "lot-m", lotNumber: "M1", originType: "manuallyCreated", onHand: 5 });
   const lots = [received, produced, manual];
 
   it("checks supplier COAs on received lots only", () => {
@@ -176,10 +184,26 @@ describe("evaluateRequirement (lot scope)", () => {
   });
 
   it("reports the worst counted lot", () => {
-    const second: LotRecord = { id: "lot-r2", lotNumber: "R2", originType: "purchaseOrderReceiving" };
+    const second = lot({ id: "lot-r2", lotNumber: "R2" });
     const r = rule({ fileTypeId: COA, scope: "lot" });
     const docs = [doc({ fileTypeId: COA, lotId: received.id })];
     assert.equal(evaluateRequirement(r, docs, [received, second], now).status, "missing");
+  });
+
+  it("only counts lots from before the requirement while they have stock", () => {
+    const r = rule({ fileTypeId: COA, scope: "lot", createdAt: new Date("2026-03-01T00:00:00Z") });
+    const before = new Date("2025-06-01T00:00:00Z");
+    const lots = [
+      lot({ lotNumber: "old-empty", createdAt: before, onHand: 0 }),
+      lot({ lotNumber: "old-rounding", createdAt: before, onHand: 1e-9 }),
+      lot({ lotNumber: "old-stocked", createdAt: before, onHand: 12 }),
+      lot({ lotNumber: "new-empty", createdAt: new Date("2026-04-01T00:00:00Z"), onHand: 0 }),
+    ];
+    const result = evaluateRequirement(r, [], lots, now);
+    assert.deepEqual(
+      result.lots!.filter((l) => l.counted).map((l) => l.lotNumber),
+      ["old-stocked", "new-empty"]
+    );
   });
 
   it("is not applicable when no lots count", () => {
@@ -196,7 +220,9 @@ describe("evaluateItemDocuments", () => {
       rule({ itemTypeId: RAW, fileTypeId: COA, scope: "lot" }),
       rule({ itemTypeId: RAW, fileTypeId: "tds", level: "optional" }),
     ];
-    const lots: LotRecord[] = [{ id: "l1", lotNumber: "L1", originType: "purchaseOrderReceiving" }];
+    const lots: LotRecord[] = [
+      { id: "l1", lotNumber: "L1", originType: "purchaseOrderReceiving", createdAt: now, onHand: 10 },
+    ];
     const docs = [doc({ fileTypeId: SDS, issuedAt: new Date("2025-03-01T00:00:00Z") })];
     const results = evaluateItemDocuments(rules, { itemTypeId: RAW, procurementTypeId: PURCHASED }, docs, lots, now);
     const byKey = Object.fromEntries(results.map((r) => [`${r.requirement.fileTypeId}:${r.requirement.issuer}`, r.status]));

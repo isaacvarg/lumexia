@@ -47,6 +47,8 @@ export type LotRecord = {
   id: string;
   lotNumber: string;
   originType: string | null;
+  createdAt: Date;
+  onHand: number;
 };
 
 export type EvaluatedDocument = {
@@ -58,7 +60,8 @@ export type EvaluatedDocument = {
 export type EvaluatedLot = {
   lotId: string;
   lotNumber: string;
-  // false for lots whose origin doesn't match the requirement's issuer (e.g. manually created lots)
+  // false for lots whose origin doesn't match the requirement's issuer (e.g. manually created lots),
+  // and for lots that predate the requirement and are used up
   counted: boolean;
   status: RequirementStatus;
   documents: EvaluatedDocument[];

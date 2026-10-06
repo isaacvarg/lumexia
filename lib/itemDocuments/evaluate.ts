@@ -82,11 +82,17 @@ const evaluateDocuments = (docs: DocumentRecord[], requirement: Requirement, now
     .map((d) => evaluateDocument(d, requirement, now))
     .sort((a, b) => statusRank[a.status] - statusRank[b.status]);
 
-// Supplier documents belong to received lots, internal ones to lots we produced.
+// Leftover float error from summing transactions shouldn't count as stock.
+const ON_HAND_EPSILON = 1e-6;
+
+// Supplier documents belong to received lots, internal ones to lots we produced. Lots created after the
+// requirement always count; older lots only while they still have stock, so history doesn't flood the list.
 const lotCounts = (lot: LotRecord, requirement: Requirement) => {
-  if (lot.originType === "purchaseOrderReceiving") return requirement.issuer !== "internal";
-  if (lot.originType === "batchProduction") return requirement.issuer !== "supplier";
-  return false;
+  const originMatches =
+    (lot.originType === "purchaseOrderReceiving" && requirement.issuer !== "internal") ||
+    (lot.originType === "batchProduction" && requirement.issuer !== "supplier");
+  if (!originMatches) return false;
+  return lot.createdAt >= requirement.createdAt || lot.onHand > ON_HAND_EPSILON;
 };
 
 export const evaluateRequirement = (
