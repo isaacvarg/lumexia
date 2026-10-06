@@ -1,0 +1,28 @@
+// Declares which documents items should have. A rule matches on item type, procurement type, or both;
+// for each file type + issuer, the most specific matching rule wins (both > item type > procurement type).
+// level: required | optional | excluded (excluded cancels a broader rule)
+// scope: item (one current document per item) | lot (one per applicable lot)
+// issuer: supplier | internal | any
+model ItemDocumentRequirement {
+    id                String           @id @default(uuid())
+    itemTypeId        String?          @map("item_type_id")
+    procurementTypeId String?          @map("procurement_type_id")
+    fileTypeId        String           @map("file_type_id")
+    level             String
+    scope             String
+    issuer            String
+    validForMonths    Int?             @map("valid_for_months")
+    minIssuedAt       DateTime?        @map("min_issued_at")
+    warnDays          Int              @default(60) @map("warn_days")
+    notes             String?
+    createdAt         DateTime         @default(now()) @map("created_at")
+    updatedAt         DateTime         @updatedAt @map("updated_at")
+
+    itemType        ItemType?        @relation(fields: [itemTypeId], references: [id], onDelete: Cascade)
+    procurementType ProcurementType? @relation(fields: [procurementTypeId], references: [id], onDelete: Cascade)
+    fileType        ItemFileType     @relation(fields: [fileTypeId], references: [id], onDelete: Cascade)
+
+    @@index([itemTypeId])
+    @@index([procurementTypeId])
+    @@map("item_document_requirements")
+}

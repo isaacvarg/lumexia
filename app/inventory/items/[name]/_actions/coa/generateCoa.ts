@@ -65,6 +65,9 @@ export const generateCoa = async (
     fileTypeId: fileType.id,
     fileId: uploadData.fileId,
     itemId: item.id,
+    lotId: qcRecord.examinedLotId,
+    issuer: "internal",
+    issuedAt: new Date(),
   });
 
   // Log activity
