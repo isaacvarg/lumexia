@@ -31,23 +31,25 @@ const SupplierStatements = ({ statements, suppliers, onAction, onAdd, canAdd }: 
         const shapeKey = getShapeKey(entry.dataType.shapeId)
         const value = entry.artifact?.currentVersion?.content ?? null
         return (
-          <div key={supplier.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-base-200/60 px-3 py-2">
-            <span className="font-medium">{supplier.name}</span>
-            <span className="min-w-0 flex-1 truncate text-sm text-base-content/70">
-              {value === null ? "No value yet" : toCopyText(shapeKey, value)}
+          <div key={supplier.id} className="flex flex-col gap-1 rounded-lg bg-base-200/60 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate font-medium">{supplier.name}</span>
+              <StatusBadge statusId={entry.artifact?.statusId ?? null} tooltip={false} />
+              {entry.canEdit && (
+                <button onClick={() => onAction(entry, "propose")} className="btn btn-ghost btn-xs" aria-label={`Change ${supplier.name}'s statement`}>
+                  <TbPencil className="size-4" />
+                </button>
+              )}
+              {entry.artifact && (
+                <button onClick={() => onAction(entry, "history")} className="btn btn-ghost btn-xs" aria-label={`${supplier.name} history`}>
+                  <TbHistory className="size-4" />
+                  {entry.artifact._count.changeRequests > 0 && <span className="badge badge-xs badge-warning">{entry.artifact._count.changeRequests}</span>}
+                </button>
+              )}
+            </div>
+            <span className="text-sm text-base-content/70">
+              {value === null ? "No value yet" : toCopyText(shapeKey, value) || "None"}
             </span>
-            <StatusBadge statusId={entry.artifact?.statusId ?? null} tooltip={false} />
-            {entry.canEdit && (
-              <button onClick={() => onAction(entry, "propose")} className="btn btn-ghost btn-xs" aria-label={`Change ${supplier.name}'s statement`}>
-                <TbPencil className="size-4" />
-              </button>
-            )}
-            {entry.artifact && (
-              <button onClick={() => onAction(entry, "history")} className="btn btn-ghost btn-xs" aria-label={`${supplier.name} history`}>
-                <TbHistory className="size-4" />
-                {entry.artifact._count.changeRequests > 0 && <span className="badge badge-xs badge-warning">{entry.artifact._count.changeRequests}</span>}
-              </button>
-            )}
           </div>
         )
       })}
