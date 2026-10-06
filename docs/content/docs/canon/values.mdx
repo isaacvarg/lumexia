@@ -1,0 +1,116 @@
+---
+title: Working with Values
+description: Proposing, reviewing, and confirming values on an item or finished product, including supplier statements and history.
+---
+
+Day-to-day canon work happens on an item's **Canon** tab (and, for
+size-specific facts, a finished product's section of that same tab). Each
+[data type](/docs/canon/data-types) that applies to the item shows as a card,
+grouped by its [group](/docs/canon/data-types#groups), with the current
+accepted value, a status badge, and the actions available for it.
+
+## Proposing a value
+
+Use **Add value** (if the artifact has no accepted version yet) or **Propose
+change** (to replace the current one) on a card to open the proposal form:
+
+1. Fill in the content editor for that data type's [shape](/docs/canon/data-types#shapes).
+   If a value already exists, you'll see a diff against the current one.
+2. Enter a **Reason** — required on every change.
+3. If the data type requires it, add **Evidence**: a source type (supplier
+   document, internal test, regulatory reference, scientific reference,
+   internal judgment, or Lumexia record), plus a file, URL, or note and a
+   source date.
+4. **Submit**.
+
+If you're also the sole or self-approving reviewer for that data type, the
+change applies immediately as a new version. Otherwise it becomes a
+**change request** in **Under Review** status (shown as **CR-** followed by
+its reference number, e.g. "CR-104"), waiting for the required number of
+approvals.
+
+<Callout>
+  Only a data type's **editors** can add or propose values for it — if no one
+  has been granted Edit, the card shows that nobody can edit it yet, with a
+  link to **Canon Settings** → **Teams and Permissions**.
+</Callout>
+
+## Reviewing a change request
+
+A reviewer sees pending change requests from the [dashboard's](/docs/canon/dashboard)
+**Requests** tab, the **Waiting for you** panel, or an artifact's own
+**History**. Each shows the proposed diff, the requester's reason, and any
+sources attached. A reviewer can:
+
+- **Approve** — counts toward the required approvals; once enough distinct
+  approvals accumulate, a new version is created and becomes current.
+- **Reject** — requires a comment, and immediately rejects the request.
+
+The requester can **Withdraw** their own pending request at any time.
+
+If the artifact's current version changes before a pending request is
+resolved, that request becomes **Outdated** rather than being approved
+against a version it no longer matches.
+
+## Confirming a stale value
+
+When something a value depends on changes — most often, a dependency's
+[active BOM](/docs/canon/data-types#dependencies) — Lumexia flags the
+artifact **Needs review** instead of silently keeping the old value. From the
+card, you can either:
+
+- **Confirm still valid** — opens a **Stale Confirmation** change request
+  that re-checks the value against its dependency without changing its
+  content, or
+- **Propose change** — if the value actually needs to be updated.
+
+## Accepting a linked source
+
+A **Linked to Lumexia** data type reads its value live from elsewhere in the
+system (for example, the active BOM) rather than being typed in directly.
+The card shows this source value read-only until a reviewer accepts it:
+
+- **Accept source** the first time a value is available.
+- **Review source change** when the live source has changed since it was
+  last accepted.
+
+Accepting shows a diff between the currently accepted value and the live
+source, requires a reason, and creates a **Source Acceptance** change request
+and version, same as any other change.
+
+## Supplier statements
+
+For an item-scoped data type with **Suppliers can state this too** enabled,
+each supplier can have their own statement of the same fact, shown in a
+**Supplier statements** block nested under the item's card. Use **Add a
+supplier's statement…** to pick a supplier and record theirs; each statement
+has its own status, edit, and history controls, independent of the item's own
+accepted value.
+
+There's also a **Per-supplier data** section on the item's Canon tab for the
+older, item-supplier data types: pick a supplier and statement type, then
+**Add statement**.
+
+### Conflicts
+
+If a data type depends on **From suppliers** and the suppliers' statements
+disagree, the item-level artifact is flagged **Conflict**. A reviewer
+resolves this the same way as any other change: by proposing (or confirming)
+the item's own value, which clears the conflict once accepted.
+
+## History
+
+Every artifact has a **History** panel with the full audit trail: pending
+change requests (with approve/reject/withdraw controls if you have the
+permission), an **"As of [date]"** lookup to see what the value was at any
+point in time, and a chronological list of every version and event
+(change requests opened, marked stale, source changed, reverification
+expired, conflict raised or resolved). Each version shows who proposed it,
+who approved it, its re-verification date, its evidence, and which upstream
+versions it was checked against.
+
+## Copying a value
+
+Every card has a **Copy** button to copy its current value to the clipboard
+— useful when a canon value needs to be pasted somewhere else, like a label
+or a listing on the website.

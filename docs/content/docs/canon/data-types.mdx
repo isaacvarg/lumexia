@@ -1,0 +1,120 @@
+---
+title: Data Types
+description: Defining what kind of fact Canon tracks, its shape, scope, and dependencies on other data types.
+---
+
+A **data type** is the definition of one kind of fact Canon tracks — for
+example "Allergens", "Official BOM", or "Shelf Label". It decides what the
+fact applies to, what shape its value takes, how many approvals a change
+needs, and whether it depends on other facts. Data types are configured at
+**Canon Settings** → **Data Types** (`/settings/canon`).
+
+## Canvas and list views
+
+Data types can be browsed as a **Canvas** — a node graph where each data type
+is a box and dependencies are drawn as connecting lines — or as a flat
+**List**, grouped or ungrouped, with search and group filtering. Both views
+open the same **Data Type** drawer when you click a type, or **+ Data Type**
+to create one. On the canvas, dragging an edge from one node to another
+creates a dependency between them directly.
+
+## Configuring a data type
+
+Each data type carries:
+
+- **Name** and **description**.
+- **Group** — an optional [group](#groups) for organizing it in settings, on
+  an item's Canon tab, and on the dashboard's Coverage view.
+- **Source** — either **Authored** (someone types or picks the value
+  directly) or **Linked to Lumexia** (the value is read live from elsewhere
+  in the system, via a resolver — for example, the active BOM). A linked
+  type can't be edited directly; its value must be
+  [accepted](/docs/canon/values#accepting-a-linked-source) from the source.
+- **Applies to** — the [subject type](#subject-types) this data type is
+  recorded against.
+- **Suppliers can state this too** — for item-scoped types, lets each
+  supplier also record their own statement of this fact (see
+  [Supplier statements](/docs/canon/values#supplier-statements)).
+- **Shape** — the structure of the value itself (below).
+- **Approvals required** — how many distinct approvals a change request
+  needs before it's accepted.
+- **Requester can't approve their own change** — when on, the person who
+  proposed a change can't also count as one of its approvals.
+- **Every change needs evidence** — requires at least one source (document,
+  note, or reference) on every change request.
+- **Re-verify after (days)** — how long an accepted value stays valid before
+  it's flagged **Expired** and needs reconfirming.
+- **Scope** — restrict the type to a procurement type or specific item types.
+- **External key** — the WooCommerce/website field this data type corresponds
+  to, for a future sync.
+
+<Callout>
+  Once a data type has any artifacts, its **Source**, **Shape**, and
+  **Applies to** are locked, since changing them would invalidate existing
+  values. Only its name, description, group, approvals, scope, and external
+  key remain editable.
+</Callout>
+
+### Subject types
+
+A data type's **Applies to** setting decides what kind of thing it's recorded
+against:
+
+| Subject type | One value per |
+| --- | --- |
+| **Item** | item or material — the formula or material itself. |
+| **Finished product (per size)** | sellable size or package, for facts that vary by size (net contents, shelf label copy). |
+| **Item, per supplier (legacy)** | item-supplier pair. Superseded by the **Suppliers can state this too** flag on item-scoped types. |
+
+### Shapes
+
+A data type's **shape** defines the structure its value takes:
+
+| Shape | Value |
+| --- | --- |
+| **Text** | Free-form text. |
+| **Rich text** | Formatted text. |
+| **Boolean** | Yes/no. |
+| **Ordered list** | A sequence of items. |
+| **Tag set** | A selection from a fixed vocabulary you define on the data type. |
+| **Block list** | A list of title + body blocks. |
+| **Key value** | A set of named key/value pairs. |
+| **Composition** | Rows of ingredient, percentage, and CAS number. |
+| **Bill of materials** | Rows of material, concentration, and step. |
+
+## Groups
+
+A **group** is a named, ordered folder for organizing data types — for
+example "Allergens", "Formula & Labelling", or "Website & Menu". Groups are
+used wherever data types are listed: Canon Settings, the item Canon tab, and
+the dashboard's Coverage view. They're managed at **Canon Settings** →
+**Groups**, where you can create, rename, reorder, and delete them. Deleting
+a group doesn't delete its data types — it just ungroups them.
+
+## Dependencies
+
+A data type can depend on other data types, so that when the parent changes,
+the dependent ("child") data type's artifacts are flagged **Needs review**.
+Dependencies are drawn on the canvas by dragging an edge between two nodes,
+and each one has a kind:
+
+| Dependency kind | The child depends on |
+| --- | --- |
+| **Same subject** | The same item or finished product's artifact for the parent data type. |
+| **Via active BOM** | The parent data type's artifact for every material in the item's active BOM. |
+| **From suppliers** | Every supplier statement recorded for that item and data type — this is also how [conflicts](/docs/canon/values#conflicts) are detected. |
+| **Filled item** | The item a finished product is filled with. |
+
+Lumexia rejects dependencies that would create a cycle.
+
+<Callout>
+  For example, an item's **Ingredient Listing** can depend on its **Official
+  BOM** via **Active BOM**: if the formula changes (a new BOM version), the
+  Ingredient Listing flips to **Needs review** until someone confirms or
+  updates it.
+</Callout>
+
+## Archiving
+
+A data type can be **archived** from its drawer instead of deleted, keeping
+its history intact while removing it from active use.

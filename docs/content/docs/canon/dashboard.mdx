@@ -1,0 +1,40 @@
+---
+title: Dashboard
+description: Coverage, open change requests, and what needs attention across the whole system.
+---
+
+The **Canon dashboard**, at `/quality/canon`, is the system-wide view of
+canon's health: how complete the data is, what's waiting on a decision, and
+what needs attention. A **Canon settings** link in the header jumps to
+[Canon Settings](/docs/canon/data-types) for configuration.
+
+## Stat cards
+
+Four cards summarize the current state at a glance:
+
+- **Coverage** — the percentage of applicable subjects that have a current,
+  accepted value.
+- **Needs attention** — artifacts in any non-current status.
+- **Waiting for review** — open change requests across the whole system.
+- **Waiting for you** — open change requests you can personally approve or
+  reject.
+
+## Tabs
+
+- **Attention** — a table of every artifact not in **Current** status,
+  filterable by status and data type. Clicking a row jumps to that item's
+  Canon tab.
+- **Requests** — every open change request: its number (CR-), data type,
+  subject, kind (Edit, Stale Confirmation, or Source Acceptance), requester,
+  current approval count, and age.
+- **Coverage** — a per-data-type table, grouped by [group](/docs/canon/data-types#groups),
+  with a progress bar of covered vs. applicable subjects and counts of
+  Current, Needs attention, Pending, and Missing. Each row expands to list
+  the specific subjects still missing a value.
+- **Activity** — a chronological feed of events across every artifact.
+
+## The home dashboard panel
+
+A **Canon Reviews** panel is also available on the main Lumexia home
+dashboard, surfacing your own **Waiting for you** change requests and any
+artifacts needing attention without having to open the full Canon dashboard.

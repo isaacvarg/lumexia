@@ -1,0 +1,75 @@
+---
+title: Canon
+description: A governed, versioned source of truth for facts about items and finished products, reconciled against the live data they're derived from.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+Lumexia already holds a lot of data about an item: its active formula, its
+supplier documents, its aliases. Canon exists for the facts that sit on top of
+that — things like **allergens**, **ingredient listings**, or **shelf label
+copy** — where the company needs to stand behind a single, reviewed value
+rather than just whatever the underlying data happens to say today.
+
+A canon value is never edited in place. It's **proposed**, optionally backed by
+**evidence**, **reviewed**, and only then becomes the current accepted value.
+When the data a value depends on changes — a formula's active BOM, a linked
+source, a supplier's own statement — Canon flags it so a human can confirm it's
+still correct instead of quietly going stale.
+
+Canon is reached at `/quality/canon`, under the **Quality** section of the
+sidebar.
+
+## The pieces
+
+- **Data types** define *what kind* of fact is being tracked (e.g.
+  "Allergens"), what it applies to, and how it's shaped. They're configured in
+  [Canon Settings](/docs/canon/data-types).
+- **Artifacts** are the actual record of one data type for one subject — one
+  item, one finished product, or one item-supplier pair. An artifact holds a
+  **current version**, a status, and a full history.
+- **Change requests** are proposals to create a new version of an artifact:
+  an edit, a confirmation that a stale value is still correct, or acceptance
+  of a value read from elsewhere in Lumexia. See
+  [Working with values](/docs/canon/values).
+- **Teams and permissions** decide who can propose and who can review changes
+  for each data type. See [Teams and permissions](/docs/canon/teams-and-permissions).
+- The **Canon dashboard** gives a system-wide view of coverage, open requests,
+  and what needs attention. See [Dashboard](/docs/canon/dashboard).
+
+## Why a value needs attention
+
+Every artifact has a status, and Lumexia shows the single most urgent one:
+
+| Status | Meaning |
+| --- | --- |
+| **Pending** | No accepted value yet. |
+| **Current** | Up to date and accepted. |
+| **Needs review** | Something it depends on changed since it was last confirmed. |
+| **Source changed** | Its linked source (read live from Lumexia) changed and hasn't been accepted yet. |
+| **Expired** | Past its re-verification date. |
+| **Conflict** | Suppliers have stated different things for the same fact. |
+
+## In this section
+
+<Cards>
+  <Card title="Data Types" href="/docs/canon/data-types" description="Defining what kind of fact Canon tracks, its shape, scope, and dependencies on other data types." />
+  <Card title="Teams and Permissions" href="/docs/canon/teams-and-permissions" description="Granting who can propose and who can review changes for each data type." />
+  <Card title="Working with Values" href="/docs/canon/values" description="Proposing, reviewing, and confirming values on an item or finished product, including supplier statements and history." />
+  <Card title="Dashboard" href="/docs/canon/dashboard" description="Coverage, open change requests, and what needs attention across the whole system." />
+</Cards>
+
+## Where canon connects
+
+- Every canon artifact belongs to an [item](/docs/inventory/items), a
+  finished product, or an item-supplier pair, and is managed from that
+  item's **Canon** tab.
+- A data type can depend on a [formula's active BOM](/docs/production/mbpr),
+  so changing a recipe can flag downstream facts (like an ingredient listing)
+  as needing review.
+- A data type can also depend on all of an item's [suppliers'](/docs/purchasing/suppliers)
+  own statements, so disagreement between suppliers surfaces as a conflict.
+- Canon's permissions are deliberately separate from the rest of Lumexia's
+  user roles — being able to manage inventory doesn't grant the ability to
+  edit or review canon values; that's assigned per data type in
+  [Teams and Permissions](/docs/canon/teams-and-permissions).

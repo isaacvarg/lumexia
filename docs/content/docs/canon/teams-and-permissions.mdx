@@ -1,0 +1,51 @@
+---
+title: Teams and Permissions
+description: Granting who can propose and who can review changes for each data type.
+---
+
+Canon decides who can edit or review its values independently of the rest of
+Lumexia's user roles — managing inventory or purchasing doesn't, by itself,
+grant any ability to change canon data. Access is granted per
+[data type](/docs/canon/data-types), either to an individual user or to a
+**Canon team**.
+
+## Capabilities
+
+Each data type can grant two capabilities:
+
+- **Edit** — can propose changes (open change requests). Not applicable to
+  **Linked to Lumexia** data types, since those are accepted from their
+  source rather than edited directly.
+- **Review** — can approve or reject proposed changes. For a linked data
+  type, this is the ability to accept changes made at the Lumexia source.
+
+Permissions are managed from a data type's drawer, in the **Permissions**
+panel that appears once it's saved. Add or remove a team or individual user
+for either capability from there.
+
+<Callout>
+  Lumexia warns you if a data type ends up with no one who can edit it (for
+  authored types) or no one who can review it — a value can't be proposed or
+  accepted without someone able to do each.
+</Callout>
+
+## Teams
+
+A **Canon team** is a named group of users that exists only to simplify
+granting Canon permissions — for example, "Regulatory" or "QA Leads". Teams
+are managed at **Canon Settings** → **Teams**, where you can create a team,
+rename it, and add or remove members. Granting a capability to a team grants
+it to everyone currently in that team.
+
+## Approval rules
+
+Beyond who *can* review, each data type sets how review works:
+
+- **Approvals required** sets how many distinct approvals a change request
+  needs before it's accepted.
+- **Requester can't approve their own change**, when enabled, excludes the
+  person who proposed the change from counting toward that number — useful
+  for enforcing a second set of eyes on sensitive facts.
+
+A single rejection rejects the whole change request, regardless of how many
+approvals it already has.
