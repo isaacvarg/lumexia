@@ -1,13 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ApiKeyAuth } from "@/lib/apiKeys";
 import { registerWhoami } from "./tools/whoami";
+import { registerItemTools } from "./tools/items";
+import { registerLotTools } from "./tools/lots";
+import { registerCanonTools } from "./tools/canon";
 
 // Who is calling: the user behind the API key, and what the key allows.
 export type McpContext = ApiKeyAuth;
 
 export type ToolRegistrar = (server: McpServer, ctx: McpContext) => void;
 
-const registrars: ToolRegistrar[] = [registerWhoami];
+const registrars: ToolRegistrar[] = [registerWhoami, registerItemTools, registerLotTools, registerCanonTools];
 
 // A fresh server per request: the endpoint is stateless, and every tool closes over the caller.
 export const createMcpServer = (ctx: McpContext) => {
