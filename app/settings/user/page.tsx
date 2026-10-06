@@ -9,12 +9,15 @@ import TabsContainer from "./_components/shared/TabsContainer";
 import ProfileSettings from "./_components/ProfileSettings";
 import DashboardSettings from "./_components/DashboardSettings";
 import { getHomeDashLayout } from "@/actions/users/homeDash/getHomeDashLayout";
+import { getMyApiKeys } from "@/actions/users/apiKeys";
+import ApiKeysPanel from "./_components/ApiKeysPanel";
 
 const UserPage = async () => {
 
   const user = await getUser();
   const configs = await getAllUserConfigs(user.id);
   const homeDashLayout = await getHomeDashLayout();
+  const apiKeys = await getMyApiKeys();
 
 
   return (
@@ -31,6 +34,7 @@ const UserPage = async () => {
           </div>
         }
         dashboard={<DashboardSettings layout={homeDashLayout} />}
+        agents={<ApiKeysPanel keys={apiKeys} />}
       />
 
     </div>

@@ -7,10 +7,11 @@ type Props = {
   profile: React.ReactNode
   status: React.ReactNode
   dashboard: React.ReactNode
+  agents: React.ReactNode
   danger: React.ReactNode
 }
 
-const TabsContainer = ({ profile, status, dashboard, danger }: Props) => {
+const TabsContainer = ({ profile, status, dashboard, agents, danger }: Props) => {
 
   const { activeTab } = useTabSelection()
   const currentTab = activeTab.userAdminDetails;
@@ -27,6 +28,7 @@ const TabsContainer = ({ profile, status, dashboard, danger }: Props) => {
         {currentTab === 'profile' && profile}
         {currentTab === 'status' && status}
         {currentTab === 'dashboard' && dashboard}
+        {currentTab === 'agents' && agents}
         {currentTab === 'danger' && danger}
       </motion.div>
     </AnimatePresence>

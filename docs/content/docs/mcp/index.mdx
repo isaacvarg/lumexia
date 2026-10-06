@@ -1,0 +1,128 @@
+---
+title: Agents (MCP)
+description: Let Claude Code, Hermes, and other AI agents read Lumexia data through the built-in MCP endpoint, authenticated with per-user API keys.
+---
+
+Lumexia exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
+endpoint so AI agents can look things up the same way a person would: search
+items, check lots and QC results, and read Canon values and their history.
+
+The endpoint lives inside the app at `/api/mcp`, so there's nothing extra to
+deploy. Agents authenticate with an **API key** that acts as a specific Lumexia
+user, with that user's permissions.
+
+<Callout>
+  Access is **read-only** for now. Agents can't change inventory, propose Canon
+  edits, or approve anything.
+</Callout>
+
+## Which agents can connect
+
+Lumexia runs on the local network over plain HTTP, so the agent has to run
+somewhere that can reach it:
+
+- **Claude Code** (CLI, desktop app, IDE extensions) runs on your machine and
+  connects directly.
+- **Hermes Agent** connects directly when it runs inside the network.
+- **claude.ai / Claude Desktop custom connectors** *can't* be used. Those
+  connect from Anthropic's cloud, which can't reach a server on the local
+  network.
+
+## Create an API key
+
+1. Open **Settings → User** and pick the **Agents** tab.
+2. Click **New key**, give it a name that says where it'll be used (e.g.
+   `Claude Code – desktop` or `Hermes`), and choose when it expires.
+3. Copy the key. **It's only shown once.** Lumexia stores just a hash of it.
+
+Make one key per agent or machine, so you can revoke one without breaking the
+others. The **Agents** tab shows when each key was last used.
+
+<Callout type="warn">
+  A key acts as you. Anything you can see in Lumexia, an agent holding your key
+  can see too, including Canon values gated by team permissions.
+</Callout>
+
+System admins can see and revoke any user's keys from **Settings → Users →
+(user) → Agents**. Admins can't create keys for someone else.
+
+## Connect Claude Code
+
+After you create a key, the **Agents** tab shows a ready-to-copy command. It
+looks like this:
+
+```bash
+claude mcp add --transport http lumexia http://<lumexia-host>:3000/api/mcp --header "Authorization: Bearer lmx_..."
+```
+
+Add `--scope user` to make it available in every project rather than just the
+current directory. Check that it connected with `claude mcp list`, or `/mcp`
+inside a session.
+
+## Connect Hermes
+
+Add a server to `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  lumexia:
+    url: "http://<lumexia-host>:3000/api/mcp"
+    headers:
+      Authorization: "Bearer ${LUMEXIA_API_KEY}"
+```
+
+and put the key in Hermes's environment as `LUMEXIA_API_KEY`, so the key
+itself stays out of the config file.
+
+## Available tools
+
+| Tool | What it returns |
+| --- | --- |
+| `whoami` | The user the key acts as, and the key's scopes. Handy to confirm the connection. |
+| `search_items` | Items matching a name, reference code, or alias (INCI name, trade name, …), with the alias that matched. Archived items are excluded unless asked for. |
+| `get_item` | One item by id or reference code: type, procurement, status, all aliases, and total quantity on hand. |
+| `get_item_lots` | An item's lots with quantity on hand and origin (purchase order and supplier, or batch). Only lots with stock unless asked, newest first. |
+| `get_lot` | A lot by lot number: item, quantity on hand, origin, QC records with every parameter result, and notes. Lot numbers can repeat across items, so this may return several. |
+| `get_item_canon` | Every [Canon](/docs/canon) data type for an item, as plain text, with status, flags, version, open change requests, and whether you can edit or review it. Includes supplier statements and finished products filled with the item. |
+| `get_canon_history` | Every accepted version of a Canon value with its change request, reason, reviews, and evidence, plus open change requests and events. |
+| `get_canon_review_queue` | Change requests waiting on your review, and stale, expired, or conflicting values you edit or review. |
+
+Tools accept either an item's id or its reference code, so an agent can go
+straight from "what's on hand for ING-1006?" to an answer.
+
+## Security notes
+
+- **Plain HTTP.** The key travels unencrypted, so anyone who can watch traffic
+  on the network could read it. That's acceptable on a trusted network. For
+  more, put Lumexia behind TLS (e.g. Caddy with its internal CA, or
+  `tailscale serve`). Clients just switch the URL to `https://`.
+- **Revoking is immediate.** A revoked or expired key is rejected on its next
+  request. Disabling a user also disables all of their keys.
+- **Keys are never stored.** Lumexia keeps only a SHA-256 hash and the first
+  few characters (shown in the list) to tell keys apart.
+
+## Troubleshooting
+
+| Symptom | Cause |
+| --- | --- |
+| `401 Missing or invalid API key` | The header is missing, the key was mistyped, or it's revoked or expired. Check its status on the **Agents** tab. |
+| `405 Method not allowed` | The endpoint is stateless and only accepts `POST`. Make sure the client is set to the **HTTP** (streamable HTTP) transport, not SSE. |
+| `get_item_canon` returns no entries | No Canon data types apply to that item, or the database's static records don't match the build. See [Static Records](/docs/StaticRecords). |
+
+## For developers
+
+- The route is `app/api/mcp/route.ts`. It authenticates the bearer key, then
+  serves one request with a fresh `McpServer` using the SDK's
+  `WebStandardStreamableHTTPServerTransport` (stateless, JSON responses).
+- Keys live in the `api_keys` table. `lib/apiKeys.ts` creates,
+  authenticates, lists, and revokes them.
+- Tools live in `lib/mcp/tools/`. Each file exports a `ToolRegistrar` that
+  receives the server and the caller's context (`ctx.user`, `ctx.scopes`), and
+  is listed in `lib/mcp/server.ts`.
+- Tools call Prisma and `lib/canon` directly with `ctx.user.id`. Don't reuse
+  server actions that call `getUser()`. They depend on a browser session and
+  redirect when there isn't one.
+- Return `jsonResult(data)` for answers and `errorResult(message)` for misses
+  the agent should react to. Keep payloads compact and capped.
+- Keys carry `scopes` (`read` today). When write tools arrive, gate them on
+  `ctx.scopes.includes("write")`.

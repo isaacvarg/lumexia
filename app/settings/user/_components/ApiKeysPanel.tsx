@@ -1,0 +1,216 @@
+'use client'
+import Card from "@/components/Card"
+import { useAppForm } from "@/components/Form2"
+import SectionTitle from "@/components/Text/SectionTitle"
+import useToast from "@/hooks/useToast"
+import type { ApiKeyListing } from "@/lib/apiKeys"
+import { ApiKeyExpiry, createMyApiKey, revokeApiKey } from "@/actions/users/apiKeys"
+import { DateTime } from "luxon"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { TbCopy, TbPlus, TbX } from "react-icons/tb"
+
+const expiryOptions: { label: string, value: ApiKeyExpiry }[] = [
+  { label: 'Never', value: 'never' },
+  { label: '30 days', value: '30' },
+  { label: '90 days', value: '90' },
+  { label: '1 year', value: '365' },
+]
+
+const formatDate = (date: Date | null) =>
+  date ? DateTime.fromJSDate(date).toLocaleString(DateTime.DATETIME_MED) : '—'
+
+const keyStatus = (key: ApiKeyListing) => {
+  if (key.revokedAt) return { label: 'Revoked', badge: 'badge-error' }
+  if (key.expiresAt && key.expiresAt <= new Date()) return { label: 'Expired', badge: 'badge-warning' }
+  return { label: 'Active', badge: 'badge-success' }
+}
+
+type Props = {
+  keys: ApiKeyListing[]
+  // Admins viewing another user can revoke but not create; keys always belong to their creator.
+  canCreate?: boolean
+}
+
+const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
+
+  const router = useRouter()
+  const { toast } = useToast()
+  const [isCreating, setIsCreating] = useState(false)
+  const [newKey, setNewKey] = useState<{ name: string, key: string } | null>(null)
+  const [revokingId, setRevokingId] = useState<string | null>(null)
+  const [origin, setOrigin] = useState('')
+
+  useEffect(() => setOrigin(window.location.origin), [])
+
+  const form = useAppForm({
+    defaultValues: { name: '', expiry: 'never' as ApiKeyExpiry },
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        const { apiKey, key } = await createMyApiKey(value)
+        setNewKey({ name: apiKey.name, key })
+        setIsCreating(false)
+        formApi.reset()
+        router.refresh()
+      } catch (err: any) {
+        toast('Could not create key', err?.message ?? 'Something went wrong', 'error')
+      }
+    }
+  })
+
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast('Copied', 'Copied to clipboard.', 'success')
+    } catch {
+      toast('Copy failed', 'Could not copy to clipboard.', 'error')
+    }
+  }
+
+  const handleRevoke = async (key: ApiKeyListing) => {
+    if (!confirm(`Revoke ${key.name}? Any agent using it loses access immediately.`)) return
+    setRevokingId(key.id)
+    try {
+      await revokeApiKey(key.id)
+      router.refresh()
+    } catch (err: any) {
+      toast('Could not revoke key', err?.message ?? 'Something went wrong', 'error')
+    } finally {
+      setRevokingId(null)
+    }
+  }
+
+  const claudeCommand = newKey
+    ? `claude mcp add --transport http lumexia ${origin}/api/mcp --header "Authorization: Bearer ${newKey.key}"`
+    : ''
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-4">
+        <SectionTitle>API Keys</SectionTitle>
+        {canCreate && !isCreating && (
+          <button type="button" className="btn btn-secondary" onClick={() => setIsCreating(true)}>
+            <TbPlus className="w-5 h-5" /> New key
+          </button>
+        )}
+      </div>
+
+      <p className="text-base-content/70">
+        API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
+        {canCreate ? ' you' : ' this user'}, with the same permissions.
+      </p>
+
+      {newKey && (
+        <Card.Root>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="font-medium text-base-content">{newKey.name} created</span>
+              <span className="text-sm text-warning">Copy this key now. It won&apos;t be shown again.</span>
+            </div>
+            <button type="button" className="btn btn-ghost btn-square" aria-label="Dismiss" onClick={() => setNewKey(null)}>
+              <TbX className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <code className="flex-1 break-all rounded bg-base-200 p-3 text-sm">{newKey.key}</code>
+            <button type="button" className="btn btn-ghost btn-square" aria-label="Copy key" onClick={() => copy(newKey.key)}>
+              <TbCopy className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-base-content/70">Add it to Claude Code:</span>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 break-all rounded bg-base-200 p-3 text-sm">{claudeCommand}</code>
+              <button type="button" className="btn btn-ghost btn-square" aria-label="Copy command" onClick={() => copy(claudeCommand)}>
+                <TbCopy className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </Card.Root>
+      )}
+
+      {isCreating && (
+        <Card.Root>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+          >
+            <form.AppField
+              name="name"
+              validators={{ onChange: ({ value }) => !value.trim() ? { message: 'A key needs a name' } : undefined }}
+            >
+              {(field) => <field.TextField label="Name" labelClass="soft" description="Where the key will be used, e.g. Claude Code (desktop) or Hermes." />}
+            </form.AppField>
+
+            <form.AppField name="expiry">
+              {(field) => <field.SelectField label="Expires" labelClass="soft" options={expiryOptions} />}
+            </form.AppField>
+
+            <div className="flex justify-end gap-3">
+              <button type="button" className="btn btn-ghost" onClick={() => setIsCreating(false)}>Cancel</button>
+              <form.AppForm>
+                <form.SubmitButton>Create key</form.SubmitButton>
+              </form.AppForm>
+            </div>
+          </form>
+        </Card.Root>
+      )}
+
+      <Card.Root>
+        {keys.length === 0 ? (
+          <p className="text-base-content/70">No API keys yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Key</th>
+                  <th>Status</th>
+                  <th>Last used</th>
+                  <th>Expires</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {keys.map(key => {
+                  const status = keyStatus(key)
+                  return (
+                    <tr key={key.id}>
+                      <td className="font-medium">{key.name}</td>
+                      <td><code className="text-sm">{key.prefix}…</code></td>
+                      <td><span className={`badge ${status.badge}`}>{status.label}</span></td>
+                      <td>{key.lastUsedAt ? formatDate(key.lastUsedAt) : 'Never'}</td>
+                      <td>{key.expiresAt ? formatDate(key.expiresAt) : 'Never'}</td>
+                      <td>{formatDate(key.createdAt)}</td>
+                      <td className="text-right">
+                        {!key.revokedAt && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline btn-error"
+                            disabled={revokingId === key.id}
+                            onClick={() => handleRevoke(key)}
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card.Root>
+    </div>
+  )
+}
+
+export default ApiKeysPanel

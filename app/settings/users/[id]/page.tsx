@@ -11,6 +11,8 @@ import ProfilePanel from "./_components/ProfilePanel"
 import AccountStatusPanel from "./_components/AccountStatusPanel"
 import DangerZonePanel from "./_components/DangerZonePanel"
 import DashboardSettings from "@/app/settings/user/_components/DashboardSettings"
+import ApiKeysPanel from "@/app/settings/user/_components/ApiKeysPanel"
+import { getUserApiKeys } from "@/actions/users/apiKeys"
 
 const UserDetailPage = async ({ params }: { params: { id: string } }) => {
 
@@ -27,6 +29,7 @@ const UserDetailPage = async ({ params }: { params: { id: string } }) => {
 
   const roles = await userRoleActions.getAll()
   const homeDashLayout = await getHomeDashLayout(user.id)
+  const apiKeys = await getUserApiKeys(user.id)
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -43,6 +46,7 @@ const UserDetailPage = async ({ params }: { params: { id: string } }) => {
         profile={<ProfilePanel user={user} allRoles={roles} />}
         status={<AccountStatusPanel user={user} />}
         dashboard={<DashboardSettings layout={homeDashLayout} userId={user.id} />}
+        agents={<ApiKeysPanel keys={apiKeys} canCreate={user.id === currentUser.id} />}
         danger={<DangerZonePanel user={user} />}
       />
     </div>

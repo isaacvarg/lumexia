@@ -2,11 +2,11 @@
 
 import TabButton from "./TabButton";
 
-export type UserSettingsTab = 'main' | 'dashboard'
+export type UserSettingsTab = 'main' | 'dashboard' | 'agents'
 
 const TabSelector = () => {
 
-  const tabs: UserSettingsTab[] = ['main', 'dashboard'];
+  const tabs: UserSettingsTab[] = ['main', 'dashboard', 'agents'];
 
   return (
     <div className="flex items-center justify-start gap-6">

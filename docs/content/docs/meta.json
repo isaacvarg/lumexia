@@ -15,6 +15,9 @@
     "accounting",
     "research",
 
+  "---Integrations---",
+    "mcp",
+
   "---Hardware---",
     "hardware/printers",
     "hardware/scales",
