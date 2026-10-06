@@ -93,6 +93,50 @@ Pin a specific version by setting `IMAGE_TAG` in the deployment's `.env` (e.g.
   before pulling. Making the package public avoids this entirely.
 </Callout>
 
+## Deploying the docs site
+
+The docs site (this one — `docs/`) is a **separate app with its own image**,
+built from `docs/Dockerfile` and run by `docs/compose.yml` as the
+`lumexia-docs` image/container, independently of the main `lumexia` image.
+Editing anything under `docs/content` has no effect anywhere until that image
+is rebuilt, pushed, and pulled — it doesn't ride along with an app release.
+
+The workflow at `.github/workflows/docker-publish-docs.yml` mirrors the main
+one, scoped to `docs/`:
+
+- **push a tag** `docs-vX.Y.Z` — publishes `:X.Y.Z`, `:X.Y`, and `:latest` to
+  `ghcr.io/<owner>/lumexia-docs`; or
+- **run it manually** from the Actions tab — publishes `:latest` and a
+  commit-`sha` tag.
+
+The `docs-v*` prefix keeps docs releases on their own version line, separate
+from the app's `vX.Y.Z` tags, so editing docs doesn't require cutting an app
+release (and vice versa).
+
+```bash
+# cut a docs release (e.g. in lazygit: Tags panel → create tag → "docs-v1.0.0")
+git tag docs-v1.0.0
+git push origin docs-v1.0.0
+```
+
+Or build and push manually, same idea as the app image but from `docs/`:
+
+```bash
+cd docs
+docker build -t ghcr.io/isaacvarg/lumexia-docs:latest .
+docker push ghcr.io/isaacvarg/lumexia-docs:latest
+```
+
+Then, wherever `docs/compose.yml` is running:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+The docs container has no database and nothing to seed — it's a static,
+stateless Next.js app, so a pull-and-restart is the entire update.
+
 ## What happens on boot
 
 The container entrypoint (`scripts/docker/entrypoint.sh`) runs every start and is
