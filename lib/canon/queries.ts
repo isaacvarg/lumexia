@@ -23,10 +23,19 @@ const getApplicableDataTypes = async (subjectTypeId: string, item: { itemTypeId:
       OR: [{ procurementTypeId: null }, { procurementTypeId: item.procurementTypeId }],
       AND: [{ OR: [{ itemTypes: { none: {} } }, { itemTypes: { some: { itemTypeId: item.itemTypeId } } }] }],
     },
-    include: { shape: true, subjectType: true },
+    include: {
+      shape: true,
+      subjectType: true,
+      group: true,
+      userPermissions: { select: { capabilityId: true } },
+      teamPermissions: { select: { capabilityId: true } },
+    },
     orderBy: { name: "asc" },
   });
 };
+
+const hasGrantees = (dataType: { userPermissions: { capabilityId: string }[]; teamPermissions: { capabilityId: string }[] }, capabilityId: string) =>
+  [...dataType.userPermissions, ...dataType.teamPermissions].some((p) => p.capabilityId === capabilityId);
 
 const buildEntries = async (
   userId: string,
@@ -59,7 +68,17 @@ const buildEntries = async (
         canUser(userId, dataType.id, canonCapabilities.review),
       ]);
 
-      return { dataType, subject, artifact, live: live?.content ?? null, canEdit, canReview };
+      return {
+        dataType,
+        subject,
+        artifact,
+        live: live?.content ?? null,
+        canEdit,
+        canReview,
+        // false when nobody at all has been given the capability, so nobody can act yet
+        hasEditors: hasGrantees(dataType, canonCapabilities.edit),
+        hasReviewers: hasGrantees(dataType, canonCapabilities.review),
+      };
     }),
   );
 };
@@ -77,24 +96,58 @@ export const getItemCanon = async (userId: string, itemId: string) => {
     getApplicableDataTypes(canonSubjectTypes.finishedProduct, item),
   ]);
 
-  // suppliers with a stated fact already; the UI can start one for any other supplier
+  // per-supplier statements that exist; new ones are started for one supplier and one type at a time
   const supplierArtifacts = await prisma.canonArtifact.findMany({
-    where: { itemId, supplierId: { not: null } },
-    select: { supplier: { select: { id: true, name: true } } },
-    distinct: ["supplierId"],
+    where: { itemId, supplierId: { not: null }, dataTypeId: { in: supplierTypes.map((d) => d.id) } },
+    select: { dataTypeId: true, supplier: { select: { id: true, name: true } } },
+    orderBy: { supplier: { name: "asc" } },
   });
+  const supplierGroups = new Map<string, { supplier: { id: string; name: string }; dataTypeIds: string[] }>();
+  for (const { supplier, dataTypeId } of supplierArtifacts) {
+    const group = supplierGroups.get(supplier!.id) ?? { supplier: supplier!, dataTypeIds: [] };
+    group.dataTypeIds.push(dataTypeId);
+    supplierGroups.set(supplier!.id, group);
+  }
   const finishedProducts = await prisma.finishedProduct.findMany({
     where: { filledWithItemId: itemId, recordStatusId: recordStatuses.active },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 
+  // supplier statements of item types that allow them, attached to their item value
+  const statementTypes = itemTypes.filter((d) => d.allowSupplierStatements);
+  const statementArtifacts = await prisma.canonArtifact.findMany({
+    where: { itemId, supplierId: { not: null }, dataTypeId: { in: statementTypes.map((d) => d.id) } },
+    select: { dataTypeId: true, supplier: { select: { id: true, name: true } } },
+    orderBy: { supplier: { name: "asc" } },
+  });
+  const itemEntries = await buildEntries(userId, itemTypes, { kind: "item", itemId });
+  const withStatements = await Promise.all(
+    itemEntries.map(async (entry) => ({
+      ...entry,
+      supplierStatements: entry.dataType.allowSupplierStatements
+        ? await Promise.all(
+            statementArtifacts
+              .filter((a) => a.dataTypeId === entry.dataType.id)
+              .map(async ({ supplier }) => ({
+                supplier: supplier!,
+                entry: (await buildEntries(userId, [entry.dataType], { kind: "itemSupplier", itemId, supplierId: supplier!.id }))[0],
+              })),
+          )
+        : [],
+    })),
+  );
+
   return {
-    item: await buildEntries(userId, itemTypes, { kind: "item", itemId }),
+    item: withStatements,
     suppliers: await Promise.all(
-      supplierArtifacts.map(async ({ supplier }) => ({
-        supplier: supplier!,
-        entries: await buildEntries(userId, supplierTypes, { kind: "itemSupplier", itemId, supplierId: supplier!.id }),
+      Array.from(supplierGroups.values()).map(async ({ supplier, dataTypeIds }) => ({
+        supplier,
+        entries: await buildEntries(
+          userId,
+          supplierTypes.filter((d) => dataTypeIds.includes(d.id)),
+          { kind: "itemSupplier", itemId, supplierId: supplier.id },
+        ),
       })),
     ),
     supplierDataTypes: supplierTypes,
@@ -115,11 +168,20 @@ export const getItemCanon = async (userId: string, itemId: string) => {
 
 export type ItemCanon = Awaited<ReturnType<typeof getItemCanon>>;
 
-// Entries for one supplier that has no statements yet, so the UI can add the first one.
-export const getSupplierCanonEntries = async (userId: string, itemId: string, supplierId: string) => {
+export type ItemCanonEntry = ItemCanon["item"][number];
+
+// One data type for one supplier, so the UI can start that single statement.
+export const getSupplierCanonEntry = async (userId: string, itemId: string, supplierId: string, dataTypeId: string) => {
   const item = await prisma.item.findUniqueOrThrow({ where: { id: itemId } });
-  const supplierTypes = await getApplicableDataTypes(canonSubjectTypes.itemSupplier, item);
-  return buildEntries(userId, supplierTypes, { kind: "itemSupplier", itemId, supplierId });
+  const [supplierTypes, itemTypes] = await Promise.all([
+    getApplicableDataTypes(canonSubjectTypes.itemSupplier, item),
+    getApplicableDataTypes(canonSubjectTypes.item, item),
+  ]);
+  // legacy per-supplier types, or item types that allow supplier statements
+  const dataType = [...supplierTypes, ...itemTypes.filter((d) => d.allowSupplierStatements)].find((d) => d.id === dataTypeId);
+  if (!dataType) throw new Error("That data type doesn't apply to this item.");
+  const [entry] = await buildEntries(userId, [dataType], { kind: "itemSupplier", itemId, supplierId });
+  return entry;
 };
 
 // The full history behind an artifact: every version with its CR, reviews, evidence and lineage,

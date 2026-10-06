@@ -35,7 +35,7 @@ const Coverage = ({ types }: { types: CanonDashboard["types"] }) => {
           </tr>
         </thead>
         <tbody>
-          {types.map(({ dataType, counts, applicable, missingCount, missing }) => {
+          {types.map(({ dataType, counts, applicable, missingCount, missing }, index) => {
             const current = counts[canonArtifactStatuses.current] ?? 0
             const attention = attentionStatuses.reduce((sum, s) => sum + (counts[s] ?? 0), 0)
             const pending = counts[canonArtifactStatuses.pending] ?? 0
@@ -44,8 +44,19 @@ const Coverage = ({ types }: { types: CanonDashboard["types"] }) => {
             const canExpand = (missingCount ?? 0) > 0
             const isOpen = expanded === dataType.id
 
+            // types arrive ordered by group, so a header goes wherever the group changes
+            const groupChanged = index === 0 || types[index - 1].dataType.groupId !== dataType.groupId
+            const anyGrouped = types.some((t) => t.dataType.groupId)
+
             return (
               <Fragment key={dataType.id}>
+                {anyGrouped && groupChanged && (
+                  <tr className="bg-base-200/60">
+                    <td colSpan={8} className="py-2 text-xs font-semibold uppercase tracking-wide text-base-content/70">
+                      {dataType.group?.name ?? "No group"}
+                    </td>
+                  </tr>
+                )}
                 <tr className={canExpand ? "hover cursor-pointer" : ""} onClick={() => canExpand && setExpanded(isOpen ? null : dataType.id)}>
                   <td className="w-6">{canExpand && (isOpen ? <TbChevronDown /> : <TbChevronRight />)}</td>
                   <td className="font-medium">

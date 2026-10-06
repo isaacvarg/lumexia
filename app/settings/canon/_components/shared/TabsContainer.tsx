@@ -5,10 +5,11 @@ import React from "react"
 
 type Props = {
   dataTypes: React.ReactNode
+  groups: React.ReactNode
   teams: React.ReactNode
 }
 
-const TabsContainer = ({ dataTypes, teams }: Props) => {
+const TabsContainer = ({ dataTypes, groups, teams }: Props) => {
 
   const { activeTab } = useTabSelection()
   const currentTab = activeTab.canonSettings;
@@ -23,6 +24,7 @@ const TabsContainer = ({ dataTypes, teams }: Props) => {
         transition={{ duration: 0.2 }}
       >
         {currentTab === 'dataTypes' && dataTypes}
+        {currentTab === 'groups' && groups}
         {currentTab === 'teams' && teams}
       </motion.div>
     </AnimatePresence>

@@ -20,6 +20,7 @@ const WIPE_ORDER: string[] = [
   'canonDataTypeDependency',
   'canonDataTypeItemType',
   'canonDataType',
+  'canonDataTypeGroup',
   'canonTeamMember',
   'canonTeam',
   // quality / QC (children first; must precede purchaseOrderItem, lot, batchProductionRecord, item)

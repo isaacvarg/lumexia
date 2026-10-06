@@ -9,6 +9,7 @@ import { canonSubjectTypes } from "@/configs/staticRecords/canonSubjectTypes"
 import { CanonDataTypeRow, CanonSettingsData } from "../types"
 import PermissionsPanel from "./PermissionsPanel"
 import Section from "./Section"
+import { subjectLabels } from "../presentation"
 
 type Props = {
   dataType: CanonDataTypeRow | null
@@ -37,9 +38,11 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
   const [tagOptions, setTagOptions] = useState(tagOptionsOf(dataType))
   const [requiredApprovals, setRequiredApprovals] = useState(dataType?.requiredApprovals ?? 1)
   const [requiresDifferentReviewer, setRequiresDifferentReviewer] = useState(dataType?.requiresDifferentReviewer ?? false)
+  const [allowSupplierStatements, setAllowSupplierStatements] = useState(dataType?.allowSupplierStatements ?? false)
   const [requiresEvidence, setRequiresEvidence] = useState(dataType?.requiresEvidence ?? false)
   const [reverifyAfterDays, setReverifyAfterDays] = useState(dataType?.reverifyAfterDays?.toString() ?? "")
   const [procurementTypeId, setProcurementTypeId] = useState(dataType?.procurementTypeId ?? "")
+  const [groupId, setGroupId] = useState(dataType?.groupId ?? "")
   const [itemTypeIds, setItemTypeIds] = useState<string[]>(dataType?.itemTypes.map((t) => t.itemTypeId) ?? [])
   const [externalKey, setExternalKey] = useState(dataType?.externalKey ?? "")
   const [saving, setSaving] = useState(false)
@@ -83,8 +86,10 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
       requiredApprovals,
       requiresDifferentReviewer,
       requiresEvidence,
+      allowSupplierStatements: allowSupplierStatements && !resolverKey && subjectTypeId === canonSubjectTypes.item,
       reverifyAfterDays: reverifyAfterDays ? Number(reverifyAfterDays) : null,
       procurementTypeId: procurementTypeId || null,
+      groupId: groupId || null,
       itemTypeIds,
     }
 
@@ -115,7 +120,7 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
   }
 
   return (
-    <aside className="absolute inset-y-0 right-0 z-30 flex w-full max-w-md flex-col border-l border-base-300 bg-base-100 shadow-xl">
+    <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-md flex-col border-l border-base-300 bg-base-100 shadow-xl">
       <header className="flex items-start justify-between gap-4 border-b border-base-300 px-5 py-4">
         <div>
           <h3 className="text-lg font-semibold">{dataType ? dataType.name : "New data type"}</h3>
@@ -136,6 +141,11 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
           <input className="input input-sm w-full" value={name} onChange={(e) => setName(e.target.value)} />
           <label className="fieldset-label">Description</label>
           <textarea className="textarea textarea-sm w-full" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <label className="fieldset-label">Group</label>
+          <select className="select select-sm w-full" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+            <option value="">No group</option>
+            {settings.groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
         </Section>
 
         <Section
@@ -173,8 +183,24 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
 
           <label className="fieldset-label">Applies to</label>
           <select className="select select-sm w-full" disabled={hasArtifacts || isLinked} value={subjectTypeId} onChange={(e) => setSubjectTypeId(e.target.value)}>
-            {lookups.subjectTypes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {lookups.subjectTypes
+              .filter((s) => s.id !== canonSubjectTypes.itemSupplier || dataType?.subjectTypeId === canonSubjectTypes.itemSupplier)
+              .map((s) => <option key={s.id} value={s.id}>{subjectLabels[s.id]?.label ?? s.name}</option>)}
           </select>
+          <p className="text-xs text-base-content/60">{subjectLabels[subjectTypeId]?.description}</p>
+
+          {!isLinked && subjectTypeId === canonSubjectTypes.item && (
+            <>
+              <label className="label cursor-pointer justify-start gap-3">
+                <input type="checkbox" className="toggle toggle-sm toggle-primary" checked={allowSupplierStatements} onChange={(e) => setAllowSupplierStatements(e.target.checked)} />
+                <span className="text-sm">Suppliers can state this too</span>
+              </label>
+              <p className="text-xs text-base-content/60">
+                The item value is what you stand behind, from any source. Supplier statements can be added under it where a
+                supplier says something; when they change or disagree, the item value is flagged for review.
+              </p>
+            </>
+          )}
 
           <label className="fieldset-label">Shape</label>
           <select className="select select-sm w-full" disabled={hasArtifacts || isLinked} value={shapeId} onChange={(e) => setShapeId(e.target.value)}>

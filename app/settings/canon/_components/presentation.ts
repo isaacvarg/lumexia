@@ -26,6 +26,23 @@ export const shapeIcons: Record<string, IconType> = {
   [canonShapes.billOfMaterials]: TbClipboardList,
 };
 
+// How each subject type reads in the UI. The record names are fixed (their IDs derive from them),
+// so clearer wording lives here.
+export const subjectLabels: Record<string, { label: string; description: string }> = {
+  [canonSubjectTypes.item]: {
+    label: "Item",
+    description: "One value per item: the formula or material itself, whatever size it's sold in. Facts from regulations, tests or literature go here, with their evidence.",
+  },
+  [canonSubjectTypes.finishedProduct]: {
+    label: "Finished product (per size)",
+    description: "One value per sellable size: things that differ between the 8 oz and the gallon, like label copy, net contents or price.",
+  },
+  [canonSubjectTypes.itemSupplier]: {
+    label: "Item, per supplier (legacy)",
+    description: "A value that only exists per supplier. For facts about the item, use Item with \"Suppliers can state this too\" instead.",
+  },
+};
+
 // daisyUI color per subject, so item / finished product / supplier types are easy to tell apart
 export const subjectColors: Record<string, { text: string; bg: string; border: string; ring: string }> = {
   [canonSubjectTypes.item]: { text: "text-primary", bg: "bg-primary/10", border: "border-primary", ring: "ring-primary/30" },

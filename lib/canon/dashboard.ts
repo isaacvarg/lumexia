@@ -33,7 +33,8 @@ const coverageFor = async (dataType: ScopedType & { id: string }) => {
     const where = itemScope(dataType);
     const missingWhere: Prisma.ItemWhereInput = {
       ...where,
-      CanonArtifact: { none: { dataTypeId: dataType.id, currentVersionId: { not: null } } },
+      // the item value itself; supplier statements of the same type don't count
+      CanonArtifact: { none: { dataTypeId: dataType.id, supplierId: null, currentVersionId: { not: null } } },
     };
     const [applicable, missingCount, missing] = await Promise.all([
       prisma.item.count({ where }),
@@ -76,14 +77,18 @@ const coverageFor = async (dataType: ScopedType & { id: string }) => {
 export const getCanonDashboard = async (userId: string) => {
   const dataTypes = await prisma.canonDataType.findMany({
     where: { recordStatusId: recordStatuses.active },
-    include: { shape: true, subjectType: true, itemTypes: { select: { itemTypeId: true } } },
-    orderBy: { name: "asc" },
+    include: { shape: true, subjectType: true, group: true, itemTypes: { select: { itemTypeId: true } } },
+    orderBy: [{ group: { sequence: "asc" } }, { group: { name: "asc" } }, { name: "asc" }],
   });
 
   const [statusCounts, attention, changeRequests, events, queue, coverage] = await Promise.all([
     prisma.canonArtifact.groupBy({
       by: ["dataTypeId", "statusId"],
-      where: { dataTypeId: { in: dataTypes.map((d) => d.id) } },
+      // item values only: supplier statements are tracked under their item value
+      where: {
+        dataTypeId: { in: dataTypes.map((d) => d.id) },
+        OR: [{ supplierId: null }, { dataType: { subjectTypeId: canonSubjectTypes.itemSupplier } }],
+      },
       _count: { _all: true },
     }),
     prisma.canonArtifact.findMany({

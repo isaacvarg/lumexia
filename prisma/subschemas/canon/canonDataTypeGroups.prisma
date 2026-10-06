@@ -1,0 +1,14 @@
+// User-defined grouping of data types (e.g. "Website", "Regulatory"), used to organise
+// settings, the item Canon tab and the dashboard. Deleting a group ungroups its types.
+model CanonDataTypeGroup {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    sequence    Int      @default(0)
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    dataTypes CanonDataType[]
+
+    @@map("canon_data_type_groups")
+}

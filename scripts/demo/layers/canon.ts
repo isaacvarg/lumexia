@@ -42,27 +42,20 @@ const RECIPES = {
 };
 
 const DATA_TYPES = {
-  supplierAllergens: {
-    name: 'Supplier Allergen Statement',
-    description: 'Allergens a supplier declares for a material, with their document as evidence.',
-    shapeId: canonShapes.tagSet,
-    subjectTypeId: canonSubjectTypes.itemSupplier,
-    shapeConfig: { options: ALLERGENS },
-    requiresEvidence: true,
-    scope: 'Ingredients',
-    position: { x: 0, y: 0 },
-  },
   allergens: {
+    group: 'allergens',
     name: 'Allergens',
-    description: 'The allergens we stand behind for a material.',
+    description: 'The allergens we stand behind for a material. Suppliers can state theirs too.',
     shapeId: canonShapes.tagSet,
     subjectTypeId: canonSubjectTypes.item,
     shapeConfig: { options: ALLERGENS },
     reverifyAfterDays: 365,
+    allowSupplierStatements: true,
     scope: 'Ingredients',
     position: { x: 320, y: 0 },
   },
   menuAllergens: {
+    group: 'allergens',
     name: 'Menu Allergens',
     description: 'Allergen callouts shown on the menu for a recipe.',
     shapeId: canonShapes.tagSet,
@@ -73,6 +66,7 @@ const DATA_TYPES = {
     position: { x: 640, y: 0 },
   },
   officialBom: {
+    group: 'formula',
     name: 'Official BOM',
     description: 'The bill of materials of the active MBPR.',
     shapeId: canonShapes.billOfMaterials,
@@ -82,6 +76,7 @@ const DATA_TYPES = {
     position: { x: 320, y: 200 },
   },
   ingredientListing: {
+    group: 'formula',
     name: 'Ingredient Listing',
     description: 'Ingredients in descending order of predominance, as printed.',
     shapeId: canonShapes.orderedList,
@@ -91,6 +86,7 @@ const DATA_TYPES = {
     position: { x: 640, y: 200 },
   },
   shelfLabel: {
+    group: 'website',
     name: 'Shelf Label',
     description: 'Copy for the shelf label of a sold size.',
     shapeId: canonShapes.blockList,
@@ -99,6 +95,7 @@ const DATA_TYPES = {
     position: { x: 960, y: 200 },
   },
   menuDescription: {
+    group: 'website',
     name: 'Menu Description',
     description: 'The description printed on the menu and the website.',
     shapeId: canonShapes.richText,
@@ -110,6 +107,12 @@ const DATA_TYPES = {
 } as const;
 
 type DataTypeKey = keyof typeof DATA_TYPES;
+
+const GROUPS = {
+  allergens: { name: 'Allergens', description: 'What each material contains and what the menu declares.' },
+  formula: { name: 'Formula & Labelling', description: 'The released formula and the ingredient listing derived from it.' },
+  website: { name: 'Website & Menu', description: 'Copy that appears on the menu, shelf labels and the website.' },
+};
 
 export const seedCanon = async (
   users: DemoUser[],
@@ -152,6 +155,16 @@ export const seedCanon = async (
   });
   console.log('  +    2 canonTeam');
 
+  // ── groups ────────────────────────────────────────────────────────────────
+  const groupIds = {} as Record<keyof typeof GROUPS, string>;
+  const groupEntries = Object.entries(GROUPS) as [keyof typeof GROUPS, (typeof GROUPS)[keyof typeof GROUPS]][];
+  for (let sequence = 0; sequence < groupEntries.length; sequence++) {
+    const [key, group] = groupEntries[sequence];
+    const created = await db.canonDataTypeGroup.create({ data: { ...group, sequence } });
+    groupIds[key] = created.id;
+  }
+  console.log(`  + ${Object.keys(groupIds).length.toString().padStart(4)} canonDataTypeGroup`);
+
   // ── data types ────────────────────────────────────────────────────────────
   const types = {} as Record<DataTypeKey, string>;
   for (const [key, def] of Object.entries(DATA_TYPES) as [DataTypeKey, (typeof DATA_TYPES)[DataTypeKey]][]) {
@@ -168,7 +181,9 @@ export const seedCanon = async (
         requiresEvidence: 'requiresEvidence' in def ? def.requiresEvidence : false,
         requiresDifferentReviewer: 'requiresDifferentReviewer' in def ? def.requiresDifferentReviewer : false,
         reverifyAfterDays: 'reverifyAfterDays' in def ? def.reverifyAfterDays : null,
+        allowSupplierStatements: 'allowSupplierStatements' in def ? def.allowSupplierStatements : false,
         recordStatusId: refs.recordStatuses.active,
+        groupId: groupIds[def.group],
         canvasX: def.position.x,
         canvasY: def.position.y,
         itemTypes: scopeTypeId ? { create: [{ itemTypeId: scopeTypeId }] } : undefined,
@@ -180,7 +195,6 @@ export const seedCanon = async (
 
   await db.canonDataTypeDependency.createMany({
     data: [
-      { parentId: types.supplierAllergens, childId: types.allergens, kindId: canonDependencyKinds.suppliers },
       { parentId: types.allergens, childId: types.menuAllergens, kindId: canonDependencyKinds.activeBom },
       { parentId: types.officialBom, childId: types.ingredientListing, kindId: canonDependencyKinds.sameSubject },
       { parentId: types.ingredientListing, childId: types.shelfLabel, kindId: canonDependencyKinds.filledItem },
@@ -193,7 +207,6 @@ export const seedCanon = async (
   const { edit, review } = canonCapabilities;
   await db.canonDataTypeTeamPermission.createMany({
     data: [
-      team(types.supplierAllergens, edit, quality.id), team(types.supplierAllergens, review, quality.id),
       team(types.allergens, edit, quality.id), team(types.allergens, review, quality.id),
       team(types.menuAllergens, edit, marketing.id), team(types.menuAllergens, review, quality.id),
       team(types.officialBom, review, quality.id),
@@ -202,9 +215,9 @@ export const seedCanon = async (
       team(types.menuDescription, edit, marketing.id), team(types.menuDescription, review, marketing.id),
     ],
   });
-  // purchasing records what suppliers state
+  // purchasing records what suppliers state (an editor of a type can edit its supplier statements)
   await db.canonDataTypeUserPermission.createMany({
-    data: [person(types.supplierAllergens, edit, valen)],
+    data: [person(types.allergens, edit, valen)],
   });
 
   // ── artifacts, through the engine ─────────────────────────────────────────
@@ -235,7 +248,7 @@ export const seedCanon = async (
   ];
   for (const [supplier, allergens, note] of statements) {
     const cr = await proposeEdit(valen, {
-      dataTypeId: types.supplierAllergens,
+      dataTypeId: types.allergens,
       subject: { kind: 'itemSupplier', itemId: milk, supplierId: supplier.id },
       proposedContent: { tags: allergens },
       reason: `Recorded from ${supplier.name}'s documentation.`,

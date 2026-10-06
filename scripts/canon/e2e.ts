@@ -175,6 +175,25 @@ const main = async () => {
     const old = await proposeEdit(userA.id, { dataTypeId: vegan.id, subject: material, reason: "Old doc", proposedContent: { value: false }, sources: [{ sourceTypeId: canonSourceTypes.supplierDocument, sourceDate: new Date("2020-01-01") }] });
     check("old evidence applied", !!old.version);
     check("material Vegan expired", (await statusOf(vegan.id, materialKey)) === "expired");
+
+    // --- item fact that suppliers can also state (no separate per-supplier type)
+    const fact = await mk("Contains Nuts", canonShapes.boolean, canonSubjectTypes.item, { allowSupplierStatements: true });
+    await prisma.canonDataTypeUserPermission.createMany({
+      data: [
+        { dataTypeId: fact.id, capabilityId: canonCapabilities.edit, userId: userA.id },
+        { dataTypeId: fact.id, capabilityId: canonCapabilities.review, userId: userA.id },
+      ],
+    });
+    const factItem = await proposeEdit(userA.id, { dataTypeId: fact.id, subject: material, reason: "Chemistry: no nut-derived inputs", proposedContent: { value: false }, sources: [{ sourceTypeId: canonSourceTypes.scientificReference, note: "Composition review" }] });
+    check("item fact recorded without a supplier", !!factItem.version);
+    for (const [i, value] of [[0, false], [1, true]] as const) {
+      await proposeEdit(userA.id, { dataTypeId: fact.id, subject: { kind: "itemSupplier", itemId: materialId, supplierId: suppliers[i].id }, reason: "Supplier declaration", proposedContent: { value } });
+    }
+    check("disagreeing supplier statements flag the item fact", (await statusOf(fact.id, materialKey)) === "conflict");
+    await proposeEdit(userA.id, { dataTypeId: fact.id, subject: { kind: "itemSupplier", itemId: materialId, supplierId: suppliers[1].id }, reason: "Corrected", proposedContent: { value: false } });
+    check("agreeing statements leave the item fact needing review", (await statusOf(fact.id, materialKey)) === "stale");
+    await expectThrow("statements rejected when the type doesn't allow them", () =>
+      proposeEdit(userA.id, { dataTypeId: vegan.id, subject: { kind: "itemSupplier", itemId: materialId, supplierId: suppliers[0].id }, reason: "x", proposedContent: { value: true } }));
   } else {
     console.log("SKIP  supplier/BOM-propagation checks (need 2 suppliers)");
   }

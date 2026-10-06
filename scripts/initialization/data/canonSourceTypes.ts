@@ -20,6 +20,14 @@ export const data = {
       "description": "A regulatory or nomenclature database, e.g. INCI, Prop 65 list."
     },
     {
+      "name": "Regulatory Document",
+      "description": "A law, regulation, standard or legal opinion, e.g. 21 CFR, an IFRA standard, counsel's memo."
+    },
+    {
+      "name": "Scientific Reference",
+      "description": "Published literature, a chemistry reference or a technical handbook."
+    },
+    {
       "name": "Internal Judgment",
       "description": "A decision made internally without external evidence."
     },

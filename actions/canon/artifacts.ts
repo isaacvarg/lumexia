@@ -8,7 +8,7 @@ import {
   getArtifactHistory,
   getItemCanon,
   getReviewQueue,
-  getSupplierCanonEntries,
+  getSupplierCanonEntry,
   refreshAllArtifacts,
 } from "@/lib/canon/queries";
 
@@ -17,9 +17,9 @@ export const getCanonForItem = async (itemId: string) => {
   return getItemCanon(userId, itemId);
 };
 
-export const getCanonSupplierEntries = async (itemId: string, supplierId: string) => {
+export const getCanonSupplierEntry = async (itemId: string, supplierId: string, dataTypeId: string) => {
   const userId = await getUserId();
-  return getSupplierCanonEntries(userId, itemId, supplierId);
+  return getSupplierCanonEntry(userId, itemId, supplierId, dataTypeId);
 };
 
 export const getCanonSupplierOptions = async () => {
