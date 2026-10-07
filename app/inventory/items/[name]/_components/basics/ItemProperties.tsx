@@ -6,6 +6,7 @@ import Layout from "@/components/Layout"
 import { TbEdit } from "react-icons/tb"
 import useDialog from "@/hooks/useDialog"
 import EditItemDialog from "./EditItemDialog"
+import SoldHint from "./SoldHint"
 
 const ItemProperties = () => {
   const { item } = useItemSelection()
@@ -35,6 +36,9 @@ const ItemProperties = () => {
       <LabelDataPair label="Inventory Type" data={item.inventoryType.name} textCase="capitalize" />
 
       <LabelDataPair label="Inventory UOM" data={item.inventoryUom.name} textCase="capitalize" />
+      <LabelDataPair label="Sold to customers" data={item.isSold ? "Yes" : "No"} />
+
+      <SoldHint />
 
     </Card.Root>
   )

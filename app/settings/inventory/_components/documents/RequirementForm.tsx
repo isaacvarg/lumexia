@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createDocumentRequirement, DocumentRequirementRow, updateDocumentRequirement } from "@/actions/inventory/documentRequirements"
-import { requirementIssuers, requirementLevels, requirementScopes, RequirementInput } from "@/lib/itemDocuments/rules"
+import { requirementIssuers, requirementLevels, requirementLotOrigins, requirementScopes, RequirementInput } from "@/lib/itemDocuments/rules"
 import { Option } from "./types"
 
 type Props = {
@@ -52,10 +52,13 @@ const RequirementForm = ({ requirement, defaults, itemTypes, procurementTypes, f
   const [value, setValue] = useState({
     itemTypeId: requirement?.itemTypeId ?? defaults?.itemTypeId ?? "",
     procurementTypeId: requirement?.procurementTypeId ?? defaults?.procurementTypeId ?? "",
+    // select values: "" any, "true" sold, "false" not sold
+    sold: String(requirement?.sold ?? defaults?.sold ?? ""),
     fileTypeId: requirement?.fileTypeId ?? "",
     level: requirement?.level ?? "required",
     scope: requirement?.scope ?? "item",
     issuer: requirement?.issuer ?? "supplier",
+    lotOrigin: requirement?.lotOrigin ?? "",
     validForMonths: requirement?.validForMonths?.toString() ?? "",
     warnDays: (requirement?.warnDays ?? 60).toString(),
     minIssuedAt: toDateInput(requirement?.minIssuedAt ?? null),
@@ -69,10 +72,12 @@ const RequirementForm = ({ requirement, defaults, itemTypes, procurementTypes, f
     const input: RequirementInput = {
       itemTypeId: value.itemTypeId || null,
       procurementTypeId: value.procurementTypeId || null,
+      sold: value.sold === "" ? null : value.sold === "true",
       fileTypeId: value.fileTypeId,
       level: value.level,
       scope: value.scope,
       issuer: value.issuer,
+      lotOrigin: value.scope === "lot" ? value.lotOrigin || null : null,
       validForMonths: value.validForMonths ? Number(value.validForMonths) : null,
       warnDays: value.warnDays ? Number(value.warnDays) : 0,
       minIssuedAt: value.minIssuedAt ? new Date(value.minIssuedAt) : null,
@@ -92,7 +97,7 @@ const RequirementForm = ({ requirement, defaults, itemTypes, procurementTypes, f
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-primary/40 bg-base-100 p-4">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <Field label="Item type">
           <select className="select select-sm w-full" value={value.itemTypeId} onChange={(e) => set("itemTypeId", e.target.value)}>
             <option value="">Any item type</option>
@@ -103,6 +108,13 @@ const RequirementForm = ({ requirement, defaults, itemTypes, procurementTypes, f
           <select className="select select-sm w-full" value={value.procurementTypeId} onChange={(e) => set("procurementTypeId", e.target.value)}>
             <option value="">Any procurement type</option>
             {procurementTypes.map((t) => <option key={t.id} value={t.id} className="capitalize">{t.name}</option>)}
+          </select>
+        </Field>
+        <Field label="Sold to customers">
+          <select className="select select-sm w-full" value={value.sold} onChange={(e) => set("sold", e.target.value)}>
+            <option value="">Sold or not</option>
+            <option value="true">Only sold items</option>
+            <option value="false">Only items not sold</option>
           </select>
         </Field>
         <Field label="Document">
@@ -123,6 +135,15 @@ const RequirementForm = ({ requirement, defaults, itemTypes, procurementTypes, f
         {!excluded && (
           <Field label="Applies">
             <Segmented value={value.scope} options={requirementScopes} onChange={(v) => set("scope", v)} />
+          </Field>
+        )}
+        {!excluded && value.scope === "lot" && (
+          <Field label="Which lots">
+            <Segmented
+              value={value.lotOrigin}
+              options={requirementLotOrigins.map((o) => ({ ...o, value: o.value ?? "" }))}
+              onChange={(v) => set("lotOrigin", v)}
+            />
           </Field>
         )}
       </div>

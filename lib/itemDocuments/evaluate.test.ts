@@ -16,10 +16,12 @@ const rule = (overrides: Partial<Requirement>): Requirement => ({
   id: `rule-${++seq}`,
   itemTypeId: null,
   procurementTypeId: null,
+  sold: null,
   fileTypeId: SDS,
   level: "required",
   scope: "item",
   issuer: "supplier",
+  lotOrigin: null,
   validForMonths: null,
   minIssuedAt: null,
   warnDays: 60,
@@ -42,7 +44,7 @@ const doc = (overrides: Partial<DocumentRecord>): DocumentRecord => ({
 });
 
 describe("resolveRequirements", () => {
-  const rawPurchased = { itemTypeId: RAW, procurementTypeId: PURCHASED };
+  const rawPurchased = { itemTypeId: RAW, procurementTypeId: PURCHASED, isSold: false };
 
   it("matches on item type, procurement type, or both", () => {
     const rules = [
@@ -72,6 +74,20 @@ describe("resolveRequirements", () => {
     const supplier = rule({ itemTypeId: RAW, issuer: "supplier" });
     const internal = rule({ itemTypeId: RAW, issuer: "internal" });
     assert.equal(resolveRequirements([supplier, internal], rawPurchased).length, 2);
+  });
+
+  it("matches the sold condition, and ranks it below item and procurement type", () => {
+    const sold = { ...rawPurchased, isSold: true };
+    const supplierCoa = rule({ itemTypeId: RAW, procurementTypeId: PURCHASED, fileTypeId: COA, scope: "lot" });
+    const ourCoa = rule({ itemTypeId: RAW, procurementTypeId: PURCHASED, sold: true, fileTypeId: COA, scope: "lot", issuer: "internal" });
+    assert.deepEqual(resolveRequirements([supplierCoa, ourCoa], rawPurchased), [supplierCoa]);
+    assert.deepEqual(resolveRequirements([supplierCoa, ourCoa], sold), [supplierCoa, ourCoa]);
+
+    const allSold = rule({ sold: true, level: "required" });
+    const rawOptional = rule({ itemTypeId: RAW, level: "optional" });
+    assert.deepEqual(resolveRequirements([allSold, rawOptional], sold), [rawOptional]);
+    assert.deepEqual(resolveRequirements([allSold], sold), [allSold]);
+    assert.deepEqual(resolveRequirements([rule({ sold: false })], sold), []);
   });
 
   it("ignores rules that match nothing", () => {
@@ -206,6 +222,15 @@ describe("evaluateRequirement (lot scope)", () => {
     );
   });
 
+  it("can point a rule at other lots than its issuer implies", () => {
+    const ours = (lotOrigin: Requirement["lotOrigin"]) =>
+      evaluateRequirement(rule({ fileTypeId: COA, scope: "lot", issuer: "internal", lotOrigin }), [], lots, now)
+        .lots!.filter((l) => l.counted).map((l) => l.lotNumber);
+    assert.deepEqual(ours(null), ["P1"]);
+    assert.deepEqual(ours("received"), ["R1"]);
+    assert.deepEqual(ours("both"), ["R1", "P1"]);
+  });
+
   it("is not applicable when no lots count", () => {
     const r = rule({ fileTypeId: COA, scope: "lot" });
     assert.equal(evaluateRequirement(r, [], [produced, manual], now).status, "notApplicable");
@@ -224,7 +249,7 @@ describe("evaluateItemDocuments", () => {
       { id: "l1", lotNumber: "L1", originType: "purchaseOrderReceiving", createdAt: now, onHand: 10 },
     ];
     const docs = [doc({ fileTypeId: SDS, issuedAt: new Date("2025-03-01T00:00:00Z") })];
-    const results = evaluateItemDocuments(rules, { itemTypeId: RAW, procurementTypeId: PURCHASED }, docs, lots, now);
+    const results = evaluateItemDocuments(rules, { itemTypeId: RAW, procurementTypeId: PURCHASED, isSold: false }, docs, lots, now);
     const byKey = Object.fromEntries(results.map((r) => [`${r.requirement.fileTypeId}:${r.requirement.issuer}`, r.status]));
     assert.deepEqual(byKey, {
       "sds:supplier": "current",
