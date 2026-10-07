@@ -34,7 +34,7 @@ const UserPage = async () => {
           </div>
         }
         dashboard={<DashboardSettings layout={homeDashLayout} />}
-        agents={<ApiKeysPanel keys={apiKeys} />}
+        agents={<ApiKeysPanel keys={apiKeys} isAdmin={!!user.roles.isSystemAdmin} />}
       />
 
     </div>

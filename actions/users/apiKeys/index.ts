@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "../getUser"
-import { createApiKey, listApiKeys, revokeApiKey as revokeKey } from "@/lib/apiKeys"
+import { apiKeyScopes, createApiKey, listApiKeys, revokeApiKey as revokeKey, setApiKeyScopes } from "@/lib/apiKeys"
 
 const EXPIRY_DAYS = { never: null, "30": 30, "90": 90, "365": 365 } as const
 
@@ -24,8 +24,13 @@ export const getUserApiKeys = async (targetUserId: string) => {
 }
 
 // Keys are always created for the signed-in user, so agents act with that user's permissions.
-export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry }) => {
+// Only system admins may give a key write access (filing documents over MCP).
+export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry; allowWrite?: boolean }) => {
   const user = await getUser()
+
+  if (input.allowWrite && !user.roles.isSystemAdmin) {
+    throw new Error("Forbidden: only system admins may create keys with write access")
+  }
 
   const name = input.name.trim()
   if (!name) {
@@ -35,7 +40,19 @@ export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry
   const days = EXPIRY_DAYS[input.expiry]
   const expiresAt = days === null ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
-  return createApiKey(user.id, { name, expiresAt })
+  const scopes = input.allowWrite ? [apiKeyScopes.read, apiKeyScopes.write] : [apiKeyScopes.read]
+  return createApiKey(user.id, { name, expiresAt, scopes })
+}
+
+// Admin-only: turn write access on or off for any user's key, e.g. for whoever files documents.
+export const setApiKeyWriteAccess = async (apiKeyId: string, allowWrite: boolean) => {
+  const user = await getUser()
+  if (!user.roles.isSystemAdmin) {
+    throw new Error("Forbidden: only system admins may change a key's access")
+  }
+
+  const scopes = allowWrite ? [apiKeyScopes.read, apiKeyScopes.write] : [apiKeyScopes.read]
+  await setApiKeyScopes(apiKeyId, scopes)
 }
 
 // Owners can revoke their own keys; system admins can revoke anyone's.

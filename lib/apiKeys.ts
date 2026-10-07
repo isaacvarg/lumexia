@@ -82,6 +82,14 @@ export const listApiKeys = async (userId: string) => {
 
 export type ApiKeyListing = Awaited<ReturnType<typeof listApiKeys>>[number];
 
+export const setApiKeyScopes = async (apiKeyId: string, scopes: ApiKeyScope[]) => {
+  return prisma.apiKey.update({
+    where: { id: apiKeyId },
+    data: { scopes },
+    select: { id: true, userId: true, scopes: true },
+  });
+};
+
 // Revocation is soft so the key's history (who, when, last used) stays visible.
 export const revokeApiKey = async (apiKeyId: string) => {
   return prisma.apiKey.update({

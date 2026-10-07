@@ -1,0 +1,101 @@
+---
+title: Item Documents
+description: Require documents like SDSs, COAs and IFRA certificates per item type, track their expiry, and see what's missing across items.
+---
+
+Items carry documents: the supplier's SDS, a COA for each lot, an IFRA
+certificate, our own branded SDS. **Document requirements** say which documents
+each kind of item should have. Lumexia then checks every item against them and
+shows what's missing, expired, or due for review.
+
+## Requirements
+
+Set requirements in **Settings → Inventory → Documents**. Each rule says:
+
+| Field | Meaning |
+| --- | --- |
+| **Item type / Procurement type / Sold to customers** | Which items it applies to. Set at least one. |
+| **Document** | The file type, e.g. Safety Data Sheet. |
+| **Issued by** | **Supplier**, **Internal** (issued or rebranded by us), or **Either**. The same document can be required twice, e.g. a supplier SDS *and* our branded SDS. |
+| **Level** | **Required**, **Optional**, or **Excluded**. Excluded cancels a broader rule for these items. |
+| **Applies** | **Per item** (one current document) or **Per lot** (one for each lot). |
+| **Which lots** | For per-lot rules: **Received**, **Produced**, or **Both**. By default supplier documents apply to received lots and ours to produced lots. |
+| **Months valid** | How long a document is valid from its issue date. Blank means it never expires. |
+| **Warn days before** | How early it shows as expiring. |
+| **Issued on or after** | Documents issued earlier count as expired, e.g. after a new IFRA amendment. |
+| **Note for uploaders** | Shown when someone uploads this document. |
+
+When several rules cover the same document and issuer for an item, the most
+specific one wins. Item type outweighs procurement type, which outweighs the
+sold condition. So you can require something for all purchased items, then
+mark it optional or excluded for one item type.
+
+The **Preview an item** panel shows what a given item type, procurement type,
+and sold setting ends up needing.
+
+### Example: resold raw materials
+
+Most raw materials are only used in production, so they need the supplier's COA
+for each lot. Some are also resold, and those need our own COA too:
+
+1. Mark the resold items as **Sold to customers** in their item properties. If
+   an item is filled into a finished product, the item page suggests it.
+2. Add *Raw Material · Purchased → COA, Supplier, Required, Per lot*.
+3. Add *Raw Material · Purchased · Sold → COA, Internal, Required, Per lot,
+   Which lots: Received*.
+
+### Which lots count
+
+Per-lot rules check lots that came from the matching origin. Lots created
+after the rule always count. Lots that already existed only count while they
+still have stock, so old history doesn't flood the list. Manually created lots
+never count, because where they came from is unknown.
+
+## Statuses
+
+| Status | Meaning |
+| --- | --- |
+| **Current** | On file and valid. |
+| **Expiring** | Valid, but inside the warning window. |
+| **Needs dates** | On file, but without an issue or expiry date, so it can't be checked. |
+| **Source updated** | Our document is based on a supplier document that has since been replaced. |
+| **Expired** | Past its expiry, or issued before the cutoff. |
+| **Missing** | Nothing on file. |
+
+## The Files tab
+
+An item's **Files** tab is built around its requirements:
+
+- **Required documents**: one row per item-level requirement with its status,
+  the current file, and **Upload** or **Replace**.
+- **Lot documents**: one row per lot that needs documents. Click a missing
+  cell to upload with the lot and its supplier already filled in.
+- **All documents**: every file, with search and a type filter. Replaced
+  versions are collapsed under the current one. Click a file to preview it.
+
+When uploading, say what the document is: its type, who issued it, the
+supplier, the lot (for lot documents), the issue date, and for our own
+documents, which supplier document it's based on. Suppliers the item is
+ordered from are listed first.
+
+A new upload **replaces** the older version of the same document (same type,
+issuer, lot, and supplier). If a current version exists from a different
+supplier, the upload dialog asks whether to replace it too. Editing a
+document's details never replaces anything. Use **Mark as replaced** or
+**Restore as current** for that.
+
+## Document Compliance
+
+**Quality → Documents** lists every required document that needs attention
+across all items, with:
+
+- Summary cards and preset views: missing branded documents, our documents to
+  revisit, expired or expiring, lot documents missing, needs dates.
+- Filters by status, issuer, item type, document type, and supplier.
+- A **By supplier** view grouping supplier documents by who to ask, with a
+  **Copy request list** to paste into an email.
+
+## Agents
+
+With a write API key, Claude Code can file a folder of documents for you. See
+[Filing documents from a folder](/docs/mcp#filing-documents-from-a-folder).

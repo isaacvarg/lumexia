@@ -46,7 +46,7 @@ const UserDetailPage = async ({ params }: { params: { id: string } }) => {
         profile={<ProfilePanel user={user} allRoles={roles} />}
         status={<AccountStatusPanel user={user} />}
         dashboard={<DashboardSettings layout={homeDashLayout} userId={user.id} />}
-        agents={<ApiKeysPanel keys={apiKeys} canCreate={user.id === currentUser.id} />}
+        agents={<ApiKeysPanel keys={apiKeys} canCreate={user.id === currentUser.id} isAdmin />}
         danger={<DangerZonePanel user={user} />}
       />
     </div>

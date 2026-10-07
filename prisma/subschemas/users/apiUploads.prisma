@@ -1,0 +1,19 @@
+// A single-use, short-lived upload link handed to an agent by the create_document_upload MCP tool.
+// The agent sends the file there with curl, so file bytes never pass through the model or the MCP call.
+// Only a hash of the token is stored; fileId is set once the upload has happened.
+model ApiUpload {
+    id        String    @id @default(uuid())
+    apiKeyId  String    @map("api_key_id")
+    tokenHash String    @unique @map("token_hash")
+    expiresAt DateTime  @map("expires_at")
+    usedAt    DateTime? @map("used_at")
+    fileId    String?   @unique @map("file_id")
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+
+    apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+    file   File?  @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+    @@index([apiKeyId])
+    @@map("api_uploads")
+}
