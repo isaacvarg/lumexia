@@ -25,6 +25,7 @@ export const getItemDocumentStatuses = async (
       id: true,
       itemTypeId: true,
       procurementTypeId: true,
+      isSold: true,
       ItemFile: {
         where: { supersededAt: null },
         select: {

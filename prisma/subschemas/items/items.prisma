@@ -7,6 +7,8 @@ model Item {
     inventoryUomId               String                         @map("inventory_uom_id") 
     procurementTypeId            String                        @map("procurement_type_id")
     inventoryTypeId              String                        @map("inventory_type_id")
+    // sold to customers as-is (e.g. a resold raw material); document requirements can match on it
+    isSold                       Boolean                       @default(false) @map("is_sold")
     createdAt                    DateTime                      @default(now()) @map("created_at")
     updatedAt                    DateTime                      @updatedAt @map("updated_at")
     itemType                     ItemType                      @relation(fields: [itemTypeId], references: [id])

@@ -22,15 +22,18 @@ const statusRank: Record<RequirementStatus, number> = {
   missing: 6,
 };
 
-const specificity = (r: Requirement) => (r.itemTypeId ? 2 : 0) + (r.procurementTypeId ? 1 : 0);
+// Item type outweighs procurement type, which outweighs the sold condition, so e.g.
+// Raw Material + purchased + sold > Raw Material + purchased > Raw Material + sold > Raw Material.
+const specificity = (r: Requirement) => (r.itemTypeId ? 4 : 0) + (r.procurementTypeId ? 2 : 0) + (r.sold !== null ? 1 : 0);
 
 // For each file type + issuer, the most specific matching rule wins; excluded rules then drop out.
 export const resolveRequirements = (rules: Requirement[], subject: RequirementSubject): Requirement[] => {
   const winners = new Map<string, Requirement>();
   for (const rule of rules) {
-    if (!rule.itemTypeId && !rule.procurementTypeId) continue;
+    if (!rule.itemTypeId && !rule.procurementTypeId && rule.sold === null) continue;
     if (rule.itemTypeId && rule.itemTypeId !== subject.itemTypeId) continue;
     if (rule.procurementTypeId && rule.procurementTypeId !== subject.procurementTypeId) continue;
+    if (rule.sold !== null && rule.sold !== subject.isSold) continue;
 
     const key = `${rule.fileTypeId}:${rule.issuer}`;
     const current = winners.get(key);
@@ -85,12 +88,22 @@ const evaluateDocuments = (docs: DocumentRecord[], requirement: Requirement, now
 // Leftover float error from summing transactions shouldn't count as stock.
 const ON_HAND_EPSILON = 1e-6;
 
-// Supplier documents belong to received lots, internal ones to lots we produced. Lots created after the
-// requirement always count; older lots only while they still have stock, so history doesn't flood the list.
+// Which lots a lot-level rule checks. By default supplier documents belong to received lots and internal
+// ones to lots we produced; a rule can override that (e.g. our own COA on received lots we resell).
+export const lotOriginsFor = (requirement: Requirement): { received: boolean; produced: boolean } => {
+  if (requirement.lotOrigin === "received") return { received: true, produced: false };
+  if (requirement.lotOrigin === "produced") return { received: false, produced: true };
+  if (requirement.lotOrigin === "both") return { received: true, produced: true };
+  return { received: requirement.issuer !== "internal", produced: requirement.issuer !== "supplier" };
+};
+
+// Lots created after the requirement always count; older lots only while they still have stock, so history
+// doesn't flood the list. Manually created lots never count: where they came from is unknown.
 const lotCounts = (lot: LotRecord, requirement: Requirement) => {
+  const origins = lotOriginsFor(requirement);
   const originMatches =
-    (lot.originType === "purchaseOrderReceiving" && requirement.issuer !== "internal") ||
-    (lot.originType === "batchProduction" && requirement.issuer !== "supplier");
+    (lot.originType === "purchaseOrderReceiving" && origins.received) ||
+    (lot.originType === "batchProduction" && origins.produced);
   if (!originMatches) return false;
   return lot.createdAt >= requirement.createdAt || lot.onHand > ON_HAND_EPSILON;
 };

@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Tue Oct 06 2026 14:26:56 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Wed Oct 07 2026 09:10:24 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -631,6 +631,7 @@ model File {
   experimentSampleNoteFiles        ExperimentSampleNoteFile[]
   experimentSampleFiles            ExperimentSampleFile[]
   CanonChangeRequestSource         CanonChangeRequestSource[]
+  ApiUpload                        ApiUpload?
 
   @@map("files")
 }
@@ -1641,19 +1642,24 @@ model InventoryType {
   @@map("inventory_types")
 }
 
-// Declares which documents items should have. A rule matches on item type, procurement type, or both;
-// for each file type + issuer, the most specific matching rule wins (both > item type > procurement type).
+// Declares which documents items should have. A rule matches on item type, procurement type and/or
+// whether the item is sold; for each file type + issuer, the most specific matching rule wins
+// (item type outweighs procurement type, which outweighs the sold condition).
 // level: required | optional | excluded (excluded cancels a broader rule)
 // scope: item (one current document per item) | lot (one per applicable lot)
 // issuer: supplier | internal | any
+// sold: null = any item, true = only sold items, false = only items not sold
+// lotOrigin (lot scope): received | produced | both; null = by issuer (supplier → received, internal → produced)
 model ItemDocumentRequirement {
   id                String    @id @default(uuid())
   itemTypeId        String?   @map("item_type_id")
   procurementTypeId String?   @map("procurement_type_id")
+  sold              Boolean?
   fileTypeId        String    @map("file_type_id")
   level             String
   scope             String
   issuer            String
+  lotOrigin         String?   @map("lot_origin")
   validForMonths    Int?      @map("valid_for_months")
   minIssuedAt       DateTime? @map("min_issued_at")
   warnDays          Int       @default(60) @map("warn_days")
@@ -1792,6 +1798,8 @@ model Item {
   inventoryUomId                       String                                @map("inventory_uom_id")
   procurementTypeId                    String                                @map("procurement_type_id")
   inventoryTypeId                      String                                @map("inventory_type_id")
+  // sold to customers as-is (e.g. a resold raw material); document requirements can match on it
+  isSold                               Boolean                               @default(false) @map("is_sold")
   createdAt                            DateTime                              @default(now()) @map("created_at")
   updatedAt                            DateTime                              @updatedAt @map("updated_at")
   itemType                             ItemType                              @relation(fields: [itemTypeId], references: [id])
@@ -3706,10 +3714,31 @@ model ApiKey {
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ApiUpload ApiUpload[]
 
   @@index([userId])
   @@map("api_keys")
+}
+
+// A single-use, short-lived upload link handed to an agent by the create_document_upload MCP tool.
+// The agent sends the file there with curl, so file bytes never pass through the model or the MCP call.
+// Only a hash of the token is stored; fileId is set once the upload has happened.
+model ApiUpload {
+  id        String    @id @default(uuid())
+  apiKeyId  String    @map("api_key_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  fileId    String?   @unique @map("file_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  file   File?  @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  @@index([apiKeyId])
+  @@map("api_uploads")
 }
 
 model Authenticator {

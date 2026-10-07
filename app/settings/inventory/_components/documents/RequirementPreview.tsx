@@ -12,15 +12,16 @@ type Props = {
   requirements: DocumentRequirementRow[]
   itemTypes: Option[]
   procurementTypes: Option[]
-  matchLabel: (r: DocumentRequirementRow) => string
+  matchLabel: (r: Pick<DocumentRequirementRow, "itemType" | "procurementType" | "sold">) => string
 }
 
 // Shows what an item with a given item type + procurement type ends up needing once precedence is applied.
 const RequirementPreview = ({ requirements, itemTypes, procurementTypes, matchLabel }: Props) => {
   const [itemTypeId, setItemTypeId] = useState(itemTypes[0]?.id ?? "")
   const [procurementTypeId, setProcurementTypeId] = useState(procurementTypes[0]?.id ?? "")
+  const [isSold, setIsSold] = useState(false)
 
-  const resolved = resolveRequirements(requirements, { itemTypeId, procurementTypeId }) as DocumentRequirementRow[]
+  const resolved = resolveRequirements(requirements, { itemTypeId, procurementTypeId, isSold }) as DocumentRequirementRow[]
   const sorted = [...resolved].sort((a, b) =>
     a.level === b.level ? a.fileType.name.localeCompare(b.fileType.name) : a.level === "required" ? -1 : 1
   )
@@ -40,6 +41,10 @@ const RequirementPreview = ({ requirements, itemTypes, procurementTypes, matchLa
             {procurementTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </div>
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" className="toggle toggle-sm" checked={isSold} onChange={(e) => setIsSold(e.target.checked)} />
+          Sold to customers
+        </label>
 
         {sorted.length === 0 ? (
           <p className="text-sm italic text-base-content/50">No documents needed.</p>

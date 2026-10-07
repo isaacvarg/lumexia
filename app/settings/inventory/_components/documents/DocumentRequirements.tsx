@@ -20,6 +20,7 @@ type Group = {
   key: string
   itemTypeId: string | null
   procurementTypeId: string | null
+  sold: boolean | null
   label: string
   rules: DocumentRequirementRow[]
 }
@@ -35,18 +36,19 @@ const DocumentRequirements = ({ requirements, ...props }: Props) => {
   const procurementTypes = byName(props.procurementTypes)
   const fileTypes = byName(props.fileTypes)
 
-  const matchLabel = (r: Pick<DocumentRequirementRow, "itemType" | "procurementType">) => {
-    if (r.itemType && r.procurementType) return `${r.itemType.name} · ${r.procurementType.name}`
-    if (r.itemType) return r.itemType.name
-    return `All ${r.procurementType?.name} items`
+  const matchLabel = (r: Pick<DocumentRequirementRow, "itemType" | "procurementType" | "sold">) => {
+    const sold = r.sold === true ? "Sold" : r.sold === false ? "Not sold" : null
+    const parts = [r.itemType?.name, r.procurementType?.name, sold].filter(Boolean)
+    if (r.itemType) return parts.join(" · ")
+    return `All ${parts.join(" · ").toLowerCase()} items`
   }
 
   // Broad procurement-type rules first, then item types alphabetically, each followed by its narrower combinations.
   const groups = Array.from(
     requirements
       .reduce((map, r) => {
-        const key = `${r.itemTypeId ?? ""}:${r.procurementTypeId ?? ""}`
-        const group = map.get(key) ?? { key, itemTypeId: r.itemTypeId, procurementTypeId: r.procurementTypeId, label: matchLabel(r), rules: [] }
+        const key = `${r.itemTypeId ?? ""}:${r.procurementTypeId ?? ""}:${r.sold ?? ""}`
+        const group = map.get(key) ?? { key, itemTypeId: r.itemTypeId, procurementTypeId: r.procurementTypeId, sold: r.sold, label: matchLabel(r), rules: [] }
         group.rules.push(r)
         return map.set(key, group)
       }, new Map<string, Group>())
@@ -68,9 +70,9 @@ const DocumentRequirements = ({ requirements, ...props }: Props) => {
       </div>
 
       <p className="max-w-3xl text-base-content/70">
-        Set which documents items need, by item type, procurement type, or both. When rules overlap for the same
-        document and issuer, the most specific one wins, so you can require something for all purchased items and
-        mark it optional or excluded for one item type.
+        Set which documents items need, by item type, procurement type and whether the item is sold. When rules
+        overlap for the same document and issuer, the most specific one wins, so you can require something for all
+        purchased items and mark it optional or excluded for one item type.
       </p>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -110,7 +112,7 @@ const DocumentRequirements = ({ requirements, ...props }: Props) => {
                   <div className="p-3">
                     <RequirementForm
                       {...formProps}
-                      defaults={{ itemTypeId: group.itemTypeId, procurementTypeId: group.procurementTypeId }}
+                      defaults={{ itemTypeId: group.itemTypeId, procurementTypeId: group.procurementTypeId, sold: group.sold }}
                     />
                   </div>
                 )}

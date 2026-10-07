@@ -22,12 +22,13 @@ const normalize = (input: RequirementInput): RequirementInput => ({
   ...input,
   itemTypeId: input.itemTypeId || null,
   procurementTypeId: input.procurementTypeId || null,
+  lotOrigin: input.scope === "lot" ? input.lotOrigin || null : null,
   notes: input.notes?.trim() || null,
 });
 
 const check = async (input: RequirementInput, id?: string) => {
   const existing = await prisma.itemDocumentRequirement.findMany({
-    select: { id: true, itemTypeId: true, procurementTypeId: true, fileTypeId: true, issuer: true },
+    select: { id: true, itemTypeId: true, procurementTypeId: true, sold: true, fileTypeId: true, issuer: true },
   });
   return validateRequirement(input, existing, id);
 };

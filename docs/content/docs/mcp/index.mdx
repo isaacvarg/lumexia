@@ -1,19 +1,22 @@
 ---
 title: Agents (MCP)
-description: Let Claude Code, Hermes, and other AI agents read Lumexia data through the built-in MCP endpoint, authenticated with per-user API keys.
+description: Let Claude Code, Hermes, and other AI agents read Lumexia data and file item documents through the built-in MCP endpoint, authenticated with per-user API keys.
 ---
 
 Lumexia exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
 endpoint so AI agents can look things up the same way a person would: search
-items, check lots and QC results, and read Canon values and their history.
+items, check lots and QC results, read Canon values and their history, and see
+which item documents are missing or out of date. With a write key, an agent can
+also upload and file item documents.
 
 The endpoint lives inside the app at `/api/mcp`, so there's nothing extra to
 deploy. Agents authenticate with an **API key** that acts as a specific Lumexia
 user, with that user's permissions.
 
 <Callout>
-  Access is **read-only** for now. Agents can't change inventory, propose Canon
-  edits, or approve anything.
+  Keys are **read-only** unless a system admin gives them write access. Write
+  access covers item documents only: agents still can't change inventory,
+  propose Canon edits, or approve anything.
 </Callout>
 
 ## Which agents can connect
@@ -45,6 +48,18 @@ others. The **Agents** tab shows when each key was last used.
 
 System admins can see and revoke any user's keys from **Settings → Users →
 (user) → Agents**. Admins can't create keys for someone else.
+
+### Write access
+
+Write access lets an agent upload documents and file them under items. Only
+system admins can grant it:
+
+- When an admin creates their own key, they can tick **Allow write**.
+- On **Settings → Users → (user) → Agents**, an admin can click **Allow write**
+  (or **Make read-only**) on any of that user's keys. That's how the person who
+  files documents gets a write key without being an admin.
+
+The **Access** column shows whether a key is **Read** or **Read & write**.
 
 ## Connect Claude Code
 
@@ -86,9 +101,55 @@ itself stays out of the config file.
 | `get_item_canon` | Every [Canon](/docs/canon) data type for an item, as plain text, with status, flags, version, open change requests, and whether you can edit or review it. Includes supplier statements and finished products filled with the item. |
 | `get_canon_history` | Every accepted version of a Canon value with its change request, reason, reviews, and evidence, plus open change requests and events. |
 | `get_canon_review_queue` | Change requests waiting on your review, and stale, expired, or conflicting values you edit or review. |
+| `list_document_types` | The document types (SDS, COA, IFRA, TDS…) with their ids. |
+| `search_suppliers` | Suppliers matching a name or alias, e.g. the company printed on a document. |
+| `get_item_documents` | An item's [document requirements](/docs/inventory/item-documents) and their status, per-lot status for lot documents, and every document on file including replaced versions. |
+| `get_document_issues` | Required documents that need attention across all items (missing, expired, expiring, undated, stale), with the supplier to ask when known. Filter by status, issuer, item, document type, or supplier. |
+| `find_documents_by_checksum` | Whether files (by MD5, from `md5sum`) were already uploaded, and which item documents they're attached to. |
+
+Keys with write access also get:
+
+| Tool | What it does |
+| --- | --- |
+| `create_document_upload` | Returns single-use upload links, valid 15 minutes. The agent uploads each file with `curl -F file=@…`, so file contents never pass through the model. PDFs and images, up to 50 MB. |
+| `attach_item_document` | Files an uploaded document under an item with its type, issuer, supplier, lot, dates, revision, and the supplier document it's based on. Like uploading in the Files tab, it replaces older versions of the same document and reports other current versions from a different supplier. |
+| `update_item_document` | Changes a filed document's details. Never replaces other documents. |
+| `set_document_replaced` | Marks a document replaced, or restores it as current. |
 
 Tools accept either an item's id or its reference code, so an agent can go
 straight from "what's on hand for ING-1006?" to an answer.
+
+## Filing documents from a folder
+
+With a write key, Claude Code can work through a folder of supplier and branded
+documents for you. It reads each file, works out which item it belongs to, and
+files it with the right type, issuer, supplier, lot, and dates.
+
+1. Open Claude Code in (or with access to) the folder, connected with a write key.
+2. Paste a prompt like this:
+
+```text
+File the documents in this folder into Lumexia. For each file, work out the
+item, document type, whether it's the supplier's document or our own branded
+version, the supplier, our lot number for COAs, the issue date, and revision.
+Check checksums first and skip anything already uploaded. Show me a table of
+what you plan to file before uploading anything, and list any file you can't
+match confidently instead of guessing.
+```
+
+3. Review the table, fix anything Claude got wrong, and tell it to go ahead.
+4. It uploads and files each document, then reports what each one replaced and
+   which requirements are now met.
+
+Tips:
+
+- Uploads behave like the Files tab: a new version replaces the older version
+  of the same document from the same supplier. If the item already has a
+  current version from a different supplier, Claude tells you and asks whether
+  to replace it.
+- Supplier COAs are matched to **our** lot number, not the supplier's. If a COA
+  only shows the supplier's lot, tell Claude which of our lots it belongs to.
+- Every upload is logged on the item's activity as you, marked "via MCP".
 
 ## Security notes
 
@@ -100,6 +161,10 @@ straight from "what's on hand for ING-1006?" to an answer.
   request. Disabling a user also disables all of their keys.
 - **Keys are never stored.** Lumexia keeps only a SHA-256 hash and the first
   few characters (shown in the list) to tell keys apart.
+- **Upload links** carry their own token instead of the key, so the key never
+  ends up in a shell command. A link works once, expires after 15 minutes, and
+  stops working if its key is revoked or loses write access. Agents can only
+  attach files they uploaded with the same key.
 
 ## Troubleshooting
 
@@ -108,6 +173,8 @@ straight from "what's on hand for ING-1006?" to an answer.
 | `401 Missing or invalid API key` | The header is missing, the key was mistyped, or it's revoked or expired. Check its status on the **Agents** tab. |
 | `405 Method not allowed` | The endpoint is stateless and only accepts `POST`. Make sure the client is set to the **HTTP** (streamable HTTP) transport, not SSE. |
 | `get_item_canon` returns no entries | No Canon data types apply to that item, or the database's static records don't match the build. See [Static Records](/docs/StaticRecords). |
+| No upload or attach tools | The key is read-only. Ask a system admin to allow write on it. |
+| Upload link returns `403` | The link was already used, expired (15 minutes), or its key was revoked or made read-only. Get a new link. |
 
 ## For developers
 
@@ -124,5 +191,13 @@ straight from "what's on hand for ING-1006?" to an answer.
   redirect when there isn't one.
 - Return `jsonResult(data)` for answers and `errorResult(message)` for misses
   the agent should react to. Keep payloads compact and capped.
-- Keys carry `scopes` (`read` today). When write tools arrive, gate them on
-  `ctx.scopes.includes("write")`.
+- Keys carry `scopes` (`read`, plus `write` when an admin grants it). Write
+  tools are registered only for write keys (`writeRegistrars` in
+  `lib/mcp/server.ts`), so read-only agents never see them.
+- `ctx.origin` is the address the agent reached Lumexia at; use it for links
+  handed back to the agent.
+- Document uploads: `create_document_upload` stores hashed, single-use tokens in
+  `api_uploads` (`lib/apiUploads.ts`). `app/api/mcp/uploads/[token]/route.ts`
+  takes the file and stores it with `lib/files/storeUpload.ts`, the same code
+  the app's upload route uses. Document changes go through
+  `lib/itemDocuments/mutations.ts`, which the Files tab uses too.

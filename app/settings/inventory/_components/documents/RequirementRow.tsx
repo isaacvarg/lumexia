@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation"
 import { TbPencil, TbTrash } from "react-icons/tb"
 import { deleteDocumentRequirement, DocumentRequirementRow } from "@/actions/inventory/documentRequirements"
-import { requirementIssuers, requirementLevels } from "@/lib/itemDocuments/rules"
+import { requirementIssuers, requirementLevels, requirementLotOrigins } from "@/lib/itemDocuments/rules"
 
 const levelClass: Record<string, string> = {
   required: "badge-primary",
@@ -46,7 +46,9 @@ const RequirementRow = ({ requirement, onEdit }: { requirement: DocumentRequirem
       <div className="flex items-center gap-2">
         <span className={`badge badge-sm ${levelClass[requirement.level]}`}>{level}</span>
         {requirement.level !== "excluded" && (
-          <span className="badge badge-sm badge-outline">{requirement.scope === "lot" ? "Per lot" : "Per item"}</span>
+          <span className="badge badge-sm badge-outline" title={requirement.lotOrigin ? requirementLotOrigins.find((o) => o.value === requirement.lotOrigin)?.description : undefined}>
+            {requirement.scope !== "lot" ? "Per item" : requirement.lotOrigin ? `Per ${requirement.lotOrigin === "both" ? "" : `${requirement.lotOrigin} `}lot` : "Per lot"}
+          </span>
         )}
       </div>
 

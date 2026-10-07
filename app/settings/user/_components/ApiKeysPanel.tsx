@@ -4,7 +4,7 @@ import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
 import useToast from "@/hooks/useToast"
 import type { ApiKeyListing } from "@/lib/apiKeys"
-import { ApiKeyExpiry, createMyApiKey, revokeApiKey } from "@/actions/users/apiKeys"
+import { ApiKeyExpiry, createMyApiKey, revokeApiKey, setApiKeyWriteAccess } from "@/actions/users/apiKeys"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -30,15 +30,20 @@ type Props = {
   keys: ApiKeyListing[]
   // Admins viewing another user can revoke but not create; keys always belong to their creator.
   canCreate?: boolean
+  // The viewer is a system admin: they can create write keys and grant or remove write access on any key.
+  isAdmin?: boolean
 }
 
-const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
+const hasWrite = (key: ApiKeyListing) => key.scopes.includes('write')
+
+const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
 
   const router = useRouter()
   const { toast } = useToast()
   const [isCreating, setIsCreating] = useState(false)
   const [newKey, setNewKey] = useState<{ name: string, key: string } | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
+  const [allowWrite, setAllowWrite] = useState(false)
   const [origin, setOrigin] = useState('')
 
   useEffect(() => setOrigin(window.location.origin), [])
@@ -47,9 +52,10 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
     defaultValues: { name: '', expiry: 'never' as ApiKeyExpiry },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const { apiKey, key } = await createMyApiKey(value)
+        const { apiKey, key } = await createMyApiKey({ ...value, allowWrite: isAdmin && allowWrite })
         setNewKey({ name: apiKey.name, key })
         setIsCreating(false)
+        setAllowWrite(false)
         formApi.reset()
         router.refresh()
       } catch (err: any) {
@@ -80,6 +86,20 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
     }
   }
 
+  const toggleWrite = async (key: ApiKeyListing) => {
+    const enable = !hasWrite(key)
+    const message = enable
+      ? `Allow ${key.name} to write? Agents using it can upload documents and change item documents as its owner.`
+      : `Make ${key.name} read-only? Agents using it can no longer upload or change documents.`
+    if (!confirm(message)) return
+    try {
+      await setApiKeyWriteAccess(key.id, enable)
+      router.refresh()
+    } catch (err: any) {
+      toast('Could not change access', err?.message ?? 'Something went wrong', 'error')
+    }
+  }
+
   const claudeCommand = newKey
     ? `claude mcp add --transport http lumexia ${origin}/api/mcp --header "Authorization: Bearer ${newKey.key}"`
     : ''
@@ -97,7 +117,8 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
 
       <p className="text-base-content/70">
         API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
-        {canCreate ? ' you' : ' this user'}, with the same permissions.
+        {canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin gives
+        them write access, which lets agents file item documents.
       </p>
 
       {newKey && (
@@ -151,6 +172,16 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
               {(field) => <field.SelectField label="Expires" labelClass="soft" options={expiryOptions} />}
             </form.AppField>
 
+            {isAdmin && (
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" className="checkbox mt-0.5" checked={allowWrite} onChange={(e) => setAllowWrite(e.target.checked)} />
+                <span className="flex flex-col">
+                  <span className="font-medium">Allow write</span>
+                  <span className="text-sm text-base-content/60">Agents using this key can upload and file item documents.</span>
+                </span>
+              </label>
+            )}
+
             <div className="flex justify-end gap-3">
               <button type="button" className="btn btn-ghost" onClick={() => setIsCreating(false)}>Cancel</button>
               <form.AppForm>
@@ -172,6 +203,7 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
                   <th>Name</th>
                   <th>Key</th>
                   <th>Status</th>
+                  <th>Access</th>
                   <th>Last used</th>
                   <th>Expires</th>
                   <th>Created</th>
@@ -186,6 +218,18 @@ const ApiKeysPanel = ({ keys, canCreate = true }: Props) => {
                       <td className="font-medium">{key.name}</td>
                       <td><code className="text-sm">{key.prefix}…</code></td>
                       <td><span className={`badge ${status.badge}`}>{status.label}</span></td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <span className={`badge badge-soft ${hasWrite(key) ? 'badge-warning' : 'badge-ghost'}`}>
+                            {hasWrite(key) ? 'Read & write' : 'Read'}
+                          </span>
+                          {isAdmin && !key.revokedAt && (
+                            <button type="button" className="btn btn-xs btn-ghost" onClick={() => toggleWrite(key)}>
+                              {hasWrite(key) ? 'Make read-only' : 'Allow write'}
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td>{key.lastUsedAt ? formatDate(key.lastUsedAt) : 'Never'}</td>
                       <td>{key.expiresAt ? formatDate(key.expiresAt) : 'Never'}</td>
                       <td>{formatDate(key.createdAt)}</td>

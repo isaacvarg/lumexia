@@ -4,6 +4,7 @@ export type RequirementLevel = "required" | "optional" | "excluded";
 export type RequirementScope = "item" | "lot";
 export type DocumentIssuer = "supplier" | "internal";
 export type RequirementIssuer = DocumentIssuer | "any";
+export type RequirementLotOrigin = "received" | "produced" | "both";
 
 // Per document, from best to worst: current, expiring, undated, stale, expired.
 // A requirement adds missing (no candidate document) and, for lot scope, notApplicable (no lots to check).
@@ -15,10 +16,12 @@ export type Requirement = Pick<
   | "id"
   | "itemTypeId"
   | "procurementTypeId"
+  | "sold"
   | "fileTypeId"
   | "level"
   | "scope"
   | "issuer"
+  | "lotOrigin"
   | "validForMonths"
   | "minIssuedAt"
   | "warnDays"
@@ -29,6 +32,7 @@ export type Requirement = Pick<
 export type RequirementSubject = {
   itemTypeId: string;
   procurementTypeId: string;
+  isSold: boolean;
 };
 
 export type DocumentRecord = {

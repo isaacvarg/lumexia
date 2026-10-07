@@ -13,6 +13,7 @@ type Inputs = {
   procurementTypeId: string
   inventoryTypeId: string
   referenceCode: string
+  isSold: boolean
 };
 
 const EditItemDialog = () => {
@@ -26,6 +27,7 @@ const EditItemDialog = () => {
       procurementTypeId: item?.procurementTypeId || '',
       inventoryTypeId: item?.inventoryTypeId || '',
       referenceCode: item?.referenceCode || '',
+      isSold: item?.isSold ?? false,
     }
   });
 
@@ -80,6 +82,13 @@ const EditItemDialog = () => {
           }))}
         />
 
+
+        <div className="flex flex-col gap-1">
+          <Form.Toggle form={form} label="Sold to customers" fieldName="isSold" />
+          <p className="text-sm text-base-content/60">
+            For items resold as-is. Document requirements can ask for different documents for sold items, such as our own COA.
+          </p>
+        </div>
 
         <Form.ActionRow form={form} />
       </Form.Root>
