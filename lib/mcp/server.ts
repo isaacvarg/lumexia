@@ -6,6 +6,8 @@ import { registerLotTools } from "./tools/lots";
 import { registerCanonTools } from "./tools/canon";
 import { registerDocumentTools } from "./tools/documents";
 import { registerDocumentWriteTools } from "./tools/documentWrites";
+import { registerPurchasingTools } from "./tools/purchasing";
+import { registerPricingTools } from "./tools/pricing";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -14,7 +16,15 @@ export type McpContext = ApiKeyAuth & { origin: string };
 
 export type ToolRegistrar = (server: McpServer, ctx: McpContext) => void;
 
-const registrars: ToolRegistrar[] = [registerWhoami, registerItemTools, registerLotTools, registerCanonTools, registerDocumentTools];
+const registrars: ToolRegistrar[] = [
+  registerWhoami,
+  registerItemTools,
+  registerLotTools,
+  registerCanonTools,
+  registerDocumentTools,
+  registerPurchasingTools,
+  registerPricingTools,
+];
 // only keys an admin granted write access see these
 const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools];
 
@@ -25,7 +35,8 @@ export const createMcpServer = (ctx: McpContext) => {
     {
       instructions:
         "Lumexia is the company's ERP for cosmetics manufacturing: items (raw materials, packaging, " +
-        "bulk and finished goods), lots, and Canon (reviewed canonical product data). " +
+        "bulk and finished goods), lots, Canon (reviewed canonical product data), purchasing (purchase orders and " +
+        "purchasing requests, both identified by reference code), and pricing examinations. " +
         "Search for an item first, then use its id with the other tools. " +
         "Item documents (SDS, COA, IFRA…) have requirements per item; get_item_documents shows what an item has " +
         "and needs, get_document_issues what's missing across items. " +

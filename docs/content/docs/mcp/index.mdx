@@ -1,12 +1,13 @@
 ---
 title: Agents (MCP)
-description: Let Claude Code, Hermes, and other AI agents read Lumexia data and file item documents through the built-in MCP endpoint, authenticated with per-user API keys.
+description: Let Claude Code, Hermes, and other AI agents read Lumexia data (items, lots, Canon, purchasing, pricing) and file item documents through the built-in MCP endpoint, authenticated with per-user API keys.
 ---
 
 Lumexia exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
 endpoint so AI agents can look things up the same way a person would: search
-items, check lots and QC results, read Canon values and their history, and see
-which item documents are missing or out of date. With a write key, an agent can
+items, check lots and QC results, read Canon values and their history, see
+which item documents are missing or out of date, look up purchase orders and
+purchasing requests, and examine pricing. With a write key, an agent can
 also upload and file item documents.
 
 The endpoint lives inside the app at `/api/mcp`, so there's nothing extra to
@@ -106,6 +107,14 @@ itself stays out of the config file.
 | `get_item_documents` | An item's [document requirements](/docs/inventory/item-documents) and their status, per-lot status for lot documents, and every document on file including replaced versions. |
 | `get_document_issues` | Required documents that need attention across all items (missing, expired, expiring, undated, stale), with the supplier to ask when known. Filter by status, issuer, item, document type, or supplier. |
 | `find_documents_by_checksum` | Whether files (by MD5, from `md5sum`) were already uploaded, and which item documents they're attached to. |
+| `search_purchase_orders` | Purchase orders, newest first, with supplier, status, lines, and total. Filter by supplier, item, status, or creation date. Cancelled orders are left out unless asked for. |
+| `get_purchase_order` | One PO by reference code: lines with expected delivery and received lot, payment method, accounting status (paid, packing slip), notes, and the requests it fills. |
+| `get_item_purchase_history` | Every PO line for an item with supplier, quantity, unit, and price per unit, plus the last price, which is the one pricing uses. |
+| `search_purchasing_requests` | Purchasing requests with status, priority, expected delivery, suppliers, and linked POs. Open requests only by default, like the requests dashboard. |
+| `get_purchasing_request` | One request by reference code: linked POs and their lines for the item, linked batches, the inventory snapshot taken when it was made, and notes. |
+| `get_item_pricing` | An item's current pricing: pricing data, last purchase price, the resulting item cost, the finished products filled with it (costs, consumer price, markup, profit), and recent examinations. |
+| `search_pricing_examinations` | Pricing examinations by item or status, e.g. `pendingReview` for the review queue or `queued` for items waiting to be examined. |
+| `get_pricing_examination` | One examination as it was snapshotted: pricing data, finished products, consumer containers, and for produced items the batch costing with every BOM material's price and where it came from. Plus validation and notes. |
 
 Keys with write access also get:
 
@@ -117,7 +126,12 @@ Keys with write access also get:
 | `set_document_replaced` | Marks a document replaced, or restores it as current. |
 
 Tools accept either an item's id or its reference code, so an agent can go
-straight from "what's on hand for ING-1006?" to an answer.
+straight from "what's on hand for ING-1006?" to an answer. Purchase orders and
+purchasing requests are looked up by their reference code (`PO-123`, `#123`,
+and `123` all work).
+
+Purchasing and pricing tools are read-only for every key, including write keys.
+Payment methods show their name only, never account details.
 
 ## Filing documents from a folder
 
