@@ -4,7 +4,7 @@ import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
 import useToast from "@/hooks/useToast"
 import type { ApiKeyListing } from "@/lib/apiKeys"
-import { ApiKeyExpiry, createMyApiKey, revokeApiKey, setApiKeyWriteAccess } from "@/actions/users/apiKeys"
+import { ApiKeyExpiry, createMyApiKey, revokeApiKey, setApiKeyAccess } from "@/actions/users/apiKeys"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -30,11 +30,12 @@ type Props = {
   keys: ApiKeyListing[]
   // Admins viewing another user can revoke but not create; keys always belong to their creator.
   canCreate?: boolean
-  // The viewer is a system admin: they can create write keys and grant or remove write access on any key.
+  // The viewer is a system admin: they can create write or delegate keys and change that access on any key.
   isAdmin?: boolean
 }
 
 const hasWrite = (key: ApiKeyListing) => key.scopes.includes('write')
+const hasDelegate = (key: ApiKeyListing) => key.scopes.includes('delegate')
 
 const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
 
@@ -44,6 +45,7 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
   const [newKey, setNewKey] = useState<{ name: string, key: string } | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
   const [allowWrite, setAllowWrite] = useState(false)
+  const [allowDelegate, setAllowDelegate] = useState(false)
   const [origin, setOrigin] = useState('')
 
   useEffect(() => setOrigin(window.location.origin), [])
@@ -52,10 +54,11 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
     defaultValues: { name: '', expiry: 'never' as ApiKeyExpiry },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const { apiKey, key } = await createMyApiKey({ ...value, allowWrite: isAdmin && allowWrite })
+        const { apiKey, key } = await createMyApiKey({ ...value, allowWrite: isAdmin && allowWrite, allowDelegate: isAdmin && allowDelegate })
         setNewKey({ name: apiKey.name, key })
         setIsCreating(false)
         setAllowWrite(false)
+        setAllowDelegate(false)
         formApi.reset()
         router.refresh()
       } catch (err: any) {
@@ -89,11 +92,25 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
   const toggleWrite = async (key: ApiKeyListing) => {
     const enable = !hasWrite(key)
     const message = enable
-      ? `Allow ${key.name} to write? Agents using it can upload documents and change item documents as its owner.`
-      : `Make ${key.name} read-only? Agents using it can no longer upload or change documents.`
+      ? `Allow ${key.name} to write? Agents using it can file item documents and approve or reject pricing as its owner.`
+      : `Make ${key.name} read-only? Agents using it can no longer change documents or review pricing as its owner.`
     if (!confirm(message)) return
     try {
-      await setApiKeyWriteAccess(key.id, enable)
+      await setApiKeyAccess(key.id, 'write', enable)
+      router.refresh()
+    } catch (err: any) {
+      toast('Could not change access', err?.message ?? 'Something went wrong', 'error')
+    }
+  }
+
+  const toggleDelegate = async (key: ApiKeyListing) => {
+    const enable = !hasDelegate(key)
+    const message = enable
+      ? `Let ${key.name} act for linked users? An agent using it (e.g. Hermes on WhatsApp) can approve or reject pricing as anyone who linked their number to Lumexia.`
+      : `Stop ${key.name} acting for linked users?`
+    if (!confirm(message)) return
+    try {
+      await setApiKeyAccess(key.id, 'delegate', enable)
       router.refresh()
     } catch (err: any) {
       toast('Could not change access', err?.message ?? 'Something went wrong', 'error')
@@ -118,7 +135,8 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
       <p className="text-base-content/70">
         API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
         {canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin gives
-        them write access, which lets agents file item documents.
+        them write access, which lets agents file item documents and review pricing. A shared agent like Hermes
+        can instead be allowed to act for linked users: people who linked their WhatsApp number below.
       </p>
 
       {newKey && (
@@ -177,7 +195,17 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
                 <input type="checkbox" className="checkbox mt-0.5" checked={allowWrite} onChange={(e) => setAllowWrite(e.target.checked)} />
                 <span className="flex flex-col">
                   <span className="font-medium">Allow write</span>
-                  <span className="text-sm text-base-content/60">Agents using this key can upload and file item documents.</span>
+                  <span className="text-sm text-base-content/60">Agents using this key can file item documents and approve or reject pricing as you.</span>
+                </span>
+              </label>
+            )}
+
+            {isAdmin && (
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" className="checkbox mt-0.5" checked={allowDelegate} onChange={(e) => setAllowDelegate(e.target.checked)} />
+                <span className="flex flex-col">
+                  <span className="font-medium">Act for linked users</span>
+                  <span className="text-sm text-base-content/60">For a shared agent like Hermes: it can approve or reject pricing as whoever messages it from a linked WhatsApp number.</span>
                 </span>
               </label>
             )}
@@ -226,6 +254,14 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
                           {isAdmin && !key.revokedAt && (
                             <button type="button" className="btn btn-xs btn-ghost" onClick={() => toggleWrite(key)}>
                               {hasWrite(key) ? 'Make read-only' : 'Allow write'}
+                            </button>
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2">
+                          {hasDelegate(key) && <span className="badge badge-soft badge-info">Acts for linked users</span>}
+                          {isAdmin && !key.revokedAt && (
+                            <button type="button" className="btn btn-xs btn-ghost" onClick={() => toggleDelegate(key)}>
+                              {hasDelegate(key) ? 'Stop acting for users' : 'Act for linked users'}
                             </button>
                           )}
                         </div>

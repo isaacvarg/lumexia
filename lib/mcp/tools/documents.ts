@@ -5,6 +5,7 @@ import { getDocumentDashboard } from "@/lib/itemDocuments/dashboard";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 import { findItem } from "../lookups";
+import { createDownloadUrl, DOWNLOAD_TTL_MINUTES } from "@/lib/apiDownloads";
 
 const day = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 const md5Of = (etag: string) => etag.replace(/"/g, "").toLowerCase();
@@ -73,7 +74,7 @@ export const describeItemDocuments = async (itemId: string) => {
   };
 };
 
-export const registerDocumentTools: ToolRegistrar = (server) => {
+export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
   server.registerTool(
     "list_document_types",
     {
@@ -234,6 +235,45 @@ export const registerDocumentTools: ToolRegistrar = (server) => {
           };
         })
       );
+    },
+  );
+
+  server.registerTool(
+    "get_document_downloads",
+    {
+      title: "Get document downloads",
+      description:
+        `Download links (valid ${DOWNLOAD_TTL_MINUTES} minutes) for item documents, by the documentId from ` +
+        "get_item_documents. Save each with `curl -sS -o <filename> <url>`; the file never passes through this call.",
+      inputSchema: {
+        documentIds: z.array(z.string().uuid()).min(1).max(25).describe("Item document ids"),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    async ({ documentIds }) => {
+      const documents = await prisma.itemFile.findMany({
+        where: { id: { in: documentIds } },
+        select: {
+          id: true,
+          item: { select: { name: true, referenceCode: true } },
+          file: { select: { name: true, size: true, mimeType: true } },
+        },
+      });
+      const found = new Set(documents.map((d) => d.id));
+
+      return jsonResult({
+        expiresInMinutes: DOWNLOAD_TTL_MINUTES,
+        howTo: "curl -sS -o <filename> <url>",
+        downloads: documents.map((d) => ({
+          documentId: d.id,
+          item: d.item,
+          filename: d.file.name,
+          bytes: d.file.size,
+          mimeType: d.file.mimeType,
+          url: createDownloadUrl(ctx.origin, d.id, ctx.keyId),
+        })),
+        notFound: documentIds.filter((id) => !found.has(id)),
+      });
     },
   );
 };

@@ -7,6 +7,8 @@ import prisma from "@/lib/prisma";
 export const apiKeyScopes = {
   read: "read",
   write: "write",
+  // act for users who linked a chat identity (e.g. WhatsApp) to their account; see lib/linkedIdentities.ts
+  delegate: "delegate",
 } as const;
 
 export type ApiKeyScope = (typeof apiKeyScopes)[keyof typeof apiKeyScopes];

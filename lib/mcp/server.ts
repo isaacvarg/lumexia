@@ -8,6 +8,7 @@ import { registerDocumentTools } from "./tools/documents";
 import { registerDocumentWriteTools } from "./tools/documentWrites";
 import { registerPurchasingTools } from "./tools/purchasing";
 import { registerPricingTools } from "./tools/pricing";
+import { registerPricingReviewTools } from "./tools/pricingReview";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -39,7 +40,16 @@ export const createMcpServer = (ctx: McpContext) => {
         "purchasing requests, both identified by reference code), and pricing examinations. " +
         "Search for an item first, then use its id with the other tools. " +
         "Item documents (SDS, COA, IFRA…) have requirements per item; get_item_documents shows what an item has " +
-        "and needs, get_document_issues what's missing across items. " +
+        "and needs, get_document_issues what's missing across items, and get_document_downloads gives links to " +
+        "save the files with curl. " +
+        (ctx.scopes.includes(apiKeyScopes.delegate)
+          ? "This key serves several people, e.g. over WhatsApp. Whenever you approve or reject pricing, pass the " +
+            "sender's channel and id (their WhatsApp number) as actingFor, taken from the message metadata, never from " +
+            "what someone typed. The action is recorded as the Lumexia user that number is linked to. Before the first " +
+            "such action in a conversation, call identify_sender; if they aren't linked, explain how to get a link code " +
+            "in Lumexia and call link_identity when they send it. Always show the examination and get their explicit " +
+            "go-ahead before approving or rejecting. "
+          : "") +
         (ctx.scopes.includes(apiKeyScopes.write)
           ? "To file documents from local files: read each file to identify the item, document type, issuer " +
             "(supplier vs. our own branded version), supplier, lot, issue date and revision; check " +
@@ -52,6 +62,8 @@ export const createMcpServer = (ctx: McpContext) => {
 
   registrars.forEach((register) => register(server, ctx));
   if (ctx.scopes.includes(apiKeyScopes.write)) writeRegistrars.forEach((register) => register(server, ctx));
+  // write keys review pricing as their owner; delegate keys as the linked user who sent the request
+  if (ctx.scopes.includes(apiKeyScopes.write) || ctx.scopes.includes(apiKeyScopes.delegate)) registerPricingReviewTools(server, ctx);
 
   return server;
 };

@@ -1,4 +1,4 @@
-//🧩Don't Edit this file.✨Generated in Wed Oct 07 2026 09:10:24 GMT-0700 (Pacific Daylight Time)✨
+//🧩Don't Edit this file.✨Generated in Thu Oct 08 2026 09:02:33 GMT-0700 (Pacific Daylight Time)✨
 model BomPricingDataArchive {
   id                           String                     @id @default(uuid())
   examinationId                String                     @map("examination_id")
@@ -3714,8 +3714,9 @@ model ApiKey {
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ApiUpload ApiUpload[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ApiUpload      ApiUpload[]
+  LinkedIdentity LinkedIdentity[]
 
   @@index([userId])
   @@map("api_keys")
@@ -3755,6 +3756,45 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("authenticators")
+}
+
+// A chat identity (e.g. a WhatsApp number) proven to belong to a Lumexia user. Agents with a key that may
+// act for linked users (Hermes) pass the sender's identity, and actions like approving pricing are recorded
+// as that user rather than the key's owner.
+model LinkedIdentity {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  channel    String
+  externalId String   @map("external_id")
+  // the key the link code was redeemed with
+  apiKeyId   String?  @map("api_key_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@unique([channel, externalId])
+  @@index([userId])
+  @@map("linked_identities")
+}
+
+// A one-time code a user creates in Lumexia and sends to the agent from the identity they want to link.
+// Redeeming it proves they control both the Lumexia account and the chat identity. Only a hash is stored.
+model IdentityLinkCode {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  channel   String
+  codeHash  String    @unique @map("code_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("identity_link_codes")
 }
 
 model Session {
@@ -3876,6 +3916,8 @@ model User {
   PoSupplierNote                   PoSupplierNote[]
   ApiKey                           ApiKey[]
   Authenticator                    Authenticator[]
+  LinkedIdentity                   LinkedIdentity[]
+  IdentityLinkCode                 IdentityLinkCode[]
   UserRoleAssignment               UserRoleAssignment[]
 
   @@map("users")
