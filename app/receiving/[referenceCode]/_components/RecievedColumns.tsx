@@ -36,5 +36,15 @@ export const receivedColumns = [
   columnHelper.accessor('quantity', {
     header: 'Quantity Recieved',
     cell: info => `${toFracitonalDigits.weight(info.row.original.quantity)} ${info.row.original.uom.abbreviation}`
+  }),
+  columnHelper.accessor((row) => row.lot?.lotNumber ?? '', {
+    id: 'lot',
+    header: 'Lot',
+    cell: info => <span className="font-mono">{info.getValue()}</span>
+  }),
+  columnHelper.accessor((row) => row.lot?.supplierLotNumber ?? '', {
+    id: 'supplierLot',
+    header: 'Supplier Lot',
+    cell: info => <span className="font-mono">{info.getValue() || '—'}</span>
   })
 ]

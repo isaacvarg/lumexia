@@ -1,35 +1,41 @@
-import { appActions } from "@/actions/app";
 import { purchasingActions } from "@/actions/purchasing";
 import PageTitle from "@/components/Text/PageTitle";
-import ItemTable from "./_components/ItemTable";
 import RecievedTable from "./_components/RecievedTable";
+import ReceivePanel from "./_components/ReceivePanel";
+import ReceiptHistory from "./_components/ReceiptHistory";
 import HelperSetter from "@/components/Helper/HelperSetter";
+import { getReceivingData } from "@/lib/receiving/queries";
 
 const ReceivingDetails = async ({ searchParams }: { searchParams: { id: string } }) => {
 
   const purchaseOrder = await purchasingActions.purchaseOrders.getOne(searchParams.id);
-  const poItems = await purchasingActions.purchaseOrders.items.getAll(searchParams.id);
-  //const activity = await appActions.activity.getAll(searchParams.id);
 
   if (!purchaseOrder) { return <Skeleton /> }
 
+  const [poItems, receiving] = await Promise.all([
+    purchasingActions.purchaseOrders.items.getAll(searchParams.id),
+    getReceivingData(purchaseOrder.id),
+  ]);
+
   return (
-    <div className="flex flex-col gap-y-6">
+    <div className="flex flex-col gap-y-8">
       <HelperSetter section="receiving-detail" />
       <PageTitle>
         {`#${purchaseOrder.referenceCode} - ${purchaseOrder.supplier.name}`}
-
       </PageTitle>
 
-      <ItemTable
+      <ReceivePanel
+        purchaseOrder={{ id: purchaseOrder.id, referenceCode: purchaseOrder.referenceCode, supplierName: purchaseOrder.supplier.name }}
         items={poItems}
+        expectations={receiving.expectations}
+        fileTypes={receiving.fileTypes}
       />
+
+      <ReceiptHistory receipts={receiving.receipts} fileTypes={receiving.fileTypes} />
 
       <RecievedTable
         items={poItems}
       />
-
-
     </div>
   )
 }
@@ -44,4 +50,4 @@ const Skeleton = () => {
   )
 }
 
-export default ReceivingDetails; 
+export default ReceivingDetails;
