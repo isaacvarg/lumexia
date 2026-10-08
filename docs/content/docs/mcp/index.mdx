@@ -6,9 +6,10 @@ description: Let Claude Code, Hermes, and other AI agents read Lumexia data (ite
 Lumexia exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP)
 endpoint so AI agents can look things up the same way a person would: search
 items, check lots and QC results, read Canon values and their history, see
-which item documents are missing or out of date, look up purchase orders and
-purchasing requests, and examine pricing. With a write key, an agent can
-also upload and file item documents.
+which item documents are missing or out of date, download them, look up
+purchase orders and purchasing requests, and examine pricing. With a write
+key, an agent can also upload and file item documents and approve or reject
+pricing examinations.
 
 The endpoint lives inside the app at `/api/mcp`, so there's nothing extra to
 deploy. Agents authenticate with an **API key** that acts as a specific Lumexia
@@ -16,8 +17,8 @@ user, with that user's permissions.
 
 <Callout>
   Keys are **read-only** unless a system admin gives them write access. Write
-  access covers item documents only: agents still can't change inventory,
-  propose Canon edits, or approve anything.
+  access covers item documents and reviewing pricing examinations: agents
+  still can't change inventory, purchasing, or Canon.
 </Callout>
 
 ## Which agents can connect
@@ -107,6 +108,7 @@ itself stays out of the config file.
 | `get_item_documents` | An item's [document requirements](/docs/inventory/item-documents) and their status, per-lot status for lot documents, and every document on file including replaced versions. |
 | `get_document_issues` | Required documents that need attention across all items (missing, expired, expiring, undated, stale), with the supplier to ask when known. Filter by status, issuer, item, document type, or supplier. |
 | `find_documents_by_checksum` | Whether files (by MD5, from `md5sum`) were already uploaded, and which item documents they're attached to. |
+| `get_document_downloads` | Download links for item documents, valid 15 minutes. The agent saves each with `curl -o`, so the file never passes through the model. |
 | `search_purchase_orders` | Purchase orders, newest first, with supplier, status, lines, and total. Filter by supplier, item, status, or creation date. Cancelled orders are left out unless asked for. |
 | `get_purchase_order` | One PO by reference code: lines with expected delivery and received lot, payment method, accounting status (paid, packing slip), notes, and the requests it fills. |
 | `get_item_purchase_history` | Every PO line for an item with supplier, quantity, unit, and price per unit, plus the last price, which is the one pricing uses. |
@@ -124,6 +126,17 @@ Keys with write access also get:
 | `attach_item_document` | Files an uploaded document under an item with its type, issuer, supplier, lot, dates, revision, and the supplier document it's based on. Like uploading in the Files tab, it replaces older versions of the same document and reports other current versions from a different supplier. |
 | `update_item_document` | Changes a filed document's details. Never replaces other documents. |
 | `set_document_replaced` | Marks a document replaced, or restores it as current. |
+| `approve_pricing_examination` | Approves an examination that's pending review, as the key's owner. |
+| `reject_pricing_examination` | Rejects one, with an optional reason added as a note. Like the app, it queues a new examination of the item that carries the notes forward. |
+
+Keys that [act for linked users](#hermes-on-whatsapp) get the two pricing
+tools too, but record the review as the person who sent the message, plus:
+
+| Tool | What it does |
+| --- | --- |
+| `identify_sender` | Which Lumexia user a WhatsApp number is linked to, or how to link it. |
+| `link_identity` | Links the sender's number to their account with the code they created in Lumexia. |
+| `unlink_identity` | Unlinks the sender's number. |
 
 Tools accept either an item's id or its reference code, so an agent can go
 straight from "what's on hand for ING-1006?" to an answer. Purchase orders and
@@ -165,6 +178,35 @@ Tips:
   only shows the supplier's lot, tell Claude which of our lots it belongs to.
 - Every upload is logged on the item's activity as you, marked "via MCP".
 
+## Hermes on WhatsApp
+
+A shared agent like Hermes uses one API key for everyone who messages it. To
+let people approve or reject pricing from WhatsApp under their own name:
+
+1. A system admin creates a key for Hermes with **Act for linked users** ticked
+   (or clicks **Act for linked users** on an existing key). Don't also give it
+   write access unless Hermes should act as the key's owner.
+2. Each person links their number once. In **Settings → User → Agents →
+   Linked Accounts** they click **Link WhatsApp** and send the code it shows to
+   Hermes from their phone. The code works once and expires after 10 minutes.
+   Sending it proves they control both the Lumexia account and the phone.
+3. From then on, when they ask Hermes to approve or reject an examination,
+   Hermes passes their number with the request and Lumexia records the
+   linked user as the reviewer. An unlinked number is refused, with
+   instructions for linking.
+
+Every review made this way is also logged with the key, the key's owner, and
+the WhatsApp number it came from. People can see and unlink their numbers in
+**Linked Accounts**; admins can unlink anyone's from **Settings → Users →
+(user) → Agents**. A key that acts for linked users never reviews pricing as
+its owner.
+
+<Callout type="warn">
+  Lumexia trusts the number Hermes sends. Configure Hermes so the sender's
+  number comes from the WhatsApp message itself, not from anything the model
+  could be talked into typing, and keep approvals to one-to-one chats.
+</Callout>
+
 ## Security notes
 
 - **Plain HTTP.** The key travels unencrypted, so anyone who can watch traffic
@@ -175,6 +217,8 @@ Tips:
   request. Disabling a user also disables all of their keys.
 - **Keys are never stored.** Lumexia keeps only a SHA-256 hash and the first
   few characters (shown in the list) to tell keys apart.
+- **Download links** are signed for one document and the key that asked for
+  them, expire after 15 minutes, and stop working if the key is revoked.
 - **Upload links** carry their own token instead of the key, so the key never
   ends up in a shell command. A link works once, expires after 15 minutes, and
   stops working if its key is revoked or loses write access. Agents can only
@@ -187,7 +231,9 @@ Tips:
 | `401 Missing or invalid API key` | The header is missing, the key was mistyped, or it's revoked or expired. Check its status on the **Agents** tab. |
 | `405 Method not allowed` | The endpoint is stateless and only accepts `POST`. Make sure the client is set to the **HTTP** (streamable HTTP) transport, not SSE. |
 | `get_item_canon` returns no entries | No Canon data types apply to that item, or the database's static records don't match the build. See [Static Records](/docs/StaticRecords). |
-| No upload or attach tools | The key is read-only. Ask a system admin to allow write on it. |
+| No upload, attach, or pricing review tools | The key is read-only. Ask a system admin to allow write on it (or **Act for linked users** for a shared agent). |
+| "This whatsapp number isn't linked" | The sender hasn't linked their number. They create a code under **Settings → User → Agents → Linked Accounts** and send it to Hermes. |
+| "Only pricing examinations that are pending review can be approved" | It was already approved or rejected, or is still queued. Check with `search_pricing_examinations`. |
 | Upload link returns `403` | The link was already used, expired (15 minutes), or its key was revoked or made read-only. Get a new link. |
 
 ## For developers
@@ -210,6 +256,15 @@ Tips:
   `lib/mcp/server.ts`), so read-only agents never see them.
 - `ctx.origin` is the address the agent reached Lumexia at; use it for links
   handed back to the agent.
+- Keys with the `delegate` scope act for linked users. Linked identities and
+  link codes live in `linked_identities` and `identity_link_codes`
+  (`lib/linkedIdentities.ts`). Tools that act for someone take `actingFor`
+  and resolve it there; see `lib/mcp/tools/pricingReview.ts`.
+- Pricing approval and rejection live in `lib/pricing/examinationReview.ts`,
+  shared with the pricing review page.
+- Document downloads: `lib/apiDownloads.ts` signs links, and
+  `app/api/mcp/downloads/[documentId]/route.ts` checks them and streams the
+  file from storage.
 - Document uploads: `create_document_upload` stores hashed, single-use tokens in
   `api_uploads` (`lib/apiUploads.ts`). `app/api/mcp/uploads/[token]/route.ts`
   takes the file and stores it with `lib/files/storeUpload.ts`, the same code

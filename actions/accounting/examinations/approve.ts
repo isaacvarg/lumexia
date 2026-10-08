@@ -1,30 +1,13 @@
 'use server'
 
-import prisma from "@/lib/prisma"
-import { pricingExaminationStatuses } from "@/configs/staticRecords/pricingExaminationStatuses"
 import { revalidatePath } from "next/cache"
 import { getUserId } from "@/actions/users/getUserId"
+import { approveExamination } from "@/lib/pricing/examinationReview"
 
 export const approvePricingExamination = async (examinationId: string) => {
     const userId = await getUserId()
 
-    const exam = await prisma.pricingExamination.findUniqueOrThrow({
-        where: { id: examinationId },
-        select: { statusId: true },
-    })
-
-    if (exam.statusId !== pricingExaminationStatuses.pendingReview) {
-        throw new Error("Only pricing examinations that are pending review can be approved.")
-    }
-
-    const response = await prisma.pricingExamination.update({
-        where: { id: examinationId },
-        data: {
-            statusId: pricingExaminationStatuses.approved,
-            approvedById: userId,
-            approvedAt: new Date(),
-        },
-    })
+    const response = await approveExamination(examinationId, userId)
 
     revalidatePath('/accounting/pricing/details')
     revalidatePath('/accounting/pricing')

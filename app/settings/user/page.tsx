@@ -11,6 +11,8 @@ import DashboardSettings from "./_components/DashboardSettings";
 import { getHomeDashLayout } from "@/actions/users/homeDash/getHomeDashLayout";
 import { getMyApiKeys } from "@/actions/users/apiKeys";
 import ApiKeysPanel from "./_components/ApiKeysPanel";
+import LinkedAccountsPanel from "./_components/LinkedAccountsPanel";
+import { getMyLinkedIdentities } from "@/actions/users/linkedIdentities";
 
 const UserPage = async () => {
 
@@ -18,6 +20,7 @@ const UserPage = async () => {
   const configs = await getAllUserConfigs(user.id);
   const homeDashLayout = await getHomeDashLayout();
   const apiKeys = await getMyApiKeys();
+  const linkedIdentities = await getMyLinkedIdentities();
 
 
   return (
@@ -34,7 +37,12 @@ const UserPage = async () => {
           </div>
         }
         dashboard={<DashboardSettings layout={homeDashLayout} />}
-        agents={<ApiKeysPanel keys={apiKeys} isAdmin={!!user.roles.isSystemAdmin} />}
+        agents={
+          <div className="flex flex-col gap-8">
+            <ApiKeysPanel keys={apiKeys} isAdmin={!!user.roles.isSystemAdmin} />
+            <LinkedAccountsPanel identities={linkedIdentities} />
+          </div>
+        }
       />
 
     </div>
