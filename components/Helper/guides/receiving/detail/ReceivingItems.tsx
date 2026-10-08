@@ -4,42 +4,52 @@ const ReceivingItems = () => {
   return (
     <GuideTypo.Wrapper>
       <GuideTypo.Lead>
-        In the <span className="font-semibold">Receivables</span> section, select one
-        or more lines — two actions appear for booking them in.
+        Tap the lines that arrived under <span className="font-semibold">Expected</span>,
+        then <span className="font-semibold">Receive</span>. A full-screen flow walks
+        through the delivery.
       </GuideTypo.Lead>
 
-      <GuideTypo.Section>Full vs partial</GuideTypo.Section>
-      <GuideTypo.List>
-        <GuideTypo.Item term="Fully Receive">
-          books in the entire ordered quantity of each selected line.
-        </GuideTypo.Item>
-        <GuideTypo.Item term="Partially Receive">
-          gives each line a <span className="font-semibold">Quantity</span> field —
-          prefilled with the full ordered amount and labeled with the purchase unit —
-          for when a delivery arrives incomplete.
-        </GuideTypo.Item>
-      </GuideTypo.List>
+      <GuideTypo.Section>The steps</GuideTypo.Section>
+      <GuideTypo.Ordered>
+        <GuideTypo.Step>
+          <span className="font-semibold">Delivery:</span> packing slip number, carrier,
+          and a photo or PDF of the packing slip.
+        </GuideTypo.Step>
+        <GuideTypo.Step>
+          <span className="font-semibold">Inspect</span> each line: right item, packaging,
+          seals, labels, count. A problem needs a note; add a photo.
+        </GuideTypo.Step>
+        <GuideTypo.Step>
+          <span className="font-semibold">Supplier lots:</span> one row per supplier lot
+          on the containers, with quantity and optional expiry and manufacture dates.
+        </GuideTypo.Step>
+        <GuideTypo.Step>
+          <span className="font-semibold">Documents:</span> the COA and other paperwork the
+          item needs. Ones already on file for that supplier lot are attached for you.
+        </GuideTypo.Step>
+        <GuideTypo.Step>
+          <span className="font-semibold">Review</span> and receive, then print labels.
+        </GuideTypo.Step>
+      </GuideTypo.Ordered>
 
       <GuideTypo.Section>What the order does</GuideTypo.Section>
       <GuideTypo.List>
         <GuideTypo.Item>
-          Receive every remaining line → order moves to{" "}
-          <span className="font-semibold">Received</span>.
+          Several supplier lots on one line split it into one line per lot.
         </GuideTypo.Item>
         <GuideTypo.Item>
-          Receive only some → order moves to{" "}
-          <span className="font-semibold">Partially Received</span> and stays on the
-          Awaiting tab until the rest arrives.
+          Less than expected leaves the rest open on a new line for the next delivery.
+        </GuideTypo.Item>
+        <GuideTypo.Item>
+          Nothing left to receive → <span className="font-semibold">Received</span>;
+          otherwise <span className="font-semibold">Partially Received</span>.
         </GuideTypo.Item>
       </GuideTypo.List>
 
       <GuideTypo.Note>
-        Receiving <span className="font-semibold">less</span> than ordered splits the
-        line: the received amount is booked in, and a{" "}
-        <span className="font-semibold">new line</span> is created for the remainder
-        so it stays outstanding on Awaiting. Receiving also updates any linked
-        procurement requests to <span className="font-semibold">Delivered</span> or{" "}
-        <span className="font-semibold">Partial Delivery</span>.
+        Nothing blocks a receipt. Failed inspections, quantity differences, a missing
+        supplier lot, missing COAs and lot mismatches are flagged on the delivery and
+        the lot instead. Document flags clear once the document is filed.
       </GuideTypo.Note>
     </GuideTypo.Wrapper>
   );

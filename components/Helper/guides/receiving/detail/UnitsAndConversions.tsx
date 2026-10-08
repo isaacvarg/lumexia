@@ -27,7 +27,7 @@ const UnitsAndConversions = () => {
       <GuideTypo.Note>
         If no conversion exists for the units involved, the line{" "}
         <span className="font-semibold">can&apos;t</span> be received and shows a red{" "}
-        <span className="font-semibold">Conversion Error</span> button. Clicking it
+        <span className="font-semibold">Set up conversion</span> button. Clicking it
         opens the discrete-conversion form for that item and supplier, prefilled with
         the purchase unit (e.g. <span className="font-mono">1 drum = 450 lb</span>);
         save it, return, and the line receives normally.

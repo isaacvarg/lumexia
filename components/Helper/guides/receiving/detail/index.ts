@@ -12,7 +12,7 @@ export const receivingDetailSection: GuideSection = {
   guides: [
     {
       title: "Receiving items",
-      description: "Fully or partially receiving lines, and what the order does.",
+      description: "Checking a delivery in: inspection, supplier lots, documents.",
       content: ReceivingItems,
     },
     {
@@ -22,7 +22,7 @@ export const receivingDetailSection: GuideSection = {
     },
     {
       title: "Lots created",
-      description: "The lot each received line mints, and what it carries.",
+      description: "The lot each supplier lot mints, and what it carries.",
       content: LotsCreated,
     },
     {
