@@ -9,7 +9,7 @@ import { useFilesActions } from "./FilesContext"
 import { formatDate, issuerLabel, StatusBadge } from "@/components/ItemDocuments/presentation"
 import DocumentMenu from "./DocumentMenu"
 
-const versionKey = (f: ItemFile) => [f.fileTypeId, f.issuer, f.lotId ?? "", f.supplierId ?? ""].join("|")
+const versionKey = (f: ItemFile) => [f.fileTypeId, f.issuer, f.lotId ?? "", f.lotId ? "" : f.supplierLotNumber ?? "", f.supplierId ?? ""].join("|")
 
 export const FileIcon = ({ file, size = "size-10" }: { file: ItemFile; size?: string }) => {
   if (file.thumbnailUrl) {
@@ -32,6 +32,7 @@ const DocumentRow = ({ file, status, versions }: { file: ItemFile; status?: Docu
   const meta = [
     file.supplier?.name,
     file.lot && `Lot ${file.lot.lotNumber}`,
+    !file.lot && file.supplierLotNumber && `Waiting for supplier lot ${file.supplierLotNumber}`,
     file.revision && `Rev ${file.revision}`,
     file.issuedAt && `Issued ${formatDate(file.issuedAt)}`,
     file.expiresAt && `Expires ${formatDate(file.expiresAt)}`,
@@ -102,7 +103,7 @@ const DocumentLibrary = ({ statusByFile }: { statusByFile: Map<string, DocumentS
     const visible = files.filter(
       (f) =>
         (!typeId || f.fileTypeId === typeId) &&
-        (!q || [f.file.name, f.supplier?.name, f.lot?.lotNumber, f.revision].some((s) => s?.toLowerCase().includes(q)))
+        (!q || [f.file.name, f.supplier?.name, f.lot?.lotNumber, f.supplierLotNumber, f.revision].some((s) => s?.toLowerCase().includes(q)))
     )
     const replacedByKey = new Map<string, ItemFile[]>()
     for (const f of visible.filter((f) => f.supersededAt)) {

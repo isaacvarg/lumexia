@@ -13,6 +13,10 @@ import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { createItemDocuments, updateItemDocument } from "../../_actions/files/itemDocumentMutations"
 import DocumentForm, { DocumentFormValue, emptyDocumentForm, fromDocumentForm, toDocumentForm, useDocumentExpectations, validateDocumentForm } from "./DocumentForm"
 import { suggestSupplierId } from "@/lib/itemDocuments/suppliers"
+import { normalizeSupplierLot } from "@/lib/itemDocuments/supplierLots"
+
+// documents waiting for a lot only replace ones waiting for the same supplier lot (see supersede.ts)
+const sameWaitingLot = (a: string | null, b: string) => normalizeSupplierLot(a ?? "") === normalizeSupplierLot(b)
 
 export const documentDialogId = "itemDocumentDialog"
 
@@ -55,7 +59,7 @@ const DocumentDialogContent = ({ state }: { state: DocumentDialogState }) => {
   const [replaceChoices, setReplaceChoices] = useState<Record<string, boolean>>({})
   const sameDocument = editing || !value.fileTypeId
     ? []
-    : files.filter((f) => !f.supersededAt && f.fileTypeId === value.fileTypeId && f.issuer === value.issuer && (f.lotId ?? "") === value.lotId)
+    : files.filter((f) => !f.supersededAt && f.fileTypeId === value.fileTypeId && f.issuer === value.issuer && (f.lotId ?? "") === value.lotId && (!!value.lotId || sameWaitingLot(f.supplierLotNumber, value.supplierLotNumber)))
   const autoReplaced = sameDocument.filter((f) => (f.supplierId ?? "") === value.supplierId)
   const otherSuppliers = sameDocument.filter((f) => (f.supplierId ?? "") !== value.supplierId)
   const willReplace = (f: ItemFile) => replaceChoices[f.id] ?? (!f.supplierId || !value.supplierId)
@@ -83,7 +87,7 @@ const DocumentDialogContent = ({ state }: { state: DocumentDialogState }) => {
     setError(null)
     try {
       if (state.mode === "edit") {
-        await updateItemDocument(state.file.id, fromDocumentForm(value))
+        await updateItemDocument(state.file.id, fromDocumentForm(value, state.file.purchaseOrderId))
       } else {
         await createItemDocuments(
           item.id,

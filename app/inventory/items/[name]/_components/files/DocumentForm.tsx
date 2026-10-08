@@ -3,12 +3,14 @@ import { useState } from "react"
 import { useItemSelection } from "@/store/itemSlice"
 import { ItemDocumentDetails } from "../../_actions/files/itemDocumentMutations"
 import { formatDate, fromDateInput, toDateInput } from "@/components/ItemDocuments/presentation"
+import { sameSupplierLot } from "@/lib/itemDocuments/supplierLots"
 
 export type DocumentFormValue = {
   fileTypeId: string
   issuer: "supplier" | "internal"
   supplierId: string
   lotId: string
+  supplierLotNumber: string
   issuedAt: string
   expiresAt: string
   revision: string
@@ -20,6 +22,7 @@ export const emptyDocumentForm: DocumentFormValue = {
   issuer: "supplier",
   supplierId: "",
   lotId: "",
+  supplierLotNumber: "",
   issuedAt: "",
   expiresAt: "",
   revision: "",
@@ -31,6 +34,8 @@ type StoredDocument = {
   issuer: string
   supplierId: string | null
   lotId: string | null
+  supplierLotNumber?: string | null
+  purchaseOrderId?: string | null
   issuedAt: Date | string | null
   expiresAt: Date | string | null
   revision: string | null
@@ -42,17 +47,21 @@ export const toDocumentForm = (d: StoredDocument): DocumentFormValue => ({
   issuer: d.issuer === "internal" ? "internal" : "supplier",
   supplierId: d.supplierId ?? "",
   lotId: d.lotId ?? "",
+  supplierLotNumber: d.supplierLotNumber ?? "",
   issuedAt: toDateInput(d.issuedAt),
   expiresAt: toDateInput(d.expiresAt),
   revision: d.revision ?? "",
   derivedFromId: d.derivedFromId ?? "",
 })
 
-export const fromDocumentForm = (v: DocumentFormValue): ItemDocumentDetails => ({
+// purchaseOrderId isn't edited here; pass the stored one so editing keeps it
+export const fromDocumentForm = (v: DocumentFormValue, purchaseOrderId: string | null = null): ItemDocumentDetails => ({
   fileTypeId: v.fileTypeId,
   issuer: v.issuer,
   supplierId: v.supplierId || null,
   lotId: v.lotId || null,
+  supplierLotNumber: v.supplierLotNumber.trim() || null,
+  purchaseOrderId,
   issuedAt: fromDateInput(v.issuedAt),
   expiresAt: fromDateInput(v.expiresAt),
   revision: v.revision || null,
@@ -106,10 +115,22 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
 
   const selectLot = (lotId: string) => {
     const lot = documents.lots.find((l) => l.id === lotId)
-    // a received lot already knows its supplier
+    // a received lot already knows its supplier and supplier lot
     const lotSupplier = value.issuer === "supplier" ? lot?.supplier?.id : undefined
-    onChange({ ...value, lotId, supplierId: !supplierPicked && lotSupplier ? lotSupplier : value.supplierId })
+    onChange({
+      ...value,
+      lotId,
+      supplierId: !supplierPicked && lotSupplier ? lotSupplier : value.supplierId,
+      supplierLotNumber: value.supplierLotNumber || lot?.supplierLotNumber || "",
+    })
   }
+
+  // a supplier lot typed with no lot chosen finds the lot that has it, or the document waits for that lot
+  const lotWithSupplierLot = !value.lotId && value.supplierLotNumber.trim()
+    ? documents.lots.find((l) => l.supplierLotNumber && sameSupplierLot(l.supplierLotNumber, value.supplierLotNumber))
+    : undefined
+  const chosenLot = documents.lots.find((l) => l.id === value.lotId)
+  const printedMismatch = !!chosenLot?.supplierLotNumber && !!value.supplierLotNumber.trim() && !sameSupplierLot(chosenLot.supplierLotNumber, value.supplierLotNumber)
 
   const orderedFrom = documents.orderedFrom
   const orderedFromIds = new Set(orderedFrom.map((s) => s.id))
@@ -198,12 +219,36 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
             {documents.lots.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.lotNumber}
+                {l.supplierLotNumber ? ` · supplier lot ${l.supplierLotNumber}` : ""}
                 {l.supplier ? ` · ${l.supplier.name}` : ""}
                 {l.originType === "batchProduction" ? " · produced" : ""}
               </option>
             ))}
           </select>
         </Field>
+
+        {(expectations.perLot || value.lotId || value.supplierLotNumber) && (
+          <Field
+            label="Supplier lot on the document"
+            hint={
+              printedMismatch
+                ? <span className="text-warning">Differs from the lot&apos;s supplier lot ({chosenLot!.supplierLotNumber}); it&apos;ll show as a lot mismatch</span>
+                : lotWithSupplierLot
+                  ? `Goes on lot ${lotWithSupplierLot.lotNumber}, which has this supplier lot`
+                  : !value.lotId && value.supplierLotNumber.trim()
+                    ? "No lot has this supplier lot yet. It'll be attached when one is received with it."
+                    : "As printed on the COA, so it can be matched to the right lot"
+            }
+          >
+            <input
+              className="input input-sm w-full font-mono"
+              value={value.supplierLotNumber}
+              onChange={(e) => set("supplierLotNumber", e.target.value.toUpperCase())}
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </Field>
+        )}
 
         <Field label={expectations.needsIssueDate ? "Issue date" : "Issue date (optional)"} hint="The revision or issue date printed on the document">
           <input type="date" className="input input-sm w-full" value={value.issuedAt} onChange={(e) => set("issuedAt", e.target.value)} />
