@@ -6,6 +6,7 @@ import {
   TbCircleDashed,
   TbClockExclamation,
   TbMinus,
+  TbArrowsDiff,
   TbRefreshAlert,
 } from "react-icons/tb"
 import { DateTime } from "luxon"
@@ -16,6 +17,7 @@ export const statusDisplay: Record<RequirementStatus, { label: string; badge: st
   expiring: { label: "Expiring", badge: "badge-warning", text: "text-warning", icon: TbClockExclamation, hint: "Expires soon" },
   undated: { label: "Needs dates", badge: "badge-info", text: "text-info", icon: TbCalendarQuestion, hint: "Add an issue or expiry date so it can be checked" },
   stale: { label: "Source updated", badge: "badge-warning", text: "text-warning", icon: TbRefreshAlert, hint: "The supplier document it was based on has been replaced" },
+  mismatch: { label: "Lot mismatch", badge: "badge-warning", text: "text-warning", icon: TbArrowsDiff, hint: "The supplier lot printed on it differs from this lot's supplier lot" },
   expired: { label: "Expired", badge: "badge-error", text: "text-error", icon: TbAlertTriangle, hint: "Past its expiry or issued before the cutoff" },
   missing: { label: "Missing", badge: "badge-error", text: "text-error", icon: TbCircleDashed, hint: "No document on file" },
   notApplicable: { label: "No lots", badge: "badge-ghost", text: "text-base-content/40", icon: TbMinus, hint: "No lots need this document" },

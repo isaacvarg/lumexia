@@ -16,11 +16,12 @@ export type IssueRow = DocumentIssue & {
 export const severity: Record<RequirementStatus, number> = {
   missing: 0,
   expired: 1,
-  stale: 2,
-  undated: 3,
-  expiring: 4,
-  current: 5,
-  notApplicable: 6,
+  mismatch: 2,
+  stale: 3,
+  undated: 4,
+  expiring: 5,
+  current: 6,
+  notApplicable: 7,
 }
 
 // Joins each issue with the names it refers to, sorted by severity then item.

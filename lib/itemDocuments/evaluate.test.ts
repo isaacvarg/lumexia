@@ -36,6 +36,7 @@ const doc = (overrides: Partial<DocumentRecord>): DocumentRecord => ({
   issuer: "supplier",
   lotId: null,
   supplierId: null,
+  supplierLotNumber: null,
   issuedAt: null,
   expiresAt: null,
   supersededAt: null,
@@ -168,6 +169,7 @@ describe("evaluateRequirement (lot scope)", () => {
   const lot = (overrides: Partial<LotRecord>): LotRecord => ({
     id: `lot-${++seq}`,
     lotNumber: `L${seq}`,
+    supplierLotNumber: null,
     originType: "purchaseOrderReceiving",
     createdAt: now,
     onHand: 0,
@@ -231,6 +233,26 @@ describe("evaluateRequirement (lot scope)", () => {
     assert.deepEqual(ours("both"), ["R1", "P1"]);
   });
 
+  it("flags a COA printed with a different supplier lot", () => {
+    const r = rule({ fileTypeId: COA, scope: "lot" });
+    const ours = lot({ id: "lot-s", supplierLotNumber: "AB-1234" });
+    const status = (printed: string | null) =>
+      evaluateRequirement(r, [doc({ fileTypeId: COA, lotId: ours.id, supplierLotNumber: printed })], [ours], now).status;
+    assert.equal(status("ab 1234"), "current");
+    assert.equal(status(null), "current");
+    assert.equal(status("XY-9"), "mismatch");
+  });
+
+  it("prefers a matching COA over a mismatched one on the same lot", () => {
+    const r = rule({ fileTypeId: COA, scope: "lot" });
+    const ours = lot({ id: "lot-t", supplierLotNumber: "AB1234" });
+    const docs = [
+      doc({ fileTypeId: COA, lotId: ours.id, supplierLotNumber: "XY9" }),
+      doc({ fileTypeId: COA, lotId: ours.id, supplierLotNumber: "AB1234" }),
+    ];
+    assert.equal(evaluateRequirement(r, docs, [ours], now).status, "current");
+  });
+
   it("is not applicable when no lots count", () => {
     const r = rule({ fileTypeId: COA, scope: "lot" });
     assert.equal(evaluateRequirement(r, [], [produced, manual], now).status, "notApplicable");
@@ -246,7 +268,7 @@ describe("evaluateItemDocuments", () => {
       rule({ itemTypeId: RAW, fileTypeId: "tds", level: "optional" }),
     ];
     const lots: LotRecord[] = [
-      { id: "l1", lotNumber: "L1", originType: "purchaseOrderReceiving", createdAt: now, onHand: 10 },
+      { id: "l1", lotNumber: "L1", supplierLotNumber: null, originType: "purchaseOrderReceiving", createdAt: now, onHand: 10 },
     ];
     const docs = [doc({ fileTypeId: SDS, issuedAt: new Date("2025-03-01T00:00:00Z") })];
     const results = evaluateItemDocuments(rules, { itemTypeId: RAW, procurementTypeId: PURCHASED, isSold: false }, docs, lots, now);

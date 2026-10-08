@@ -14,8 +14,8 @@ import LotDocumentsPanel from "./LotDocumentsPanel"
 import RequirementsPanel from "./RequirementsPanel"
 import { needsAttention, StatusBadge } from "@/components/ItemDocuments/presentation"
 
-const attentionOrder: RequirementStatus[] = ["missing", "expired", "stale", "undated", "expiring"]
-const rank = (s: DocumentStatus) => ["current", "expiring", "undated", "stale", "expired"].indexOf(s)
+const attentionOrder: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring"]
+const rank = (s: DocumentStatus) => ["current", "expiring", "undated", "stale", "mismatch", "expired"].indexOf(s)
 
 const Files = () => {
   const { documents, files } = useItemSelection()

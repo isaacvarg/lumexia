@@ -1,7 +1,8 @@
 import { Db } from "@/lib/canon/db";
 
 // Call after creating an ItemFile. Older current files with the same item, file type, issuer, lot and
-// supplier are marked superseded. If one of them was issued after the new file (back-filling an old
+// supplier are marked superseded. Documents still waiting for their lot (no lot, a supplier lot printed on
+// them) only replace waiting documents for the same supplier lot. If one of them was issued after the new file (back-filling an old
 // revision), the new file is the one marked superseded instead. `batchIds` are files uploaded together
 // with this one; they never supersede each other.
 export const supersedeOlderItemFiles = async (
@@ -19,6 +20,7 @@ export const supersedeOlderItemFiles = async (
       issuer: file.issuer,
       lotId: file.lotId,
       supplierId: file.supplierId,
+      ...(file.lotId ? {} : { supplierLotNumber: file.supplierLotNumber }),
       supersededAt: null,
     },
     select: { id: true, issuedAt: true },

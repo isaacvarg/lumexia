@@ -119,7 +119,7 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
     {
       title: "Get item documents",
       description:
-        "An item's document requirements with their status (current, expiring, undated, stale, expired, missing), " +
+        "An item's document requirements with their status (current, expiring, undated, stale, mismatch, expired, missing), " +
         "per-lot status for lot documents, and every document on file including replaced versions. " +
         "Use before attaching a document to see what the item still needs.",
       inputSchema: { item: z.string().min(1).describe("Item id or reference code") },
@@ -137,11 +137,12 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
     {
       title: "Get document issues",
       description:
-        "Required documents that need attention across all items: missing, expired, expiring, undated, or stale " +
+        "Required documents that need attention across all items: missing, expired, mismatch (a lot document printed " +
+        "with a different supplier lot than the lot's), expiring, undated, or stale " +
         "(our version is based on a supplier document that has since been replaced). Each issue has the supplier " +
         "to ask when known. Filter to narrow it down.",
       inputSchema: {
-        statuses: z.array(z.enum(["missing", "expired", "expiring", "undated", "stale"])).optional().describe("Only these statuses"),
+        statuses: z.array(z.enum(["missing", "expired", "mismatch", "expiring", "undated", "stale"])).optional().describe("Only these statuses"),
         issuer: z.enum(["supplier", "internal"]).optional().describe("Only supplier documents or only our own"),
         item: z.string().optional().describe("Only this item (id or reference code)"),
         documentType: z.string().optional().describe("Only this document type (id, name or abbreviation)"),

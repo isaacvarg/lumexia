@@ -1,0 +1,64 @@
+import { PurchaseOrder } from "../purchasing/purchaseOrders"
+import { PurchaseOrderItem } from "../purchasing/purchaseOrderItems"
+import { User } from "../users/users"
+import { File } from "../app/files"
+import { Lot } from "./lots"
+
+// One delivery checked in at the dock against a purchase order. Each line is a PO line that was in the
+// delivery: its inspection answers and the lots it created (one per supplier lot).
+model Receipt {
+  id                String        @id @default(uuid())
+  purchaseOrderId   String        @map("purchase_order_id")
+  receivedById      String        @map("received_by_id")
+  packingSlipNumber String?       @map("packing_slip_number")
+  carrier           String?
+  notes             String?
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  receivedBy        User          @relation(fields: [receivedById], references: [id])
+  lines             ReceiptLine[]
+  files             ReceiptFile[]
+
+  @@index([purchaseOrderId])
+  @@map("receipts")
+}
+
+// checks: { [checkKey]: "pass" | "fail" | "na" }, keys from lib/receiving/checks.ts.
+// openQuantity is what was still expected on the PO line, in its purchase UOM, so short and over
+// receipts can be told apart later.
+model ReceiptLine {
+  id                  String            @id @default(uuid())
+  receiptId           String            @map("receipt_id")
+  purchaseOrderItemId String            @map("purchase_order_item_id")
+  openQuantity        Float             @map("open_quantity")
+  receivedQuantity    Float             @map("received_quantity")
+  checks              Json
+  hasIssue            Boolean           @default(false) @map("has_issue")
+  issueNote           String?           @map("issue_note")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+  receipt             Receipt           @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+  lots                Lot[]
+  files               ReceiptFile[]
+
+  @@index([receiptId])
+  @@map("receipt_lines")
+}
+
+// kind: packingSlip | photo. Photos usually belong to a line (damage, labels); the packing slip to the receipt.
+model ReceiptFile {
+  id            String       @id @default(uuid())
+  receiptId     String       @map("receipt_id")
+  receiptLineId String?      @map("receipt_line_id")
+  fileId        String       @map("file_id")
+  kind          String
+  createdAt     DateTime     @default(now()) @map("created_at")
+  receipt       Receipt      @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  receiptLine   ReceiptLine? @relation(fields: [receiptLineId], references: [id], onDelete: Cascade)
+  file          File         @relation(fields: [fileId], references: [id])
+
+  @@index([receiptId])
+  @@map("receipt_files")
+}

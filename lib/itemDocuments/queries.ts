@@ -34,6 +34,7 @@ export const getItemDocumentStatuses = async (
           issuer: true,
           lotId: true,
           supplierId: true,
+          supplierLotNumber: true,
           issuedAt: true,
           expiresAt: true,
           supersededAt: true,
@@ -45,6 +46,7 @@ export const getItemDocumentStatuses = async (
         select: {
           id: true,
           lotNumber: true,
+          supplierLotNumber: true,
           initialQuantity: true,
           createdAt: true,
           lotOrigin: { select: { originType: true } },
@@ -68,6 +70,7 @@ export const getItemDocumentStatuses = async (
       item.lot.map((l) => ({
         id: l.id,
         lotNumber: l.lotNumber,
+        supplierLotNumber: l.supplierLotNumber,
         originType: l.lotOrigin?.originType ?? null,
         createdAt: l.createdAt,
         onHand: onHand.get(l.id) ?? l.initialQuantity,
