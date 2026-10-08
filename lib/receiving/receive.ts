@@ -60,6 +60,12 @@ export type ReceiveResult =
     }
   | { ok: false; error: string; purchaseOrderItemId?: string };
 
+class AlreadyReceivedError extends Error {
+  constructor(readonly itemName: string, readonly purchaseOrderItemId: string) {
+    super(`${itemName} was already received`);
+  }
+}
+
 const receivableStatuses: string[] = [purchaseOrderStatuses.confirmedAwaitingDelivery, purchaseOrderStatuses.partiallyReceived];
 
 const validate = (input: ReceiveInput): string | null => {
@@ -127,132 +133,145 @@ export const receiveDelivery = async (userId: string, input: ReceiveInput): Prom
   }
 
   const now = new Date();
-  const result = await prisma.$transaction(async (tx) => {
-    const receipt = await tx.receipt.create({
-      data: {
-        purchaseOrderId: input.purchaseOrderId,
-        receivedById: userId,
-        packingSlipNumber: input.packingSlipNumber?.trim() || null,
-        carrier: input.carrier?.trim() || null,
-        notes: input.notes?.trim() || null,
-        files: { create: input.packingSlipFileIds.map((fileId) => ({ fileId, kind: "packingSlip" })) },
-      },
-    });
-
-    const lotIds: string[] = [];
-    const lines: { documents: number; poItem: (typeof poItems)[number]; lotNumbers: string[]; remainder: number; overReceived: boolean; hasIssue: boolean; received: number }[] = [];
-
-    for (const line of input.lines) {
-      const poItem = byId.get(line.purchaseOrderItemId)!;
-      const plan = planLine(poItem.quantity, line.lots.map((l) => l.quantity));
-      const hasIssue = failedChecks(line.checks).length > 0;
-
-      const receiptLine = await tx.receiptLine.create({
+  let result;
+  try {
+    result = await prisma.$transaction(async (tx) => {
+      const receipt = await tx.receipt.create({
         data: {
-          receiptId: receipt.id,
-          purchaseOrderItemId: poItem.id,
-          openQuantity: poItem.quantity,
-          receivedQuantity: plan.received,
-          checks: line.checks,
-          hasIssue,
-          issueNote: line.issueNote?.trim() || null,
-          files: { create: line.photoFileIds.map((fileId) => ({ fileId, kind: "photo", receiptId: receipt.id })) },
+          purchaseOrderId: input.purchaseOrderId,
+          receivedById: userId,
+          packingSlipNumber: input.packingSlipNumber?.trim() || null,
+          carrier: input.carrier?.trim() || null,
+          notes: input.notes?.trim() || null,
+          files: { create: input.packingSlipFileIds.map((fileId) => ({ fileId, kind: "packingSlip" })) },
         },
       });
 
-      const copyDetails = poItem.details.map((d) => ({ expectedDateStart: d.expectedDateStart, expectedDateEnd: d.expectedDateEnd }));
-      const lineLotIds: string[] = [];
-      const lotNumbers: string[] = [];
+      const lotIds: string[] = [];
+      const lines: { documents: number; poItem: (typeof poItems)[number]; lotNumbers: string[]; remainder: number; overReceived: boolean; hasIssue: boolean; received: number }[] = [];
 
-      for (let index = 0; index < line.lots.length; index++) {
-        const lotInput = line.lots[index];
-        const lot = await tx.lot.create({
+      for (const line of input.lines) {
+        const poItem = byId.get(line.purchaseOrderItemId)!;
+        const plan = planLine(poItem.quantity, line.lots.map((l) => l.quantity));
+        const hasIssue = failedChecks(line.checks).length > 0;
+
+        const receiptLine = await tx.receiptLine.create({
           data: {
-            itemId: poItem.itemId,
-            lotNumber: generateLotNumber(poItem.item.referenceCode),
-            initialQuantity: converted.get(poItem.id)![index],
-            uomId: poItem.item.inventoryUomId,
-            supplierLotNumber: cleanSupplierLot(lotInput.supplierLotNumber),
-            expiresAt: lotInput.expiresAt,
-            manufacturedAt: lotInput.manufacturedAt,
-            receiptLineId: receiptLine.id,
-            lotOrigin: { create: { purchaseOrderId: poItem.purchaseOrderId, originType: "purchaseOrderReceiving" } },
+            receiptId: receipt.id,
+            purchaseOrderItemId: poItem.id,
+            openQuantity: poItem.quantity,
+            receivedQuantity: plan.received,
+            checks: line.checks,
+            hasIssue,
+            issueNote: line.issueNote?.trim() || null,
+            files: { create: line.photoFileIds.map((fileId) => ({ fileId, kind: "photo", receiptId: receipt.id })) },
           },
         });
-        lineLotIds.push(lot.id);
-        lotNumbers.push(lot.lotNumber);
 
-        // the first lot takes over the PO line itself; each further supplier lot gets its own row
-        const row = { quantity: lotInput.quantity, purchaseOrderStatusId: purchaseOrderStatuses.received, lotId: lot.id };
-        if (index === 0) {
-          await tx.purchaseOrderItem.update({ where: { id: poItem.id }, data: row });
-        } else {
+        const copyDetails = poItem.details.map((d) => ({ expectedDateStart: d.expectedDateStart, expectedDateEnd: d.expectedDateEnd }));
+        const lineLotIds: string[] = [];
+        const lotNumbers: string[] = [];
+
+        for (let index = 0; index < line.lots.length; index++) {
+          const lotInput = line.lots[index];
+          const lot = await tx.lot.create({
+            data: {
+              itemId: poItem.itemId,
+              lotNumber: generateLotNumber(poItem.item.referenceCode),
+              initialQuantity: converted.get(poItem.id)![index],
+              uomId: poItem.item.inventoryUomId,
+              supplierLotNumber: cleanSupplierLot(lotInput.supplierLotNumber),
+              expiresAt: lotInput.expiresAt,
+              manufacturedAt: lotInput.manufacturedAt,
+              receiptLineId: receiptLine.id,
+              lotOrigin: { create: { purchaseOrderId: poItem.purchaseOrderId, originType: "purchaseOrderReceiving" } },
+            },
+          });
+          lineLotIds.push(lot.id);
+          lotNumbers.push(lot.lotNumber);
+
+          // the first lot takes over the PO line itself; each further supplier lot gets its own row
+          const row = { quantity: lotInput.quantity, purchaseOrderStatusId: purchaseOrderStatuses.received, lotId: lot.id };
+          if (index === 0) {
+            // guards against two receivers posting the same line at once
+            const claimed = await tx.purchaseOrderItem.updateMany({
+              where: { id: poItem.id, purchaseOrderStatusId: { in: receivableStatuses }, lotId: null },
+              data: row,
+            });
+            if (claimed.count === 0) throw new AlreadyReceivedError(poItem.item.name, poItem.id);
+          } else {
+            await tx.purchaseOrderItem.create({
+              data: {
+                ...row,
+                purchaseOrderId: poItem.purchaseOrderId,
+                itemId: poItem.itemId,
+                pricePerUnit: poItem.pricePerUnit,
+                uomId: poItem.uomId,
+                details: { create: copyDetails },
+              },
+            });
+          }
+
+          if (lotInput.linkDocumentIds.length > 0) {
+            await tx.itemFile.updateMany({
+              where: { id: { in: lotInput.linkDocumentIds }, itemId: poItem.itemId, lotId: null, supersededAt: null },
+              data: { lotId: lot.id },
+            });
+          }
+        }
+
+        if (plan.remainder > 0) {
           await tx.purchaseOrderItem.create({
             data: {
-              ...row,
               purchaseOrderId: poItem.purchaseOrderId,
               itemId: poItem.itemId,
+              quantity: plan.remainder,
               pricePerUnit: poItem.pricePerUnit,
               uomId: poItem.uomId,
+              purchaseOrderStatusId: purchaseOrderStatuses.partiallyReceived,
               details: { create: copyDetails },
             },
           });
         }
 
-        if (lotInput.linkDocumentIds.length > 0) {
-          await tx.itemFile.updateMany({
-            where: { id: { in: lotInput.linkDocumentIds }, itemId: poItem.itemId, lotId: null, supersededAt: null },
-            data: { lotId: lot.id },
+        // documents uploaded at the dock, filed like the Files tab does
+        for (const doc of line.documents) {
+          const lotInput = doc.lotIndex !== null ? line.lots[doc.lotIndex] : null;
+          const itemFile = await tx.itemFile.create({
+            data: {
+              itemId: poItem.itemId,
+              fileId: doc.fileId,
+              fileTypeId: doc.fileTypeId,
+              issuer: "supplier",
+              supplierId: poItem.purchaseOrders.supplierId,
+              purchaseOrderId: poItem.purchaseOrderId,
+              lotId: doc.lotIndex !== null ? lineLotIds[doc.lotIndex] : null,
+              supplierLotNumber: cleanSupplierLot(lotInput?.supplierLotNumber),
+              issuedAt: doc.issuedAt,
+              expiresAt: doc.expiresAt,
+            },
           });
+          await supersedeOlderItemFiles(tx, itemFile.id, { now });
         }
+
+        lotIds.push(...lineLotIds);
+        lines.push({ documents: line.documents.length, poItem, lotNumbers, remainder: plan.remainder, overReceived: plan.overReceived, hasIssue, received: plan.received });
       }
 
-      if (plan.remainder > 0) {
-        await tx.purchaseOrderItem.create({
-          data: {
-            purchaseOrderId: poItem.purchaseOrderId,
-            itemId: poItem.itemId,
-            quantity: plan.remainder,
-            pricePerUnit: poItem.pricePerUnit,
-            uomId: poItem.uomId,
-            purchaseOrderStatusId: purchaseOrderStatuses.partiallyReceived,
-            details: { create: copyDetails },
-          },
-        });
-      }
+      const stillOpen = await tx.purchaseOrderItem.count({
+        where: { purchaseOrderId: input.purchaseOrderId, purchaseOrderStatusId: { in: receivableStatuses } },
+      });
+      const statusId = stillOpen === 0 ? purchaseOrderStatuses.received : purchaseOrderStatuses.partiallyReceived;
+      await tx.purchaseOrder.update({ where: { id: input.purchaseOrderId }, data: { statusId } });
 
-      // documents uploaded at the dock, filed like the Files tab does
-      for (const doc of line.documents) {
-        const lotInput = doc.lotIndex !== null ? line.lots[doc.lotIndex] : null;
-        const itemFile = await tx.itemFile.create({
-          data: {
-            itemId: poItem.itemId,
-            fileId: doc.fileId,
-            fileTypeId: doc.fileTypeId,
-            issuer: "supplier",
-            supplierId: poItem.purchaseOrders.supplierId,
-            purchaseOrderId: poItem.purchaseOrderId,
-            lotId: doc.lotIndex !== null ? lineLotIds[doc.lotIndex] : null,
-            supplierLotNumber: cleanSupplierLot(lotInput?.supplierLotNumber),
-            issuedAt: doc.issuedAt,
-            expiresAt: doc.expiresAt,
-          },
-        });
-        await supersedeOlderItemFiles(tx, itemFile.id, { now });
-      }
-
-      lotIds.push(...lineLotIds);
-      lines.push({ documents: line.documents.length, poItem, lotNumbers, remainder: plan.remainder, overReceived: plan.overReceived, hasIssue, received: plan.received });
+      return { receipt, lotIds, lines, statusId };
+    }, { timeout: 30_000 });
+  } catch (error) {
+    if (error instanceof AlreadyReceivedError) {
+      return { ok: false, error: `${error.itemName} was just received by someone else. Refresh the page.`, purchaseOrderItemId: error.purchaseOrderItemId };
     }
-
-    const stillOpen = await tx.purchaseOrderItem.count({
-      where: { purchaseOrderId: input.purchaseOrderId, purchaseOrderStatusId: { in: receivableStatuses } },
-    });
-    const statusId = stillOpen === 0 ? purchaseOrderStatuses.received : purchaseOrderStatuses.partiallyReceived;
-    await tx.purchaseOrder.update({ where: { id: input.purchaseOrderId }, data: { statusId } });
-
-    return { receipt, lotIds, lines, statusId };
-  }, { timeout: 30_000 });
+    throw error;
+  }
 
   await logReceipt(userId, input, result);
   return {
