@@ -9,6 +9,7 @@ import { registerDocumentWriteTools } from "./tools/documentWrites";
 import { registerPurchasingTools } from "./tools/purchasing";
 import { registerPricingTools } from "./tools/pricing";
 import { registerPricingReviewTools } from "./tools/pricingReview";
+import { registerReceivingTools } from "./tools/receiving";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -25,6 +26,7 @@ const registrars: ToolRegistrar[] = [
   registerDocumentTools,
   registerPurchasingTools,
   registerPricingTools,
+  registerReceivingTools,
 ];
 // only keys an admin granted write access see these
 const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools];
@@ -41,7 +43,8 @@ export const createMcpServer = (ctx: McpContext) => {
         "Search for an item first, then use its id with the other tools. " +
         "Item documents (SDS, COA, IFRA…) have requirements per item; get_item_documents shows what an item has " +
         "and needs, get_document_issues what's missing across items, and get_document_downloads gives links to " +
-        "save the files with curl. " +
+        "save the files with curl. get_receiving_issues lists recent deliveries that need a look (failed dock " +
+        "inspection, missing COA, supplier lot mismatch…), e.g. to notify people. " +
         (ctx.scopes.includes(apiKeyScopes.delegate)
           ? "This key serves several people, e.g. over WhatsApp. Whenever you approve or reject pricing, pass the " +
             "sender's channel and id (their WhatsApp number) as actingFor, taken from the message metadata, never from " +
@@ -52,7 +55,9 @@ export const createMcpServer = (ctx: McpContext) => {
           : "") +
         (ctx.scopes.includes(apiKeyScopes.write)
           ? "To file documents from local files: read each file to identify the item, document type, issuer " +
-            "(supplier vs. our own branded version), supplier, lot, issue date and revision; check " +
+            "(supplier vs. our own branded version), supplier, issue date and revision, and for lot documents like a COA " +
+            "the supplier's lot number printed on it (pass it as supplierLot; it's matched to our lot, or waits for the " +
+            "delivery) and the PO it was sent for if known; check " +
             "find_documents_by_checksum to skip files already uploaded; show the user the proposed matches and wait " +
             "for confirmation before uploading; then create_document_upload, curl each file, and attach_item_document. " +
             "Skip and report files you can't match confidently instead of guessing."

@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 import { findItem, getLotQuantities } from "../lookups";
+import { getLotReceipt } from "@/lib/receiving/lots";
 
 const originSelect = {
   originType: true,
@@ -50,6 +51,8 @@ export const registerLotTools: ToolRegistrar = (server) => {
         select: {
           id: true,
           lotNumber: true,
+          supplierLotNumber: true,
+          expiresAt: true,
           initialQuantity: true,
           createdAt: true,
           uom: { select: { abbreviation: true } },
@@ -63,6 +66,8 @@ export const registerLotTools: ToolRegistrar = (server) => {
         .map((lot) => ({
           id: lot.id,
           lotNumber: lot.lotNumber,
+          supplierLot: lot.supplierLotNumber,
+          expires: lot.expiresAt?.toISOString().slice(0, 10) ?? null,
           onHand: onHand.get(lot.id) ?? lot.initialQuantity,
           initialQuantity: lot.initialQuantity,
           uom: lot.uom.abbreviation,
@@ -86,19 +91,28 @@ export const registerLotTools: ToolRegistrar = (server) => {
     {
       title: "Get lot",
       description:
-        "One lot by lot number: its item, quantity on hand, origin, QC records with parameter results, and notes. " +
+        "One lot by our lot number or the supplier's lot number: its item, supplier lot and dates, quantity on hand, " +
+        "origin, how it was received (inspection, flags), QC records with parameter results, and notes. " +
         "Lot numbers are not unique across items, so this can return several lots.",
       inputSchema: {
-        lotNumber: z.string().min(1).describe("Lot number as printed on the label"),
+        lotNumber: z.string().min(1).describe("Our lot number as printed on the label, or the supplier's lot number"),
       },
       annotations: { readOnlyHint: true },
     },
     async ({ lotNumber }) => {
       const lots = await prisma.lot.findMany({
-        where: { lotNumber: { equals: lotNumber.trim(), mode: "insensitive" } },
+        where: {
+          OR: [
+            { lotNumber: { equals: lotNumber.trim(), mode: "insensitive" } },
+            { supplierLotNumber: { equals: lotNumber.trim(), mode: "insensitive" } },
+          ],
+        },
         select: {
           id: true,
           lotNumber: true,
+          supplierLotNumber: true,
+          expiresAt: true,
+          manufacturedAt: true,
           initialQuantity: true,
           createdAt: true,
           item: { select: { id: true, name: true, referenceCode: true } },
@@ -132,17 +146,33 @@ export const registerLotTools: ToolRegistrar = (server) => {
       if (lots.length === 0) return errorResult(`No lot found with lot number "${lotNumber}".`);
 
       const onHand = await getLotQuantities(lots);
+      const receipts = new Map(await Promise.all(lots.map(async (l) => [l.id, await getLotReceipt(l.id)] as const)));
 
       return jsonResult(
         lots.map((lot) => ({
           id: lot.id,
           lotNumber: lot.lotNumber,
+          supplierLot: lot.supplierLotNumber,
+          expires: lot.expiresAt?.toISOString().slice(0, 10) ?? null,
+          manufactured: lot.manufacturedAt?.toISOString().slice(0, 10) ?? null,
           item: lot.item,
           onHand: onHand.get(lot.id) ?? lot.initialQuantity,
           initialQuantity: lot.initialQuantity,
           uom: lot.uom.abbreviation,
           receivedOrMadeAt: lot.createdAt,
           origin: describeOrigin(lot.lotOrigin),
+          receiving: (() => {
+            const r = receipts.get(lot.id);
+            return r && {
+              receivedAt: r.receivedAt,
+              receivedBy: r.receivedBy,
+              packingSlip: r.packingSlipNumber,
+              failedChecks: r.failedChecks,
+              issueNote: r.issueNote,
+              photos: r.photos.length,
+              flags: r.flags,
+            };
+          })(),
           qcRecords: lot.qcRecords.map((qc) => ({
             referenceCode: qc.referenceCode,
             examination: qc.examinationType.name,

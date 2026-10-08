@@ -58,6 +58,12 @@ const resolveLot = async (itemId: string, input: string) => {
   return { error: lots.length > 1 ? `Lot "${input}" is ambiguous for this item. Pass the lot id.` : `This item has no lot "${input}". Use get_item_lots.` };
 };
 
+const resolvePurchaseOrder = async (input: string | number) => {
+  const digits = String(input).match(/\d+/)?.[0];
+  const po = digits ? await prisma.purchaseOrder.findFirst({ where: { referenceCode: Number(digits) }, select: { id: true, referenceCode: true } }) : null;
+  return po ? { purchaseOrder: po } : { error: `No purchase order "${input}". Use search_purchase_orders.` };
+};
+
 const findDocument = (documentId: string) =>
   prisma.itemFile.findUnique({
     where: { id: documentId },
@@ -68,6 +74,8 @@ const findDocument = (documentId: string) =>
       issuer: true,
       supplierId: true,
       lotId: true,
+      supplierLotNumber: true,
+      purchaseOrderId: true,
       issuedAt: true,
       expiresAt: true,
       revision: true,
@@ -80,7 +88,18 @@ const detailsSchema = {
   documentType: z.string().describe("Document type id, name or abbreviation, e.g. SDS"),
   issuer: z.enum(["supplier", "internal"]).describe("supplier = issued by the supplier/manufacturer; internal = issued or rebranded by us"),
   supplier: z.string().optional().describe("Supplier id or exact name. Optional for internal documents"),
-  lot: z.string().optional().describe("Our lot number or lot id, for lot-specific documents like a COA"),
+  lot: z.string().optional().describe("Our lot number or lot id, for lot-specific documents like a COA, when you know it"),
+  supplierLot: z
+    .string()
+    .optional()
+    .describe(
+      "The supplier's lot/batch number printed on a lot document (e.g. a COA). Without `lot`, it's matched to our lot " +
+        "with that supplier lot; if none was received yet, the document waits and is attached when it is"
+    ),
+  purchaseOrder: z
+    .union([z.number().int(), z.string()])
+    .optional()
+    .describe("PO reference code the document was sent for (e.g. from the email subject), so receiving can show it"),
   issuedAt: dateArg.optional(),
   expiresAt: dateArg.optional().describe("Only if an expiry date is printed on the document, YYYY-MM-DD"),
   revision: z.string().optional().describe("Revision or version printed on the document"),
@@ -146,6 +165,8 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
       if (supplier && "error" in supplier) return errorResult(supplier.error!);
       const lot = args.lot ? await resolveLot(item.id, args.lot) : null;
       if (lot && "error" in lot) return errorResult(lot.error!);
+      const po = args.purchaseOrder !== undefined ? await resolvePurchaseOrder(args.purchaseOrder) : null;
+      if (po && "error" in po) return errorResult(po.error!);
 
       if (args.basedOnDocumentId) {
         const source = await findDocument(args.basedOnDocumentId);
@@ -158,6 +179,8 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
         issuer: args.issuer,
         supplierId: supplier?.supplier?.id ?? null,
         lotId: lot?.lot?.id ?? null,
+        supplierLotNumber: args.supplierLot ?? null,
+        purchaseOrderId: po?.purchaseOrder?.id ?? null,
         issuedAt: toDate(args.issuedAt) ?? null,
         expiresAt: toDate(args.expiresAt) ?? null,
         revision: args.revision ?? null,
@@ -170,6 +193,7 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
       const alsoReplace = args.alsoReplaceDocumentIds ?? [];
       const result = await createItemDocuments(actor, item.id, [{ fileId: args.fileId, name: upload.file!.name }], details, alsoReplace);
       const documentId = result.itemFileIds[0];
+      const filedLot = result.lotId ? await prisma.lot.findUnique({ where: { id: result.lotId }, select: { lotNumber: true, supplierLotNumber: true } }) : null;
 
       // current versions of the same document from another (or no) supplier that this didn't replace
       const otherCurrent = await prisma.itemFile.findMany({
@@ -178,7 +202,8 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
           id: { not: documentId },
           fileTypeId: details.fileTypeId,
           issuer: details.issuer,
-          lotId: details.lotId,
+          lotId: result.lotId,
+          ...(result.lotId ? {} : { supplierLotNumber: details.supplierLotNumber ?? null }),
           supersededAt: null,
           // NULL never equals anything in SQL, so "different supplier" has to spell out the no-supplier case
           ...(details.supplierId
@@ -192,6 +217,11 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
       return jsonResult({
         documentId,
         item,
+        lot: filedLot
+          ? { lotNumber: filedLot.lotNumber, supplierLot: filedLot.supplierLotNumber, matchedBySupplierLot: !details.lotId }
+          : details.supplierLotNumber
+            ? `Waiting: no lot with supplier lot ${details.supplierLotNumber} has been received yet. It will be attached when one is.`
+            : null,
         replaced: result.replacedIds,
         filedAsOlderVersion: result.filedAsOlderIds.length > 0
           ? "A newer version is already current, so this was filed as a replaced (older) version."
@@ -207,7 +237,8 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
     {
       title: "Update item document",
       description:
-        "Change the details of a document already on file (type, issuer, supplier, lot, dates, revision, based on). " +
+        "Change the details of a document already on file (type, issuer, supplier, lot, supplier lot, purchase order, " +
+        "dates, revision, based on). " +
         "Only the fields given change; pass null to clear an optional field. Never replaces other documents.",
       inputSchema: {
         documentId: z.string().describe("Item document id (from get_item_documents)"),
@@ -215,6 +246,8 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
         issuer: detailsSchema.issuer.optional(),
         supplier: z.string().nullable().optional().describe("Supplier id or exact name, or null to clear"),
         lot: z.string().nullable().optional().describe("Lot number or id, or null to clear"),
+        supplierLot: z.string().nullable().optional().describe("Supplier lot printed on the document, or null to clear"),
+        purchaseOrder: z.union([z.number().int(), z.string()]).nullable().optional().describe("PO reference code, or null to clear"),
         issuedAt: dateArg.nullable().optional(),
         expiresAt: dateArg.nullable().optional(),
         revision: z.string().nullable().optional(),
@@ -231,12 +264,16 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
       if (supplier && "error" in supplier) return errorResult(supplier.error!);
       const lot = args.lot ? await resolveLot(doc.itemId, args.lot) : null;
       if (lot && "error" in lot) return errorResult(lot.error!);
+      const po = args.purchaseOrder ? await resolvePurchaseOrder(args.purchaseOrder) : null;
+      if (po && "error" in po) return errorResult(po.error!);
 
       const details: ItemDocumentDetails = {
         fileTypeId: type?.type?.id ?? doc.fileTypeId,
         issuer: args.issuer ?? (doc.issuer === "internal" ? "internal" : "supplier"),
         supplierId: args.supplier === null ? null : supplier?.supplier?.id ?? doc.supplierId,
         lotId: args.lot === null ? null : lot?.lot?.id ?? doc.lotId,
+        supplierLotNumber: args.supplierLot === undefined ? doc.supplierLotNumber : args.supplierLot,
+        purchaseOrderId: args.purchaseOrder === null ? null : po?.purchaseOrder?.id ?? doc.purchaseOrderId,
         issuedAt: args.issuedAt === undefined ? doc.issuedAt : toDate(args.issuedAt) ?? null,
         expiresAt: args.expiresAt === undefined ? doc.expiresAt : toDate(args.expiresAt) ?? null,
         revision: args.revision === undefined ? doc.revision : args.revision,
