@@ -12,10 +12,7 @@ import LotsStep from "./LotsStep"
 import DocumentsStep from "./DocumentsStep"
 import ReviewStep from "./ReviewStep"
 import { DeliveryDraft, inspectionProblem, LineDraft, lotsProblem, newLine, toReceiveInput } from "./draft"
-
-type Step = { kind: "delivery" } | { kind: "inspect" | "lots" | "documents"; line: number } | { kind: "review" }
-
-const stepTitles = { delivery: "Delivery", inspect: "Inspect", lots: "Supplier lots", documents: "Documents", review: "Review" } as const
+import { ItemBanner, nextLabel, Step, StepTracker, WholeDeliveryBanner } from "./scope"
 
 type Props = {
   purchaseOrder: { id: string; referenceCode: number; supplierName: string }
@@ -34,6 +31,7 @@ const ReceiveFlow = ({ purchaseOrder, items, allItems, expectations, fileTypes, 
   const [delivery, setDelivery] = useState<DeliveryDraft>(emptyDelivery)
   const [lines, setLines] = useState<LineDraft[]>(() => items.map(newLine))
   const [stepIndex, setStepIndex] = useState(0)
+  const [reached, setReached] = useState(0)
   const [problem, setProblem] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState<{ lotIds: string[] } | null>(null)
@@ -74,7 +72,24 @@ const ReceiveFlow = ({ purchaseOrder, items, allItems, expectations, fileTypes, 
     onClose()
   }
 
-  const goTo = (index: number) => setStepIndex(Math.max(0, Math.min(index, steps.length - 1)))
+  const goTo = (index: number) => {
+    const target = Math.max(0, Math.min(index, steps.length - 1))
+    setStepIndex(target)
+    setReached((r) => Math.max(r, target))
+  }
+
+  // jumping from the tracker still checks the step being left, so a half-done inspection isn't skipped past
+  const jump = (index: number) => {
+    if (index > stepIndex && (step.kind === "inspect" || step.kind === "lots")) {
+      const issue = step.kind === "inspect" ? inspectionProblem(lines[step.line]) : lotsProblem(lines[step.line])
+      if (issue) {
+        setProblem(issue)
+        return
+      }
+    }
+    setReturnToReview(false)
+    goTo(index)
+  }
 
   const next = () => {
     if (step.kind === "inspect" || step.kind === "lots") {
@@ -126,7 +141,6 @@ const ReceiveFlow = ({ purchaseOrder, items, allItems, expectations, fileTypes, 
     }
   }
 
-  const lineHeader = "line" in step ? itemFor(lines[step.line]) : null
   const receivedRows = done ? allItems.filter((i) => i.lot && done.lotIds.includes(i.lot.id)) : []
 
   return (
@@ -137,27 +151,27 @@ const ReceiveFlow = ({ purchaseOrder, items, allItems, expectations, fileTypes, 
             PO #{purchaseOrder.referenceCode} · {purchaseOrder.supplierName}
           </div>
           <div className="truncate text-xl font-semibold">
-            {done
-              ? "Received"
-              : lineHeader
-                ? `${lineHeader.alias?.alias?.name ?? lineHeader.item.name} · ${stepTitles[step.kind]}`
-                : stepTitles[step.kind]}
+            {done ? "Received" : `Receiving ${lines.length === 1 ? "1 item" : `${lines.length} items`}`}
           </div>
         </div>
-        {!done && lines.length > 1 && "line" in step && (
-          <span className="badge badge-lg badge-ghost">Item {step.line + 1} of {lines.length}</span>
-        )}
         <button type="button" className="btn btn-ghost btn-lg btn-square" aria-label="Close" onClick={close}>
           <TbX className="size-7" />
         </button>
       </header>
 
       {!done && (
-        <progress className="progress progress-primary h-1.5 w-full rounded-none" value={stepIndex + 1} max={steps.length} />
+        <div className="border-b border-base-300">
+          <StepTracker steps={steps} current={stepIndex} reached={reached} items={lines.map(itemFor)} onGo={jump} />
+        </div>
       )}
 
       <div ref={body} className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-4xl px-4 py-6 md:px-6">
+          {!done && ("line" in step ? (
+            <ItemBanner item={itemFor(lines[step.line])} line={step.line} lineCount={lines.length} kind={step.kind} />
+          ) : (
+            <WholeDeliveryBanner kind={step.kind} items={lines.map(itemFor)} />
+          ))}
           {done ? (
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 rounded-box bg-success/10 p-5 text-lg">
@@ -223,7 +237,7 @@ const ReceiveFlow = ({ purchaseOrder, items, allItems, expectations, fileTypes, 
                 </button>
               ) : (
                 <button type="button" className="btn btn-lg btn-primary" onClick={next}>
-                  {returnToReview ? "Back to review" : "Next"} <TbArrowRight className="size-6" />
+                  {returnToReview ? "Back to review" : nextLabel(steps, stepIndex, lines.map(itemFor))} <TbArrowRight className="size-6" />
                 </button>
               )}
             </>

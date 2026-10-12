@@ -1,7 +1,6 @@
 'use client'
 import { TbFile, TbX } from "react-icons/tb"
 import type { PurchaseOrderItem } from "@/actions/purchasing/purchaseOrders/items/getAll"
-import { toFracitonalDigits } from "@/utils/data/toFractionalDigits"
 import CaptureButtons from "./CaptureButtons"
 import { DeliveryDraft } from "./draft"
 
@@ -11,23 +10,11 @@ type Props = {
   onChange: (delivery: DeliveryDraft) => void
 }
 
-const DeliveryStep = ({ delivery, items, onChange }: Props) => {
+const DeliveryStep = ({ delivery, onChange }: Props) => {
   const set = <K extends keyof DeliveryDraft>(key: K, value: DeliveryDraft[K]) => onChange({ ...delivery, [key]: value })
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-box bg-base-200/60 p-4">
-        <div className="mb-2 font-semibold">Receiving</div>
-        <ul className="flex flex-col gap-1 text-lg">
-          {items.map((i) => (
-            <li key={i.id} className="flex justify-between gap-4">
-              <span>{i.alias?.alias?.name ?? i.item.name}</span>
-              <span className="text-base-content/60">{toFracitonalDigits.weight(i.quantity)} {i.uom.abbreviation}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="rounded-box border border-warning/40 bg-warning/5 p-4 text-base-content/80">
         Before signing for the freight, check the outside of the pallets for damage and note any on the carrier&apos;s paperwork.
       </div>

@@ -21,7 +21,7 @@ const InspectStep = ({ line, onChange }: Props) => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-base-content/70">Look over every container, not just the top layer.</p>
+        <p className="text-base-content/70">Look over every container of this item, not just the top layer.</p>
         <button type="button" className="btn btn-lg btn-success btn-soft" onClick={allOk}>
           <TbChecks className="size-6" /> Everything looks OK
         </button>

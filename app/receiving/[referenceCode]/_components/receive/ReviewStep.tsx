@@ -7,6 +7,7 @@ import { toFracitonalDigits } from "@/utils/data/toFractionalDigits"
 import { FlagBadge } from "@/components/Receiving/ReceivingFlags"
 import { formatDate, fromDateInput } from "@/components/ItemDocuments/presentation"
 import { DeliveryDraft, draftFlags, LineDraft, linkedDocuments, parseQuantity } from "./draft"
+import { displayName, itemColor } from "./scope"
 
 type Props = {
   delivery: DeliveryDraft
@@ -22,9 +23,6 @@ const ReviewStep = ({ delivery, items, lines, expectationsFor, fileTypes, onEdit
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-base-content/70">
-        Check everything once more. Warnings don&apos;t stop the receipt; they show on the lots until they&apos;re sorted out.
-      </p>
 
       {(delivery.packingSlipNumber || delivery.carrier || delivery.packingSlips.length > 0) && (
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-base-content/70">
@@ -41,9 +39,12 @@ const ReviewStep = ({ delivery, items, lines, expectationsFor, fileTypes, onEdit
         const failed = failedChecks(line.checks)
         const uom = item.uom.abbreviation
         return (
-          <section key={line.purchaseOrderItemId} className="flex flex-col gap-4 rounded-box border border-base-300 p-4">
+          <section key={line.purchaseOrderItemId} className={`flex flex-col gap-4 rounded-box border border-l-8 border-base-300 p-4 ${itemColor(lineIndex).edge}`}>
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <h3 className="text-xl font-semibold">{item.alias?.alias?.name ?? item.item.name}</h3>
+              <h3 className="flex items-center gap-2 text-xl font-semibold">
+                <span className={`flex size-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${itemColor(lineIndex).solid}`}>{lineIndex + 1}</span>
+                {displayName(item)}
+              </h3>
               <div className="flex flex-wrap gap-1">
                 {flags.filter((f) => !f.lotKey).map((f) => <FlagBadge key={f.flag} flag={f.flag} size="md" />)}
               </div>
