@@ -95,7 +95,34 @@ across all items, with:
 - A **By supplier** view grouping supplier documents by who to ask, with a
   **Copy request list** to paste into an email.
 
+## Document inbox
+
+Documents that arrive from outside, today supplier emails, land in
+**Quality → Documents → Inbox** until they're filed. Each email is shown with
+its attachments, who sent it, the supplier matched from the sender's address,
+the subject, and a link back to the email.
+
+- **To review** has everything that needs a person: documents nobody has filed
+  yet, and documents the agent filed that nobody has checked.
+- **File on an item** opens the same form as the Files tab, prefilled with the
+  agent's suggestion when there is one. It shows the item's requirements and
+  which one the document counts toward, and asks before replacing a current
+  version from another supplier. A document can be filed on several items.
+- **File on a PO** adds it to the purchase order's accounting files, for
+  invoices, packing slips and order confirmations.
+- The agent's filings show its reason. **Looks right** marks one checked;
+  **Take back** removes the document from the item or PO, restores what it
+  replaced, and puts it back in the inbox.
+- **Dismiss** is for anything that doesn't belong in Lumexia (logos, terms and
+  conditions, newsletters). Dismissed documents can be restored, and the same
+  file arriving again is dismissed on its own.
+
+Deleting a document on an item's Files tab that came from the inbox sends it
+back to the inbox as unfiled.
+
 ## Agents
 
 With a write API key, Claude Code can file a folder of documents for you. See
 [Filing documents from a folder](/docs/mcp#filing-documents-from-a-folder).
+Emailed documents are filed through the inbox; see
+[Documents emailed by suppliers](/docs/mcp#documents-emailed-by-suppliers).

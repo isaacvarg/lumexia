@@ -117,6 +117,7 @@ itself stays out of the config file.
 | `get_item_pricing` | An item's current pricing: pricing data, last purchase price, the resulting item cost, the finished products filled with it (costs, consumer price, markup, profit), and recent examinations. |
 | `search_pricing_examinations` | Pricing examinations by item or status, e.g. `pendingReview` for the review queue or `queued` for items waiting to be examined. |
 | `get_receiving_issues` | Deliveries received since a given time whose lines need a look: failed dock inspection, more or less than ordered, no supplier lot, a required lot document (COA) missing, or a COA for another supplier lot. Document flags clear once the document is on file. See [Receiving alerts](#receiving-alerts). |
+| `get_document_inbox` | Documents waiting in the [document inbox](/docs/inventory/item-documents#document-inbox): who sent them, the email subject and link, the supplier matched from the sender, the agent's suggestion or filing, and where an identical file is already on file. Each has a download link valid 15 minutes. Views: `review` (default), `pending`, `agentFiled`, `filed`, `dismissed`. |
 | `get_pricing_examination` | One examination as it was snapshotted: pricing data, finished products, consumer containers, and for produced items the batch costing with every BOM material's price and where it came from. Plus validation and notes. |
 
 Keys with write access also get:
@@ -127,6 +128,9 @@ Keys with write access also get:
 | `attach_item_document` | Files an uploaded document under an item with its type, issuer, supplier, lot, supplier lot, PO, dates, revision, and the supplier document it's based on. Given only the supplier lot, it goes on our lot with that supplier lot, or waits until one is received. Like uploading in the Files tab, it replaces older versions of the same document and reports other current versions from a different supplier. |
 | `update_item_document` | Changes a filed document's details. Never replaces other documents. |
 | `set_document_replaced` | Marks a document replaced, or restores it as current. |
+| `file_inbox_document` | Files an inbox document under an item, with the same details as `attach_item_document` and a required `reason`. No upload needed. It shows in the inbox as filed by the agent until someone checks it. |
+| `file_inbox_document_to_purchase_order` | Files an inbox document (invoice, packing slip…) on a PO's accounting files, with a reason. |
+| `suggest_inbox_document` | Leaves the agent's best guess (item, type, supplier, supplier lot, PO, dates, confidence) and reason on an inbox document it couldn't file. It prefills the filing form for whoever files it. |
 | `approve_pricing_examination` | Approves an examination that's pending review, as the key's owner. |
 | `reject_pricing_examination` | Rejects one, with an optional reason added as a note. Like the app, it queues a new examination of the item that carries the notes forward. |
 
@@ -183,16 +187,64 @@ Tips:
 
 ## Documents emailed by suppliers
 
-Purchase orders ask suppliers to send documents to the documents inbox, often
-before the delivery arrives. An agent filing those emails should pass the
-supplier lot printed on each COA (and the PO from the email, if there is one)
-to `attach_item_document`:
+Purchase orders ask suppliers to send documents to the documents mailbox, often
+before the delivery arrives. Every attachment goes into Lumexia's
+[document inbox](/docs/inventory/item-documents#document-inbox) first, and the
+agent then files what it can:
+
+1. The automation (an n8n workflow watching Gmail) posts each email and its
+   attachments to `POST /api/inbox/documents` with a write API key. No model is
+   involved, so nothing is lost when the agent can't match a document.
+2. The response has an `inboxDocumentId` per file. The agent reads the email and
+   the attachments, searches Lumexia, and for each document either:
+   - files it with `file_inbox_document` (or `file_inbox_document_to_purchase_order`)
+     when exactly one item or PO clearly matches, with its reason, or
+   - leaves `suggest_inbox_document` with what it found and why it didn't file.
+3. People see unfiled documents and the agent's unchecked filings under
+   **Quality → Documents → Inbox**, and file, check, take back, or dismiss them.
+
+Pass the supplier lot printed on each COA (and the PO from the email, if there
+is one):
 
 - If the lot was already received, the COA goes straight onto it.
 - If not, it's kept as waiting for that supplier lot. At the dock the receiver
   sees "COA on file" as soon as they type the matching supplier lot, and it's
   attached to the new lot when they post the receipt. A COA for this PO with a
   different supplier lot is shown as a possible mismatch.
+
+### The inbox endpoint
+
+`POST /api/inbox/documents`, with `Authorization: Bearer <write key>` and
+multipart form data:
+
+| Field | |
+| --- | --- |
+| `source` | `gmail`, `paperless` or `manual` |
+| `sourceId` | Required. The message's id in its source, e.g. the Gmail message id |
+| `threadId`, `sourceUrl` | Optional. `sourceUrl` becomes the **Open email** link |
+| `senderEmail`, `senderName`, `subject`, `body`, `receivedAt` | Optional. `receivedAt` is an ISO date or epoch milliseconds |
+| files | One or more file fields (any name; `files` by convention). PDFs, images, Word, Excel and CSV, up to 50 MB each |
+
+Sending the same message again is safe: files already in it are skipped, so a
+failed run can simply be retried. The sender's email domain is matched against
+supplier contacts to show which supplier sent it. A file that's identical to
+one already filed, or to one dismissed before, arrives already dismissed.
+
+```json
+{
+  "messageId": "…",
+  "supplier": { "id": "…", "name": "Acme Chemicals" },
+  "documents": [
+    { "inboxDocumentId": "…", "name": "SDS.pdf", "md5": "…", "status": "pending", "dismissReason": null, "alreadyInInbox": false }
+  ],
+  "skipped": [{ "name": "invite.ics", "reason": "Only PDFs, images and Office/CSV files are accepted." }]
+}
+```
+
+In n8n, use an HTTP Request node with **Form-Data** body: text fields for the
+message and one **n8n Binary File** field per attachment, then hand the returned
+ids to the AI Agent node along with the attachments. Marking the Gmail thread
+read stays the way to avoid reprocessing.
 
 ## Receiving alerts
 
@@ -293,3 +345,8 @@ its owner.
   takes the file and stores it with `lib/files/storeUpload.ts`, the same code
   the app's upload route uses. Document changes go through
   `lib/itemDocuments/mutations.ts`, which the Files tab uses too.
+- Document inbox: `app/api/inbox/documents/route.ts` takes uploads from
+  automations and calls `lib/documentInbox/ingest.ts`. Filing, taking back,
+  checking and dismissing live in `lib/documentInbox/mutations.ts`, shared by
+  the inbox page and `lib/mcp/tools/inbox.ts`. Arguments that name items,
+  types, suppliers, lots and POs are resolved in `lib/mcp/documentArgs.ts`.

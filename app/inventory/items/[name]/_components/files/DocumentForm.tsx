@@ -1,7 +1,9 @@
 'use client'
-import { useState } from "react"
+import { createContext, useContext, useState } from "react"
 import { useItemSelection } from "@/store/itemSlice"
 import { ItemDocumentDetails } from "../../_actions/files/itemDocumentMutations"
+import { ItemDocuments } from "../../_actions/files/getItemDocuments"
+import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { formatDate, fromDateInput, toDateInput } from "@/components/ItemDocuments/presentation"
 import { sameSupplierLot } from "@/lib/itemDocuments/supplierLots"
 
@@ -68,9 +70,27 @@ export const fromDocumentForm = (v: DocumentFormValue, purchaseOrderId: string |
   derivedFromId: v.issuer === "internal" ? v.derivedFromId || null : null,
 })
 
+// What the form works from: the item's requirements, lots and files plus the type and supplier lists. On the
+// item page that's the item store; elsewhere (the document inbox) a provider passes the chosen item's.
+export type DocumentFormSource = {
+  fileTypes: { id: string; name: string; bgColor: string; textColor: string }[]
+  suppliers: { id: string; name: string }[]
+  documents: ItemDocuments
+  files: ItemFile[]
+}
+
+const DocumentFormSourceContext = createContext<DocumentFormSource | null>(null)
+export const DocumentFormSourceProvider = DocumentFormSourceContext.Provider
+
+export const useDocumentFormSource = (): DocumentFormSource => {
+  const provided = useContext(DocumentFormSourceContext)
+  const { options, documents, files } = useItemSelection()
+  return provided ?? { fileTypes: options.itemFileTypes, suppliers: options.suppliers, documents, files }
+}
+
 // What the item's requirements expect for the chosen file type + issuer, used to guide the form.
 export const useDocumentExpectations = (v: Pick<DocumentFormValue, "fileTypeId" | "issuer">) => {
-  const { documents } = useItemSelection()
+  const { documents } = useDocumentFormSource()
   const matching = documents.requirements
     .map((r) => r.requirement)
     .filter((r) => r.fileTypeId === v.fileTypeId && (r.issuer === v.issuer || r.issuer === "any"))
@@ -106,7 +126,7 @@ type Props = {
 }
 
 const DocumentForm = ({ value, onChange, editingId }: Props) => {
-  const { options, documents, files } = useItemSelection()
+  const { fileTypes, suppliers, documents, files } = useDocumentFormSource()
   const expectations = useDocumentExpectations(value)
   const set = <K extends keyof DocumentFormValue>(key: K, v: DocumentFormValue[K]) => onChange({ ...value, [key]: v })
 
@@ -149,7 +169,7 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Document type">
-        {options.itemFileTypes.map((t) => {
+        {fileTypes.map((t) => {
           const active = value.fileTypeId === t.id
           return (
             <button
@@ -201,7 +221,7 @@ const DocumentForm = ({ value, onChange, editingId }: Props) => {
               </optgroup>
             )}
             <optgroup label={orderedFrom.length > 0 ? "All suppliers" : "Suppliers"}>
-              {options.suppliers.filter((s) => !orderedFromIds.has(s.id)).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {suppliers.filter((s) => !orderedFromIds.has(s.id)).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </optgroup>
           </select>
         </Field>

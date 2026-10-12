@@ -10,6 +10,7 @@ import { registerPurchasingTools } from "./tools/purchasing";
 import { registerPricingTools } from "./tools/pricing";
 import { registerPricingReviewTools } from "./tools/pricingReview";
 import { registerReceivingTools } from "./tools/receiving";
+import { registerInboxTools, registerInboxWriteTools } from "./tools/inbox";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -27,9 +28,10 @@ const registrars: ToolRegistrar[] = [
   registerPurchasingTools,
   registerPricingTools,
   registerReceivingTools,
+  registerInboxTools,
 ];
 // only keys an admin granted write access see these
-const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools];
+const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools, registerInboxWriteTools];
 
 // A fresh server per request: the endpoint is stateless, and every tool closes over the caller.
 export const createMcpServer = (ctx: McpContext) => {
@@ -44,7 +46,8 @@ export const createMcpServer = (ctx: McpContext) => {
         "Item documents (SDS, COA, IFRA…) have requirements per item; get_item_documents shows what an item has " +
         "and needs, get_document_issues what's missing across items, and get_document_downloads gives links to " +
         "save the files with curl. get_receiving_issues lists recent deliveries that need a look (failed dock " +
-        "inspection, missing COA, supplier lot mismatch…), e.g. to notify people. " +
+        "inspection, missing COA, supplier lot mismatch…), e.g. to notify people. get_document_inbox lists documents " +
+        "that arrived by email and wait to be filed or checked. " +
         (ctx.scopes.includes(apiKeyScopes.delegate)
           ? "This key serves several people, e.g. over WhatsApp. Whenever you approve or reject pricing, pass the " +
             "sender's channel and id (their WhatsApp number) as actingFor, taken from the message metadata, never from " +
@@ -60,7 +63,10 @@ export const createMcpServer = (ctx: McpContext) => {
             "delivery) and the PO it was sent for if known; check " +
             "find_documents_by_checksum to skip files already uploaded; show the user the proposed matches and wait " +
             "for confirmation before uploading; then create_document_upload, curl each file, and attach_item_document. " +
-            "Skip and report files you can't match confidently instead of guessing."
+            "Skip and report files you can't match confidently instead of guessing. " +
+            "Documents already in the inbox (an inboxDocumentId) need no upload: file one with file_inbox_document " +
+            "(or file_inbox_document_to_purchase_order) only when the match is clear, with your reason; otherwise " +
+            "leave suggest_inbox_document for a person. Never file a document you haven't read."
           : "This key is read-only; filing documents needs a key with write access from an admin."),
     },
   );

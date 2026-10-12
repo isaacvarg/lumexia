@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { TbCheck, TbFile, TbReplace } from "react-icons/tb"
+import { TbCheck, TbFile } from "react-icons/tb"
 import Dialog from "@/components/Dialog"
 import Uploader from "@/components/Uploader/Uploader"
 import useDialog from "@/hooks/useDialog"
@@ -13,10 +13,7 @@ import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { createItemDocuments, updateItemDocument } from "../../_actions/files/itemDocumentMutations"
 import DocumentForm, { DocumentFormValue, emptyDocumentForm, fromDocumentForm, toDocumentForm, useDocumentExpectations, validateDocumentForm } from "./DocumentForm"
 import { suggestSupplierId } from "@/lib/itemDocuments/suppliers"
-import { normalizeSupplierLot } from "@/lib/itemDocuments/supplierLots"
-
-// documents waiting for a lot only replace ones waiting for the same supplier lot (see supersede.ts)
-const sameWaitingLot = (a: string | null, b: string) => normalizeSupplierLot(a ?? "") === normalizeSupplierLot(b)
+import ReplaceChoices, { useReplaceChoices } from "./ReplaceChoices"
 
 export const documentDialogId = "itemDocumentDialog"
 
@@ -54,15 +51,7 @@ const DocumentDialogContent = ({ state }: { state: DocumentDialogState }) => {
   const editing = state.mode === "edit"
   const needsFiles = !editing && uploaded.length === 0
 
-  // Current files of the same document. Same supplier: replaced automatically. Different (or no) supplier:
-  // the uploader decides, defaulting to replace when either side has no supplier set.
-  const [replaceChoices, setReplaceChoices] = useState<Record<string, boolean>>({})
-  const sameDocument = editing || !value.fileTypeId
-    ? []
-    : files.filter((f) => !f.supersededAt && f.fileTypeId === value.fileTypeId && f.issuer === value.issuer && (f.lotId ?? "") === value.lotId && (!!value.lotId || sameWaitingLot(f.supplierLotNumber, value.supplierLotNumber)))
-  const autoReplaced = sameDocument.filter((f) => (f.supplierId ?? "") === value.supplierId)
-  const otherSuppliers = sameDocument.filter((f) => (f.supplierId ?? "") !== value.supplierId)
-  const willReplace = (f: ItemFile) => replaceChoices[f.id] ?? (!f.supplierId || !value.supplierId)
+  const replaceChoices = useReplaceChoices(value, files, !editing)
 
   useEffect(() => {
     if (!editing) getAllTags().then((t) => setTags(t ?? [])).catch(() => setTags([]))
@@ -93,7 +82,7 @@ const DocumentDialogContent = ({ state }: { state: DocumentDialogState }) => {
           item.id,
           uploaded.map((f) => ({ fileId: f.fileId, name: f.name })),
           fromDocumentForm(value),
-          otherSuppliers.filter(willReplace).map((f) => f.id)
+          replaceChoices.alsoReplaceIds
         )
         await Promise.all(
           uploaded.flatMap((f) => Array.from(tagIds).map((tagId) => addFileTag({ fileId: f.fileId, tagId })))
@@ -139,33 +128,7 @@ const DocumentDialogContent = ({ state }: { state: DocumentDialogState }) => {
 
       <DocumentForm value={value} onChange={setValue} editingId={editing ? state.file.id : undefined} />
 
-      {(autoReplaced.length > 0 || otherSuppliers.length > 0) && (
-        <div className="flex flex-col gap-2 rounded-lg border border-base-300 p-3 text-sm">
-          {autoReplaced.map((f) => (
-            <div key={f.id} className="flex items-center gap-2 text-base-content/70">
-              <TbReplace className="size-4 shrink-0" />
-              <span>Replaces <span className="font-medium text-base-content">{f.file.name}</span>{f.supplier && ` (${f.supplier.name})`}</span>
-            </div>
-          ))}
-          {otherSuppliers.map((f) => (
-            <label key={f.id} className="flex cursor-pointer items-start gap-2">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-sm mt-0.5"
-                checked={willReplace(f)}
-                onChange={(e) => setReplaceChoices((prev) => ({ ...prev, [f.id]: e.target.checked }))}
-              />
-              <span>
-                <span className="font-medium">{f.file.name}</span>
-                {f.supplier ? ` from ${f.supplier.name}` : " (no supplier)"} is also current. Replace it with this upload?
-                <span className="block text-xs text-base-content/50">
-                  Leave unchecked if both suppliers&apos; documents should stay current.
-                </span>
-              </span>
-            </label>
-          ))}
-        </div>
-      )}
+      <ReplaceChoices choices={replaceChoices} />
 
       {!editing && tags.length > 0 && (
         <div className="flex flex-col gap-2">

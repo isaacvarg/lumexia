@@ -336,6 +336,7 @@ model PoAccountingFile {
   fileType        PoAccountingFileType @relation(fields: [fileTypeId], references: [id])
   file            File                 @relation(fields: [fileId], references: [id])
   purchaseOrder   PurchaseOrder        @relation(fields: [purchaseOrderId], references: [id])
+  inboxFiling     InboxFiling?
 
   @@map("po_accounting_files")
 }
@@ -633,6 +634,7 @@ model File {
   CanonChangeRequestSource         CanonChangeRequestSource[]
   ApiUpload                        ApiUpload?
   receiptFiles                     ReceiptFile[]
+  inboxDocument                    InboxDocument?
 
   @@map("files")
 }
@@ -1787,6 +1789,7 @@ model ItemFile {
   purchaseOrder     PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
   derivedFrom       ItemFile?      @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
   derivatives       ItemFile[]     @relation("ItemFileDerivation")
+  inboxFiling       InboxFiling?
 
   @@index([itemId])
   @@index([lotId])
@@ -3107,6 +3110,7 @@ model Supplier {
   ItemFile                             ItemFile[]
   PurchasingRequestSupplierTag         PurchasingRequestSupplierTag[]
   SupplierContact                      SupplierContact[]
+  inboxMessages                        InboxMessage[]
 
   @@map("suppliers")
 }
@@ -3995,6 +3999,10 @@ model User {
   IdentityLinkCode                 IdentityLinkCode[]
   UserRoleAssignment               UserRoleAssignment[]
   Receipt                          Receipt[]
+  inboxMessages                    InboxMessage[]
+  inboxDocumentsChecked            InboxDocument[]                   @relation("InboxDocumentCheckedBy")
+  inboxDocumentsDismissed          InboxDocument[]                   @relation("InboxDocumentDismissedBy")
+  inboxFilings                     InboxFiling[]
 
   @@map("users")
 }
@@ -4006,4 +4014,89 @@ model VerificationToken {
 
   @@id([identifier, token])
   @@map("verification_tokens")
+}
+
+// The document inbox: files that arrive from outside (supplier emails today, Paperless later) wait here
+// until they're filed under an item or purchase order, or dismissed. An agent may file them itself; those
+// filings stay in the inbox until a person checks them.
+
+// One delivery into the inbox, e.g. an email with its attachments. source + sourceId (the Gmail message
+// id) is unique, so sending the same email again adds only files that aren't there yet.
+// supplierId is matched from the sender's email domain against supplier contacts.
+model InboxMessage {
+  id          String    @id @default(uuid())
+  source      String
+  sourceId    String    @map("source_id")
+  threadId    String?   @map("thread_id")
+  sourceUrl   String?   @map("source_url")
+  senderEmail String?   @map("sender_email")
+  senderName  String?   @map("sender_name")
+  subject     String?
+  body        String?
+  receivedAt  DateTime? @map("received_at")
+  supplierId  String?   @map("supplier_id")
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  supplier  Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  createdBy User            @relation(fields: [createdById], references: [id])
+  documents InboxDocument[]
+
+  @@unique([source, sourceId])
+  @@map("inbox_messages")
+}
+
+// status: pending | filed | dismissed. checkedAt is when a person confirmed the filing; filings made by a
+// person are checked when made, the agent's wait for review. suggestion is what the agent proposed when it
+// didn't file (see lib/documentInbox/types.ts).
+model InboxDocument {
+  id            String    @id @default(uuid())
+  messageId     String    @map("message_id")
+  fileId        String    @unique @map("file_id")
+  md5           String
+  status        String    @default("pending")
+  suggestion    Json?
+  suggestedAt   DateTime? @map("suggested_at")
+  checkedAt     DateTime? @map("checked_at")
+  checkedById   String?   @map("checked_by_id")
+  dismissedAt   DateTime? @map("dismissed_at")
+  dismissedById String?   @map("dismissed_by_id")
+  dismissReason String?   @map("dismiss_reason")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  message     InboxMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file        File          @relation(fields: [fileId], references: [id])
+  checkedBy   User?         @relation("InboxDocumentCheckedBy", fields: [checkedById], references: [id])
+  dismissedBy User?         @relation("InboxDocumentDismissedBy", fields: [dismissedById], references: [id])
+  filings     InboxFiling[]
+
+  @@unique([messageId, md5])
+  @@index([status])
+  @@index([md5])
+  @@map("inbox_documents")
+}
+
+// Where an inbox document was filed: an item document or a PO accounting file. Removing that document
+// removes the filing. replacedItemFileIds are the documents the filing replaced, restored if it's undone.
+// via: user | agent; reason is the agent's explanation of the match.
+model InboxFiling {
+  id                  String   @id @default(uuid())
+  inboxDocumentId     String   @map("inbox_document_id")
+  itemFileId          String?  @unique @map("item_file_id")
+  poAccountingFileId  String?  @unique @map("po_accounting_file_id")
+  replacedItemFileIds String[] @map("replaced_item_file_ids")
+  via                 String
+  reason              String?
+  filedById           String   @map("filed_by_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  inboxDocument    InboxDocument     @relation(fields: [inboxDocumentId], references: [id], onDelete: Cascade)
+  itemFile         ItemFile?         @relation(fields: [itemFileId], references: [id], onDelete: Cascade)
+  poAccountingFile PoAccountingFile? @relation(fields: [poAccountingFileId], references: [id], onDelete: Cascade)
+  filedBy          User              @relation(fields: [filedById], references: [id])
+
+  @@index([inboxDocumentId])
+  @@map("inbox_filings")
 }

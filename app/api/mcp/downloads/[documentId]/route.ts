@@ -7,16 +7,17 @@ import { verifyDownload } from "@/lib/apiDownloads";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Agents download item documents here with `curl -o <file> <url>`. The signed link from the
+// Agents download item documents (and inbox documents) here with `curl -o <file> <url>`. The signed link from the
 // get_document_downloads MCP tool is the only credential (see lib/apiDownloads.ts).
 export async function GET(request: NextRequest, { params }: { params: { documentId: string } }) {
   const verdict = await verifyDownload(params.documentId, request.nextUrl.searchParams);
   if (!("ok" in verdict)) return Response.json({ error: verdict.error }, { status: verdict.status });
 
-  const document = await prisma.itemFile.findUnique({
-    where: { id: params.documentId },
-    select: { file: { select: { name: true, bucketName: true, objectName: true, mimeType: true } } },
-  });
+  // an item document, or a document still in the inbox (get_document_inbox)
+  const fileSelect = { file: { select: { name: true, bucketName: true, objectName: true, mimeType: true } } };
+  const document =
+    (await prisma.itemFile.findUnique({ where: { id: params.documentId }, select: fileSelect })) ??
+    (await prisma.inboxDocument.findUnique({ where: { id: params.documentId }, select: fileSelect }));
   if (!document) return Response.json({ error: "Document not found." }, { status: 404 });
 
   const { file } = document;

@@ -1,6 +1,7 @@
 'use server'
 
 import prisma from "@/lib/prisma"
+import { deleteFileIfUnused } from "@/lib/files/deleteFileIfUnused"
 import { AccountingFile } from "./getAccountingFilesByPo"
 
 export const deleteAccountingFile = async (file: AccountingFile) => {
@@ -9,10 +10,5 @@ export const deleteAccountingFile = async (file: AccountingFile) => {
         where: { id: file.id },
     })
 
-    const fileRes = await prisma.file.delete({
-        where: { id: file.file.id }
-    })
-
-
-    return fileRes;
+    return deleteFileIfUnused(file.file.id);
 }
