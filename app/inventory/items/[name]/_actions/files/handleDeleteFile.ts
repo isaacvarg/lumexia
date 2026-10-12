@@ -3,6 +3,7 @@
 import { getUserId } from "@/actions/users/getUserId"
 import { ItemFile } from "./getAllItemFiles"
 import prisma from "@/lib/prisma"
+import { deleteFileIfUnused } from "@/lib/files/deleteFileIfUnused"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
 
 export const handleDeleteFile = async (file: ItemFile) => {
@@ -13,11 +14,7 @@ export const handleDeleteFile = async (file: ItemFile) => {
     }
   });
 
-  await prisma.file.delete({
-    where: {
-      id: file.fileId
-    }
-  });
+  await deleteFileIfUnused(file.fileId);
 
   await createActivityLog('removeFile', 'item', file.itemId, { context: `File ${file.file.name} was removed` });
 
