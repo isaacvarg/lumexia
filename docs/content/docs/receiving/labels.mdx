@@ -10,8 +10,9 @@ its record in Lumexia.
 
 ## Printing labels at receiving
 
-Labels are generated from the **Received** section of an order's receiving page,
-once the line items have been received:
+When a receipt is posted, the confirmation screen has a **Print labels** button
+for the lots it just created. Labels can also be printed later from the
+**Received** section of an order's receiving page:
 
 1. Select one or more received items.
 2. Click the QR button to open the label form.
@@ -31,6 +32,7 @@ Each label is a 4 x 3 inch page containing:
 
 - The **[lot number](/docs/inventory/lot-numbers)**.
 - The **item name**.
+- The **supplier lot**, when it was recorded at receiving.
 - A **QR code** encoding the lot's unique identifier, so scanning it resolves
   straight to the lot.
 - The **timestamp** the label was generated.

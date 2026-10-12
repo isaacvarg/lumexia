@@ -7,6 +7,7 @@ export interface Lot {
     id: string
     itemId: string
     lotNumber: string
+    supplierLotNumber?: string | null
     initialQuantity: number
     uomId: string
     createdAt: string | Date

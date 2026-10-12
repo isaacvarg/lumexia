@@ -9,7 +9,7 @@ import IssueTable from "./IssueTable"
 import SupplierView from "./SupplierView"
 import { useIssueRows } from "./useIssueRows"
 
-const statusOptions: RequirementStatus[] = ["missing", "expired", "stale", "undated", "expiring"]
+const statusOptions: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring"]
 
 type Filters = {
   statuses: RequirementStatus[]

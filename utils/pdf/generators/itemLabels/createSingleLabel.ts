@@ -17,6 +17,10 @@ export const createSingleLabel = async (pdf: jsPDF, lot: LabelData) => {
   pdf.setFontSize(15);
   pdf.text(lot.lot.item.name, 2, 1, { align: "center" });
   pdf.addImage(lot.qr, "PNG", 1.35, 1.25, 1.25, 1.25);
+  if (lot.lot.supplierLotNumber) {
+    pdf.setFontSize(9);
+    pdf.text(`Supplier lot ${lot.lot.supplierLotNumber}`, 2, 2.68, { align: "center" });
+  }
   pdf.setFontSize(5);
   pdf.text(timestamp, 2, 2.85, { align: "center" });
 };

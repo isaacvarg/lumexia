@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { sameSupplierLot } from "./supplierLots";
 import {
   DocumentRecord,
   DocumentStatus,
@@ -18,8 +19,9 @@ const statusRank: Record<RequirementStatus, number> = {
   expiring: 2,
   undated: 3,
   stale: 4,
-  expired: 5,
-  missing: 6,
+  mismatch: 5,
+  expired: 6,
+  missing: 7,
 };
 
 // Item type outweighs procurement type, which outweighs the sold condition, so e.g.
@@ -124,11 +126,15 @@ export const evaluateRequirement = (
   }
 
   const evaluatedLots: EvaluatedLot[] = lots.map((lot) => {
-    const documents = evaluateDocuments(
-      candidates.filter((d) => d.lotId === lot.id),
-      requirement,
-      now
+    const lotDocs = candidates.filter((d) => d.lotId === lot.id);
+    const mismatched = new Set(
+      lotDocs
+        .filter((d) => d.supplierLotNumber && lot.supplierLotNumber && !sameSupplierLot(d.supplierLotNumber, lot.supplierLotNumber))
+        .map((d) => d.id)
     );
+    const documents = evaluateDocuments(lotDocs, requirement, now)
+      .map((d) => (mismatched.has(d.documentId) && statusRank[d.status] < statusRank.mismatch ? { ...d, status: "mismatch" as const } : d))
+      .sort((a, b) => statusRank[a.status] - statusRank[b.status]);
     return {
       lotId: lot.id,
       lotNumber: lot.lotNumber,

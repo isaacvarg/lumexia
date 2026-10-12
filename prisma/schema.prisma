@@ -336,6 +336,7 @@ model PoAccountingFile {
   fileType        PoAccountingFileType @relation(fields: [fileTypeId], references: [id])
   file            File                 @relation(fields: [fileId], references: [id])
   purchaseOrder   PurchaseOrder        @relation(fields: [purchaseOrderId], references: [id])
+  inboxFiling     InboxFiling?
 
   @@map("po_accounting_files")
 }
@@ -632,6 +633,8 @@ model File {
   experimentSampleFiles            ExperimentSampleFile[]
   CanonChangeRequestSource         CanonChangeRequestSource[]
   ApiUpload                        ApiUpload?
+  receiptFiles                     ReceiptFile[]
+  inboxDocument                    InboxDocument?
 
   @@map("files")
 }
@@ -1500,6 +1503,11 @@ model Lot {
   lotNumber         String             @map("lot_number")
   initialQuantity   Float              @map("initial_quantity")
   uomId             String             @map("uom_id")
+  // what the supplier printed on the container, captured at receiving
+  supplierLotNumber String?            @map("supplier_lot_number")
+  expiresAt         DateTime?          @map("expires_at")
+  manufacturedAt    DateTime?          @map("manufactured_at")
+  receiptLineId     String?            @map("receipt_line_id")
   item              Item               @relation(fields: [itemId], references: [id])
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
@@ -1511,8 +1519,69 @@ model Lot {
   purchaseOrderItem PurchaseOrderItem?
   ItemFile          ItemFile[]
   BprStaging        BprStaging[]
+  receiptLine       ReceiptLine?       @relation(fields: [receiptLineId], references: [id])
 
+  @@index([receiptLineId])
   @@map("lots")
+}
+
+// One delivery checked in at the dock against a purchase order. Each line is a PO line that was in the
+// delivery: its inspection answers and the lots it created (one per supplier lot).
+model Receipt {
+  id                String        @id @default(uuid())
+  purchaseOrderId   String        @map("purchase_order_id")
+  receivedById      String        @map("received_by_id")
+  packingSlipNumber String?       @map("packing_slip_number")
+  carrier           String?
+  notes             String?
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  receivedBy        User          @relation(fields: [receivedById], references: [id])
+  lines             ReceiptLine[]
+  files             ReceiptFile[]
+
+  @@index([purchaseOrderId])
+  @@map("receipts")
+}
+
+// checks: { [checkKey]: "pass" | "fail" | "na" }, keys from lib/receiving/checks.ts.
+// openQuantity is what was still expected on the PO line, in its purchase UOM, so short and over
+// receipts can be told apart later.
+model ReceiptLine {
+  id                  String            @id @default(uuid())
+  receiptId           String            @map("receipt_id")
+  purchaseOrderItemId String            @map("purchase_order_item_id")
+  openQuantity        Float             @map("open_quantity")
+  receivedQuantity    Float             @map("received_quantity")
+  checks              Json
+  hasIssue            Boolean           @default(false) @map("has_issue")
+  issueNote           String?           @map("issue_note")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+  receipt             Receipt           @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+  lots                Lot[]
+  files               ReceiptFile[]
+
+  @@index([receiptId])
+  @@map("receipt_lines")
+}
+
+// kind: packingSlip | photo. Photos usually belong to a line (damage, labels); the packing slip to the receipt.
+model ReceiptFile {
+  id            String       @id @default(uuid())
+  receiptId     String       @map("receipt_id")
+  receiptLineId String?      @map("receipt_line_id")
+  fileId        String       @map("file_id")
+  kind          String
+  createdAt     DateTime     @default(now()) @map("created_at")
+  receipt       Receipt      @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  receiptLine   ReceiptLine? @relation(fields: [receiptLineId], references: [id], onDelete: Cascade)
+  file          File         @relation(fields: [fileId], references: [id])
+
+  @@index([receiptId])
+  @@map("receipt_files")
 }
 
 model ReorderingRule {
@@ -1695,30 +1764,36 @@ model ItemFileType {
 // sets supersededAt on the previous one. derivedFrom points an internal (rebranded) document at the
 // supplier document it was based on, so it can be flagged stale when that source is superseded.
 model ItemFile {
-  id            String       @id @default(uuid())
-  fileTypeId    String       @map("file_type_id")
-  fileId        String       @map("file_id")
-  itemId        String       @map("item_id")
-  lotId         String?      @map("lot_id")
-  supplierId    String?      @map("supplier_id")
-  issuer        String       @default("supplier")
-  issuedAt      DateTime?    @map("issued_at")
-  expiresAt     DateTime?    @map("expires_at")
-  revision      String?
-  supersededAt  DateTime?    @map("superseded_at")
-  derivedFromId String?      @map("derived_from_id")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  fileType      ItemFileType @relation(fields: [fileTypeId], references: [id])
-  file          File         @relation(fields: [fileId], references: [id])
-  item          Item         @relation(fields: [itemId], references: [id])
-  lot           Lot?         @relation(fields: [lotId], references: [id])
-  supplier      Supplier?    @relation(fields: [supplierId], references: [id])
-  derivedFrom   ItemFile?    @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
-  derivatives   ItemFile[]   @relation("ItemFileDerivation")
+  id                String         @id @default(uuid())
+  fileTypeId        String         @map("file_type_id")
+  fileId            String         @map("file_id")
+  itemId            String         @map("item_id")
+  lotId             String?        @map("lot_id")
+  supplierId        String?        @map("supplier_id")
+  // the lot printed on a supplier document; matches it to our lot when that lot has no document yet
+  supplierLotNumber String?        @map("supplier_lot_number")
+  purchaseOrderId   String?        @map("purchase_order_id")
+  issuer            String         @default("supplier")
+  issuedAt          DateTime?      @map("issued_at")
+  expiresAt         DateTime?      @map("expires_at")
+  revision          String?
+  supersededAt      DateTime?      @map("superseded_at")
+  derivedFromId     String?        @map("derived_from_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  fileType          ItemFileType   @relation(fields: [fileTypeId], references: [id])
+  file              File           @relation(fields: [fileId], references: [id])
+  item              Item           @relation(fields: [itemId], references: [id])
+  lot               Lot?           @relation(fields: [lotId], references: [id])
+  supplier          Supplier?      @relation(fields: [supplierId], references: [id])
+  purchaseOrder     PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  derivedFrom       ItemFile?      @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
+  derivatives       ItemFile[]     @relation("ItemFileDerivation")
+  inboxFiling       InboxFiling?
 
   @@index([itemId])
   @@index([lotId])
+  @@index([supplierLotNumber])
   @@map("item_files")
 }
 
@@ -2707,6 +2782,7 @@ model PurchaseOrderItem {
   lot                   Lot?                      @relation(fields: [lotId], references: [id])
   details               PurchaseOrderItemDetail[]
   qcRecords             QcRecord[]
+  receiptLines          ReceiptLine[]
 
   @@map("purchase_order_items")
 }
@@ -2790,6 +2866,8 @@ model PurchaseOrder {
   poPublicNotes         PoPublicNote[]
   NotionPurchaseOrder   NotionPurchaseOrder[]
   RequestPurchaseOrder  RequestPurchaseOrder[]
+  receipts              Receipt[]
+  itemFiles             ItemFile[]
 
   @@map("purchase_orders")
 }
@@ -3032,6 +3110,7 @@ model Supplier {
   ItemFile                             ItemFile[]
   PurchasingRequestSupplierTag         PurchasingRequestSupplierTag[]
   SupplierContact                      SupplierContact[]
+  inboxMessages                        InboxMessage[]
 
   @@map("suppliers")
 }
@@ -3919,6 +3998,11 @@ model User {
   LinkedIdentity                   LinkedIdentity[]
   IdentityLinkCode                 IdentityLinkCode[]
   UserRoleAssignment               UserRoleAssignment[]
+  Receipt                          Receipt[]
+  inboxMessages                    InboxMessage[]
+  inboxDocumentsChecked            InboxDocument[]                   @relation("InboxDocumentCheckedBy")
+  inboxDocumentsDismissed          InboxDocument[]                   @relation("InboxDocumentDismissedBy")
+  inboxFilings                     InboxFiling[]
 
   @@map("users")
 }
@@ -3930,4 +4014,89 @@ model VerificationToken {
 
   @@id([identifier, token])
   @@map("verification_tokens")
+}
+
+// The document inbox: files that arrive from outside (supplier emails today, Paperless later) wait here
+// until they're filed under an item or purchase order, or dismissed. An agent may file them itself; those
+// filings stay in the inbox until a person checks them.
+
+// One delivery into the inbox, e.g. an email with its attachments. source + sourceId (the Gmail message
+// id) is unique, so sending the same email again adds only files that aren't there yet.
+// supplierId is matched from the sender's email domain against supplier contacts.
+model InboxMessage {
+  id          String    @id @default(uuid())
+  source      String
+  sourceId    String    @map("source_id")
+  threadId    String?   @map("thread_id")
+  sourceUrl   String?   @map("source_url")
+  senderEmail String?   @map("sender_email")
+  senderName  String?   @map("sender_name")
+  subject     String?
+  body        String?
+  receivedAt  DateTime? @map("received_at")
+  supplierId  String?   @map("supplier_id")
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  supplier  Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  createdBy User            @relation(fields: [createdById], references: [id])
+  documents InboxDocument[]
+
+  @@unique([source, sourceId])
+  @@map("inbox_messages")
+}
+
+// status: pending | filed | dismissed. checkedAt is when a person confirmed the filing; filings made by a
+// person are checked when made, the agent's wait for review. suggestion is what the agent proposed when it
+// didn't file (see lib/documentInbox/types.ts).
+model InboxDocument {
+  id            String    @id @default(uuid())
+  messageId     String    @map("message_id")
+  fileId        String    @unique @map("file_id")
+  md5           String
+  status        String    @default("pending")
+  suggestion    Json?
+  suggestedAt   DateTime? @map("suggested_at")
+  checkedAt     DateTime? @map("checked_at")
+  checkedById   String?   @map("checked_by_id")
+  dismissedAt   DateTime? @map("dismissed_at")
+  dismissedById String?   @map("dismissed_by_id")
+  dismissReason String?   @map("dismiss_reason")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  message     InboxMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file        File          @relation(fields: [fileId], references: [id])
+  checkedBy   User?         @relation("InboxDocumentCheckedBy", fields: [checkedById], references: [id])
+  dismissedBy User?         @relation("InboxDocumentDismissedBy", fields: [dismissedById], references: [id])
+  filings     InboxFiling[]
+
+  @@unique([messageId, md5])
+  @@index([status])
+  @@index([md5])
+  @@map("inbox_documents")
+}
+
+// Where an inbox document was filed: an item document or a PO accounting file. Removing that document
+// removes the filing. replacedItemFileIds are the documents the filing replaced, restored if it's undone.
+// via: user | agent; reason is the agent's explanation of the match.
+model InboxFiling {
+  id                  String   @id @default(uuid())
+  inboxDocumentId     String   @map("inbox_document_id")
+  itemFileId          String?  @unique @map("item_file_id")
+  poAccountingFileId  String?  @unique @map("po_accounting_file_id")
+  replacedItemFileIds String[] @map("replaced_item_file_ids")
+  via                 String
+  reason              String?
+  filedById           String   @map("filed_by_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  inboxDocument    InboxDocument     @relation(fields: [inboxDocumentId], references: [id], onDelete: Cascade)
+  itemFile         ItemFile?         @relation(fields: [itemFileId], references: [id], onDelete: Cascade)
+  poAccountingFile PoAccountingFile? @relation(fields: [poAccountingFileId], references: [id], onDelete: Cascade)
+  filedBy          User              @relation(fields: [filedById], references: [id])
+
+  @@index([inboxDocumentId])
+  @@map("inbox_filings")
 }

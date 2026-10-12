@@ -1,6 +1,6 @@
 ---
 title: Workflow
-description: Finding what needs receiving, receiving items fully or partially, unit conversions, and the lots that result.
+description: Finding what needs receiving, checking a delivery in at the dock (inspection, supplier lots, documents), unit conversions, and the lots that result.
 ---
 
 Receiving works through purchase orders that are on their way in. The dashboard
@@ -43,54 +43,79 @@ awaiting orders, so incoming deliveries are visible without opening the module.
 
 ## The order's receiving page
 
-Opening an order shows its line items split into two sections:
+Opening an order shows three sections:
 
-- **Receivables:** line items that have not been received yet. This is the
-  action area, where you count goods in.
-- **Received:** line items that have already been received. This is where you
-  print [labels](/docs/receiving/labels) for the resulting lots.
+- **Expected:** the lines still on their way. This is where you start a
+  receipt.
+- **Deliveries:** every delivery received against the order, with the
+  inspection result, the lots it created and anything that still needs a look.
+- **Received:** the received lines, where you can reprint
+  [labels](/docs/receiving/labels).
 
-### The item name shown in the table
+### The item name shown
 
 Suppliers often refer to an item by their own name or catalogue code. When a
 [supplier alias](/docs/inventory/items#aliases) exists for this order's supplier
-and item, the table shows the supplier's name for the item; otherwise it shows
-your true item name. This helps warehouse staff be able to identify what is being received, as the supplier name is likely what be on physical shipment.
+and item, receiving shows the supplier's name, since that's what is on the
+shipment, with your item name underneath.
 
-When an item has other names on file, a small icon appears
-next to it: hover over the icon to see an **Aliases** tooltip listing every
-other name the item is known by, including your true item name.
+## Receiving a delivery
 
-## Receiving items
+The receiving screen is built for a tablet at the dock. Tap the lines that
+arrived under **Expected**, then **Receive**. A full-screen flow walks through
+the delivery:
 
-In the **Receivables** section, select one or more line items. Two actions
-appear:
+1. **Delivery.** The packing slip number, carrier, and a photo or PDF of the
+   packing slip or bill of lading (all optional). Check the outside of the
+   pallets before signing for the freight.
+2. For each line in the delivery:
+   - **Inspect.** Answer each check: right item, packaging intact, seals
+     intact, supplier labels, count matches the slip. **Everything looks OK**
+     answers them all at once. A **Problem** asks what's wrong, and a photo is
+     encouraged. It doesn't stop the receipt; the line is flagged.
+   - **Supplier lots.** One row per supplier lot in the delivery, with the
+     supplier's lot number as printed on the container, the quantity in the
+     purchase unit, and optionally the expiry (or retest) and manufacture
+     dates. Each row becomes its own lot here with its own labels. The total
+     shows how it compares with what was expected.
+   - **Documents.** What the item's [document
+     requirements](/docs/inventory/item-documents) expect for a received lot,
+     usually the COA. Documents already on file for the supplier lot (for
+     example a COA the supplier emailed ahead) are matched and attached
+     automatically. Photograph or upload paperwork that came in the box. Item
+     documents that need attention, like an expired SDS, are listed too.
+3. **Review**, then **Receive**. Afterwards, print labels straight from the
+   confirmation.
 
-- **Fully Receive:** books in the entire ordered quantity of each selected line.
-- **Partially Receive:** lets you enter a smaller quantity for each selected
-  line.
+### Nothing blocks a receipt
 
-### Fully receiving
+Problems are recorded and flagged on the delivery and the lot instead of
+stopping the receiver:
 
-**Fully Receive** counts the full ordered quantity of every selected line into
-stock. If you receive every remaining line on the order, the order moves to
-**Received**. If you fully receive only some lines and leave others, the order
-moves to **Partially Received** and stays on the Awaiting tab until the rest
-arrives.
+| Flag | Meaning |
+| --- | --- |
+| **Inspection issue** | A check failed at the dock. The note and photos are on the delivery. |
+| **More than ordered** | More arrived than was still expected on the line. |
+| **Rest still expected** | Less arrived; the remainder stays open on the order. |
+| **No supplier lot** | The supplier's lot number wasn't recorded. |
+| **Docs missing** | A required lot document (e.g. the COA) isn't on file yet. |
+| **COA lot mismatch** | A document on the lot names a different supplier lot. |
 
-### Partially receiving
+The document flags are worked out from what's on file now, so they clear by
+themselves once the right document is filed. Agents can list recent flagged
+deliveries with [`get_receiving_issues`](/docs/mcp#receiving-alerts).
 
-Choose **Partially Receive** when a line arrives incomplete. Each selected item
-gets a **Quantity** field, prefilled with the full ordered amount and labeled
-with the purchase unit. Enter what actually arrived and submit.
+### What the order does
 
-When you receive less than the ordered quantity, the line splits: the amount you
-received is booked into stock, and a new line item is created for the remainder
-so it stays outstanding on the order. The order moves to **Partially Received**,
-and the leftover line waits on the Awaiting tab for the next delivery.
+- A line with several supplier lots is split into one line per lot, so each
+  line keeps exactly one lot.
+- Receiving less than expected leaves the rest on a new line that stays on the
+  Awaiting tab for the next delivery. Expected delivery dates carry over.
+- When nothing is left to receive the order moves to **Received**, otherwise
+  to **Partially Received**.
 
 <Callout>
-  Receiving a delivery also updates any [procurement
+  Receiving also updates any [procurement
   requests](/docs/purchasing/procurement-requests) linked to the order, marking
   them Delivered or Partial Delivery so the original requester can see progress.
 </Callout>
@@ -110,28 +135,24 @@ defined, see [Unit of Measurement
 Conversions](/docs/inventory/uom-conversions).
 
 If no conversion exists for the units involved, the line cannot be received and
-shows a red **Conversion Error** button instead. Clicking it opens the discrete
+shows a red **Set up conversion** button instead. Clicking it opens the discrete
 conversion form for that item and supplier, pre-filled with the purchase unit;
 once you save the conversion (for example, `1 drum = 450 lb`), return to
 receiving and the line can be received normally.
 
 ## The lots that result
 
-Each received line becomes a new [lot](/docs/inventory/item-details#lots) of the
-item:
+Each supplier lot received becomes a new [lot](/docs/inventory/item-details#lots)
+of the item:
 
 - The lot's quantity is stored in the item's **inventory unit of measurement**,
   after any conversion above.
 - A [lot number](/docs/inventory/lot-numbers) is generated automatically from the
   item's reference code and the date.
-- The lot records its origin as this purchase order, so you can always trace a
-  lot back to the receipt that created it.
+- It keeps the **supplier lot**, expiry and manufacture dates entered at the
+  dock, and records its origin as this purchase order and delivery.
 
-<Callout>
-  Receiving does not capture an expiry date. If you track expiry, record it
-  separately; lots created from receiving carry a lot number, quantity, and
-  origin, but no expiration field.
-</Callout>
-
-Once a line is received, it moves to the **Received** section, where you can
-generate [labels](/docs/receiving/labels) for its lot.
+The lot's **Receiving** card on the item page shows how it came in (who received
+it, the inspection, photos and flags) and lets you correct the supplier lot or
+dates later. Setting a supplier lot there also attaches any documents that were
+waiting for it.

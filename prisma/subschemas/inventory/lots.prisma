@@ -9,6 +9,10 @@ model Lot {
     lotNumber       String            @map("lot_number")
     initialQuantity Float             @map("initial_quantity")
     uomId           String            @map("uom_id")
+    supplierLotNumber String?         @map("supplier_lot_number")
+    expiresAt       DateTime?         @map("expires_at")
+    manufacturedAt  DateTime?         @map("manufactured_at")
+    receiptLineId   String?           @map("receipt_line_id")
     item            Item              @relation(fields: [itemId], references: [id])
     createdAt       DateTime          @default(now()) @map("created_at")
     updatedAt       DateTime          @updatedAt @map("updated_at")
@@ -18,6 +22,7 @@ model Lot {
     qcRecords       QcRecord[]
     notes LotNote[]
     purchaseOrderItem PurchaseOrderItem?
+    receiptLine     ReceiptLine?      @relation(fields: [receiptLineId], references: [id])
 
     @@map("lots")
 }

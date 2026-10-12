@@ -8,6 +8,7 @@ import Card from "@/components/Card"
 import { useEffect, useState } from "react"
 import TransactionsTable from "./TransactionsTable"
 import LotBasics from "./LotBasics"
+import LotReceiving from "./LotReceiving"
 import LotNotes from "./LotNotes"
 import Alert from "@/components/Alert"
 import { qcExaminationTypes } from "@/configs/staticRecords/qcExaminationTypes"
@@ -109,6 +110,7 @@ const LotDetails = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
           <LotBasics />
+          <LotReceiving />
           <LotNotes />
 
 

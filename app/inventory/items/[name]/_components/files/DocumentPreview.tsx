@@ -40,6 +40,7 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
       issuer: file.issuer === "internal" ? "internal" : "supplier",
       supplierId: file.supplierId ?? "",
       lotId: file.lotId ?? "",
+      supplierLotNumber: file.supplierLotNumber ?? "",
     })
 
   return (
@@ -78,7 +79,8 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
           <dl className="divide-y divide-base-300">
             <Detail label="Issued by">{issuerLabel(file.issuer)}</Detail>
             <Detail label="Supplier">{file.supplier?.name ?? "—"}</Detail>
-            <Detail label="Lot">{file.lot?.lotNumber ?? "Not lot-specific"}</Detail>
+            <Detail label="Lot">{file.lot?.lotNumber ?? (file.supplierLotNumber ? "Waiting for its lot" : "Not lot-specific")}</Detail>
+            {file.supplierLotNumber && <Detail label="Supplier lot"><span className="font-mono">{file.supplierLotNumber}</span></Detail>}
             <Detail label="Issue date">{formatDate(file.issuedAt) ?? "—"}</Detail>
             <Detail label="Expiry date">{formatDate(file.expiresAt) ?? "From requirement"}</Detail>
             <Detail label="Revision">{file.revision ?? "—"}</Detail>

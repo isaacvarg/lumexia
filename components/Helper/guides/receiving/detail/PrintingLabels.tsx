@@ -4,9 +4,9 @@ const PrintingLabels = () => {
   return (
     <GuideTypo.Wrapper>
       <GuideTypo.Lead>
-        Once a line is received it moves to the{" "}
-        <span className="font-semibold">Received</span> section, where you can print QR
-        labels that tie the physical stock back to its lot.
+        Right after receiving, <span className="font-semibold">Print labels</span> on the
+        confirmation prints QR labels for the new lots. You can also print them later
+        from the <span className="font-semibold">Received</span> section.
       </GuideTypo.Lead>
 
       <GuideTypo.Section>Printing</GuideTypo.Section>
@@ -26,8 +26,8 @@ const PrintingLabels = () => {
       <GuideTypo.Section>What a label shows</GuideTypo.Section>
       <GuideTypo.List>
         <GuideTypo.Item>
-          The lot number, the item name, a QR code encoding the lot&apos;s unique id,
-          and the generation timestamp.
+          The lot number, the item name, the supplier lot (when recorded), a QR code
+          encoding the lot&apos;s unique id, and the generation timestamp.
         </GuideTypo.Item>
       </GuideTypo.List>
 

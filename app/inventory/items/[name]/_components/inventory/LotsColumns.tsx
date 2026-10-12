@@ -18,6 +18,10 @@ export const lotsColumns = [
     },
     cell: (row) => row.row.original.lotNumber
   }),
+  columnHelper.accessor('supplierLotNumber', {
+    header: 'Supplier Lot',
+    cell: (row) => <span className="font-mono">{row.getValue() ?? ''}</span>,
+  }),
   columnHelper.accessor('totalQuantityOnHand', {
     header: 'On Hand (lbs)',
     cell: (row) => toFracitonalDigits.weight(row.row.original.totalQuantityOnHand),

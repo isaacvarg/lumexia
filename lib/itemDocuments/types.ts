@@ -6,9 +6,10 @@ export type DocumentIssuer = "supplier" | "internal";
 export type RequirementIssuer = DocumentIssuer | "any";
 export type RequirementLotOrigin = "received" | "produced" | "both";
 
-// Per document, from best to worst: current, expiring, undated, stale, expired.
+// Per document, from best to worst: current, expiring, undated, stale, mismatch, expired.
+// mismatch: a lot document whose printed supplier lot differs from the lot's supplier lot.
 // A requirement adds missing (no candidate document) and, for lot scope, notApplicable (no lots to check).
-export type DocumentStatus = "current" | "expiring" | "undated" | "stale" | "expired";
+export type DocumentStatus = "current" | "expiring" | "undated" | "stale" | "mismatch" | "expired";
 export type RequirementStatus = DocumentStatus | "missing" | "notApplicable";
 
 export type Requirement = Pick<
@@ -41,6 +42,7 @@ export type DocumentRecord = {
   issuer: string;
   lotId: string | null;
   supplierId: string | null;
+  supplierLotNumber: string | null;
   issuedAt: Date | null;
   expiresAt: Date | null;
   supersededAt: Date | null;
@@ -50,6 +52,7 @@ export type DocumentRecord = {
 export type LotRecord = {
   id: string;
   lotNumber: string;
+  supplierLotNumber: string | null;
   originType: string | null;
   createdAt: Date;
   onHand: number;

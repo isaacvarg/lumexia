@@ -14,6 +14,7 @@ export const getItemDocuments = async (itemId: string) => {
       select: {
         id: true,
         lotNumber: true,
+        supplierLotNumber: true,
         createdAt: true,
         lotOrigin: {
           select: {
@@ -49,6 +50,7 @@ export const getItemDocuments = async (itemId: string) => {
     lots: lots.map((l) => ({
       id: l.id,
       lotNumber: l.lotNumber,
+      supplierLotNumber: l.supplierLotNumber,
       createdAt: l.createdAt,
       originType: l.lotOrigin?.originType ?? null,
       supplier: l.lotOrigin?.purchaseOrder?.supplier ?? null,
