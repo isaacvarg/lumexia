@@ -28,9 +28,14 @@ const demoCredentials = Credentials({
   },
 });
 
+// Discord now sends `iss` on the authorization response (RFC 9207). The
+// built-in provider has no issuer, so Auth.js checks it against its
+// placeholder and rejects the callback.
+const discord = Discord({ issuer: "https://discord.com" });
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: isDemo ? [Discord, demoCredentials] : [Discord],
+  providers: isDemo ? [discord, demoCredentials] : [discord],
   ...(isDemo ? { session: { strategy: "jwt" as const } } : {}),
   callbacks: {
     async signIn({ user }) {
