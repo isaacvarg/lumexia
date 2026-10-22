@@ -13,11 +13,16 @@ grant any ability to change canon data. Access is granted per
 
 Each data type can grant two capabilities:
 
-- **Edit** — can propose changes (open change requests). Not applicable to
-  **Linked to Lumexia** data types, since those are accepted from their
-  source rather than edited directly.
+- **Edit** — can propose changes (open change requests). On a **Linked to
+  Lumexia** data type, which can't be edited directly, editors can propose
+  accepting the source value, and a reviewer approves it.
 - **Review** — can approve or reject proposed changes. For a linked data
-  type, this is the ability to accept changes made at the Lumexia source.
+  type, a reviewer accepting the source value accepts it right away (their
+  proposal counts as their approval).
+
+Agents that propose changes through an API key (see
+[MCP](/docs/mcp#canon-proposals)) should hold **Edit** only, never **Review**.
+The Permissions panel warns when a user with such a key is a reviewer.
 
 Permissions are managed from a data type's drawer, in the **Permissions**
 panel that appears once it's saved. Add or remove a team or individual user

@@ -4,6 +4,7 @@ import { getAllUsers } from "@/actions/users/getAllUsers";
 import itemTypeActions from "@/actions/inventory/itemTypeActions";
 import procurementTypeActions from "@/actions/inventory/procurementTypeActions";
 import { users as staticUsers } from "@/configs/staticRecords/users";
+import { listProposingUserIds } from "@/lib/apiKeys";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
 import DataTypesView from "./_components/DataTypesView";
@@ -11,7 +12,7 @@ import Groups from "./_components/groups/Groups";
 import Teams from "./_components/teams/Teams";
 
 const CanonSettingsPage = async () => {
-  const [dataTypes, groups, teams, lookups, resolvers, users, itemTypes, procurementTypes] = await Promise.all([
+  const [dataTypes, groups, teams, lookups, resolvers, users, itemTypes, procurementTypes, agentUserIds] = await Promise.all([
     canonActions.dataTypes.getAll(),
     canonActions.groups.getAll(),
     canonActions.teams.getAll(),
@@ -20,12 +21,13 @@ const CanonSettingsPage = async () => {
     getAllUsers(),
     itemTypeActions.getAll(),
     procurementTypeActions.getAll(),
+    listProposingUserIds(),
   ]);
 
   const activeUsers = users
     // the Lumexia bot user can't edit or review
     .filter((u) => !u.disabled && u.id !== staticUsers.lumexia)
-    .map(({ id, name, image }) => ({ id, name, image }));
+    .map(({ id, name, image }) => ({ id, name, image, isAgent: agentUserIds.includes(id) }));
 
   return (
     <div className="flex flex-col gap-y-6">

@@ -3,7 +3,7 @@ import Card from "@/components/Card"
 import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
 import useToast from "@/hooks/useToast"
-import type { ApiKeyListing } from "@/lib/apiKeys"
+import type { ApiKeyListing, GrantableScope } from "@/lib/apiKeys"
 import { ApiKeyExpiry, createMyApiKey, revokeApiKey, setApiKeyAccess } from "@/actions/users/apiKeys"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
@@ -34,8 +34,50 @@ type Props = {
   isAdmin?: boolean
 }
 
-const hasWrite = (key: ApiKeyListing) => key.scopes.includes('write')
-const hasDelegate = (key: ApiKeyListing) => key.scopes.includes('delegate')
+// Access beyond reading, granted by a system admin. Order is display order.
+const grants: {
+  scope: GrantableScope
+  label: string
+  description: string
+  badge: string
+  enableConfirm: (name: string) => string
+  disableConfirm: (name: string) => string
+}[] = [
+  {
+    scope: 'write',
+    label: 'Write',
+    description: 'File item documents and approve or reject pricing as the key\'s owner.',
+    badge: 'badge-warning',
+    enableConfirm: (name) => `Allow ${name} to write? Agents using it can file item documents and approve or reject pricing as its owner.`,
+    disableConfirm: (name) => `Remove write access from ${name}? Agents using it can no longer change documents or review pricing as its owner.`,
+  },
+  {
+    scope: 'delegate',
+    label: 'Act for linked users',
+    description: 'For a shared agent like Hermes: it acts as whoever messages it from a linked account (WhatsApp, Discord, Telegram, Slack, a Hermes profile).',
+    badge: 'badge-info',
+    enableConfirm: (name) => `Let ${name} act for linked users? An agent using it can act as anyone who linked an account to Lumexia, within what this key allows.`,
+    disableConfirm: (name) => `Stop ${name} acting for linked users?`,
+  },
+  {
+    scope: 'propose',
+    label: 'Propose Canon changes',
+    description: 'Open Canon change requests, add evidence, and withdraw its own requests. It can never approve or reject: give the key\'s user Edit, never Review.',
+    badge: 'badge-accent',
+    enableConfirm: (name) => `Let ${name} propose Canon changes? Every proposal still needs a reviewer. Make sure its user holds Edit only, never Review.`,
+    disableConfirm: (name) => `Stop ${name} proposing Canon changes?`,
+  },
+  {
+    scope: 'alias:write',
+    label: 'Edit aliases',
+    description: 'Add, rename and remove item aliases (e.g. WooCommerce ids) with the existing alias types.',
+    badge: 'badge-secondary',
+    enableConfirm: (name) => `Let ${name} add, rename and remove item aliases?`,
+    disableConfirm: (name) => `Stop ${name} editing item aliases?`,
+  },
+]
+
+const has = (key: ApiKeyListing, scope: GrantableScope) => key.scopes.includes(scope)
 
 const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
 
@@ -44,8 +86,7 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
   const [isCreating, setIsCreating] = useState(false)
   const [newKey, setNewKey] = useState<{ name: string, key: string } | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
-  const [allowWrite, setAllowWrite] = useState(false)
-  const [allowDelegate, setAllowDelegate] = useState(false)
+  const [selectedGrants, setSelectedGrants] = useState<GrantableScope[]>([])
   const [origin, setOrigin] = useState('')
 
   useEffect(() => setOrigin(window.location.origin), [])
@@ -54,11 +95,10 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
     defaultValues: { name: '', expiry: 'never' as ApiKeyExpiry },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const { apiKey, key } = await createMyApiKey({ ...value, allowWrite: isAdmin && allowWrite, allowDelegate: isAdmin && allowDelegate })
+        const { apiKey, key } = await createMyApiKey({ ...value, grants: isAdmin ? selectedGrants : [] })
         setNewKey({ name: apiKey.name, key })
         setIsCreating(false)
-        setAllowWrite(false)
-        setAllowDelegate(false)
+        setSelectedGrants([])
         formApi.reset()
         router.refresh()
       } catch (err: any) {
@@ -89,33 +129,19 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
     }
   }
 
-  const toggleWrite = async (key: ApiKeyListing) => {
-    const enable = !hasWrite(key)
-    const message = enable
-      ? `Allow ${key.name} to write? Agents using it can file item documents and approve or reject pricing as its owner.`
-      : `Make ${key.name} read-only? Agents using it can no longer change documents or review pricing as its owner.`
-    if (!confirm(message)) return
+  const toggleGrant = async (key: ApiKeyListing, grant: (typeof grants)[number]) => {
+    const enable = !has(key, grant.scope)
+    if (!confirm(enable ? grant.enableConfirm(key.name) : grant.disableConfirm(key.name))) return
     try {
-      await setApiKeyAccess(key.id, 'write', enable)
+      await setApiKeyAccess(key.id, grant.scope, enable)
       router.refresh()
     } catch (err: any) {
       toast('Could not change access', err?.message ?? 'Something went wrong', 'error')
     }
   }
 
-  const toggleDelegate = async (key: ApiKeyListing) => {
-    const enable = !hasDelegate(key)
-    const message = enable
-      ? `Let ${key.name} act for linked users? An agent using it (e.g. Hermes on WhatsApp) can approve or reject pricing as anyone who linked their number to Lumexia.`
-      : `Stop ${key.name} acting for linked users?`
-    if (!confirm(message)) return
-    try {
-      await setApiKeyAccess(key.id, 'delegate', enable)
-      router.refresh()
-    } catch (err: any) {
-      toast('Could not change access', err?.message ?? 'Something went wrong', 'error')
-    }
-  }
+  const toggleSelected = (scope: GrantableScope, checked: boolean) =>
+    setSelectedGrants((current) => checked ? [...current, scope] : current.filter((s) => s !== scope))
 
   const claudeCommand = newKey
     ? `claude mcp add --transport http lumexia ${origin}/api/mcp --header "Authorization: Bearer ${newKey.key}"`
@@ -134,9 +160,9 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
 
       <p className="text-base-content/70">
         API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
-        {canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin gives
-        them write access, which lets agents file item documents and review pricing. A shared agent like Hermes
-        can instead be allowed to act for linked users: people who linked their WhatsApp number below.
+        {canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin grants
+        more: writing documents and pricing reviews, proposing Canon changes, editing aliases, or, for a shared
+        agent like Hermes, acting for people who linked their accounts below.
       </p>
 
       {newKey && (
@@ -190,25 +216,20 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
               {(field) => <field.SelectField label="Expires" labelClass="soft" options={expiryOptions} />}
             </form.AppField>
 
-            {isAdmin && (
-              <label className="flex cursor-pointer items-start gap-3">
-                <input type="checkbox" className="checkbox mt-0.5" checked={allowWrite} onChange={(e) => setAllowWrite(e.target.checked)} />
+            {isAdmin && grants.map(grant => (
+              <label key={grant.scope} className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  className="checkbox mt-0.5"
+                  checked={selectedGrants.includes(grant.scope)}
+                  onChange={(e) => toggleSelected(grant.scope, e.target.checked)}
+                />
                 <span className="flex flex-col">
-                  <span className="font-medium">Allow write</span>
-                  <span className="text-sm text-base-content/60">Agents using this key can file item documents and approve or reject pricing as you.</span>
+                  <span className="font-medium">{grant.label}</span>
+                  <span className="text-sm text-base-content/60">{grant.description}</span>
                 </span>
               </label>
-            )}
-
-            {isAdmin && (
-              <label className="flex cursor-pointer items-start gap-3">
-                <input type="checkbox" className="checkbox mt-0.5" checked={allowDelegate} onChange={(e) => setAllowDelegate(e.target.checked)} />
-                <span className="flex flex-col">
-                  <span className="font-medium">Act for linked users</span>
-                  <span className="text-sm text-base-content/60">For a shared agent like Hermes: it can approve or reject pricing as whoever messages it from a linked WhatsApp number.</span>
-                </span>
-              </label>
-            )}
+            ))}
 
             <div className="flex justify-end gap-3">
               <button type="button" className="btn btn-ghost" onClick={() => setIsCreating(false)}>Cancel</button>
@@ -247,24 +268,26 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
                       <td><code className="text-sm">{key.prefix}…</code></td>
                       <td><span className={`badge ${status.badge}`}>{status.label}</span></td>
                       <td>
-                        <div className="flex items-center gap-2">
-                          <span className={`badge badge-soft ${hasWrite(key) ? 'badge-warning' : 'badge-ghost'}`}>
-                            {hasWrite(key) ? 'Read & write' : 'Read'}
-                          </span>
-                          {isAdmin && !key.revokedAt && (
-                            <button type="button" className="btn btn-xs btn-ghost" onClick={() => toggleWrite(key)}>
-                              {hasWrite(key) ? 'Make read-only' : 'Allow write'}
-                            </button>
-                          )}
+                        <div className="flex flex-wrap items-center gap-1">
+                          <span className="badge badge-soft badge-ghost">Read</span>
+                          {grants.filter(grant => has(key, grant.scope)).map(grant => (
+                            <span key={grant.scope} className={`badge badge-soft ${grant.badge}`}>{grant.label}</span>
+                          ))}
                         </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          {hasDelegate(key) && <span className="badge badge-soft badge-info">Acts for linked users</span>}
-                          {isAdmin && !key.revokedAt && (
-                            <button type="button" className="btn btn-xs btn-ghost" onClick={() => toggleDelegate(key)}>
-                              {hasDelegate(key) ? 'Stop acting for users' : 'Act for linked users'}
-                            </button>
-                          )}
-                        </div>
+                        {isAdmin && !key.revokedAt && (
+                          <div className="dropdown dropdown-end mt-1">
+                            <button type="button" tabIndex={0} className="btn btn-xs btn-ghost">Change access</button>
+                            <ul tabIndex={0} className="dropdown-content menu z-10 w-60 rounded-box bg-base-100 p-2 shadow">
+                              {grants.map(grant => (
+                                <li key={grant.scope}>
+                                  <button type="button" onClick={() => toggleGrant(key, grant)}>
+                                    {has(key, grant.scope) ? `Remove: ${grant.label}` : `Allow: ${grant.label}`}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </td>
                       <td>{key.lastUsedAt ? formatDate(key.lastUsedAt) : 'Never'}</td>
                       <td>{key.expiresAt ? formatDate(key.expiresAt) : 'Never'}</td>

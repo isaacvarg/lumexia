@@ -1,13 +1,13 @@
 'use client'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { TbAlertTriangle, TbPlus, TbUser, TbUsersGroup, TbX } from "react-icons/tb"
+import { TbAlertTriangle, TbPlus, TbRobot, TbUser, TbUsersGroup, TbX } from "react-icons/tb"
 import { canonActions } from "@/actions/canon"
 import { canonCapabilities } from "@/configs/staticRecords/canonCapabilities"
 import { CanonDataTypeRow, CanonSettingsData } from "../types"
 import Section from "./Section"
 
-type Grantee = { id: string; kind: "user" | "team"; name: string }
+type Grantee = { id: string; kind: "user" | "team"; name: string; isAgent?: boolean }
 
 const CapabilityList = ({
   title,
@@ -31,7 +31,12 @@ const CapabilityList = ({
       .map((p) => ({ id: p.id, kind: "team" as const, name: p.team.name })),
     ...dataType.userPermissions
       .filter((p) => p.capabilityId === capabilityId)
-      .map((p) => ({ id: p.id, kind: "user" as const, name: p.user.name ?? "Unnamed user" })),
+      .map((p) => ({
+        id: p.id,
+        kind: "user" as const,
+        name: p.user.name ?? "Unnamed user",
+        isAgent: settings.users.some((u) => u.id === p.userId && u.isAgent),
+      })),
   ]
 
   const grantedTeamIds = new Set(dataType.teamPermissions.filter((p) => p.capabilityId === capabilityId).map((p) => p.teamId))
@@ -63,7 +68,7 @@ const CapabilityList = ({
         {grants.length === 0 && <span className="text-sm italic text-base-content/50">Nobody yet</span>}
         {grants.map((g) => (
           <span key={g.id} className="badge badge-lg gap-1 badge-soft">
-            {g.kind === "team" ? <TbUsersGroup className="size-4" /> : <TbUser className="size-4" />}
+            {g.kind === "team" ? <TbUsersGroup className="size-4" /> : g.isAgent ? <TbRobot className="size-4" /> : <TbUser className="size-4" />}
             {g.name}
             <button onClick={() => remove(g)} aria-label={`Remove ${g.name}`} className="opacity-60 hover:opacity-100">
               <TbX className="size-3.5" />
@@ -82,7 +87,7 @@ const CapabilityList = ({
           </optgroup>
           <optgroup label="People">
             {settings.users.filter((u) => !grantedUserIds.has(u.id)).map((u) => (
-              <option key={u.id} value={`user:${u.id}`}>{u.name ?? "Unnamed user"}</option>
+              <option key={u.id} value={`user:${u.id}`}>{u.name ?? "Unnamed user"}{u.isAgent ? " (agent)" : ""}</option>
             ))}
           </optgroup>
         </select>
@@ -106,6 +111,25 @@ const PermissionsPanel = ({ dataType, settings }: { dataType: CanonDataTypeRow; 
       : "No reviewers yet, so proposed changes can't be approved."),
   ].filter(Boolean) as string[]
 
+  // agents propose; a reviewer that is also an agent could see its own proposals through
+  const agentIds = new Set(settings.users.filter((u) => u.isAgent).map((u) => u.id))
+  const agentReviewers = Array.from(new Set([
+    ...dataType.userPermissions
+      .filter((p) => p.capabilityId === canonCapabilities.review && agentIds.has(p.userId))
+      .map((p) => p.user.name ?? "Unnamed user"),
+    ...dataType.teamPermissions
+      .filter((p) => p.capabilityId === canonCapabilities.review)
+      .flatMap((p) => settings.teams.find((t) => t.id === p.teamId)?.members ?? [])
+      .filter((m) => agentIds.has(m.userId))
+      .map((m) => m.user.name ?? "Unnamed user"),
+  ]))
+  if (agentReviewers.length > 0) {
+    missing.push(
+      `${agentReviewers.join(", ")} ${agentReviewers.length === 1 ? "has" : "have"} an API key that proposes Canon changes. ` +
+      `Agents should hold Edit only: as reviewers, their proposals are refused, and a misconfiguration could let them approve.`,
+    )
+  }
+
   return (
     <Section title="Permissions">
       <div className="flex flex-col gap-5">
@@ -115,15 +139,15 @@ const PermissionsPanel = ({ dataType, settings }: { dataType: CanonDataTypeRow; 
             <div>{missing.map((m) => <div key={m}>{m}</div>)}</div>
           </div>
         )}
-        {!isLinked && (
-          <CapabilityList
-            title="Editors"
-            hint="Can propose changes."
-            capabilityId={canonCapabilities.edit}
-            dataType={dataType}
-            settings={settings}
-          />
-        )}
+        <CapabilityList
+          title="Editors"
+          hint={isLinked
+            ? "Can propose accepting the Lumexia source value; a reviewer still approves it."
+            : "Can propose changes."}
+          capabilityId={canonCapabilities.edit}
+          dataType={dataType}
+          settings={settings}
+        />
         <CapabilityList
           title="Reviewers"
           hint={isLinked

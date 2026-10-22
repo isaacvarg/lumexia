@@ -2,6 +2,8 @@ import { Alias} from "aliases"
 model AliasType {
     id        String   @id @default(uuid())
     name      String
+    // an alias of this type identifies one item, e.g. a WooCommerce product id; no two items may share it
+    isUnique  Boolean  @default(false) @map("is_unique")
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
     Alias     Alias[]

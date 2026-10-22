@@ -30,9 +30,9 @@ const CanonCard = ({ entry, onAction, children }: Props) => {
     ? hasEditors
       ? "Only this type's editors can add or change its value."
       : "Nobody can edit this yet. Add editors in Settings → Canon."
-    : awaitingAcceptance && !canReview
+    : awaitingAcceptance && !canEdit && !canReview
       ? hasReviewers
-        ? "Waiting for a reviewer to accept the source value."
+        ? "Waiting for an editor or reviewer to accept the source value."
         : "Nobody can accept the source value yet. Add reviewers in Settings → Canon."
       : null
 
@@ -98,7 +98,7 @@ const CanonCard = ({ entry, onAction, children }: Props) => {
             </button>
           )}
 
-          {awaitingAcceptance && canReview && (
+          {awaitingAcceptance && (canEdit || canReview) && (
             <button onClick={() => onAction("accept")} className="btn btn-sm btn-soft btn-warning">
               <TbShieldCheck className="size-4" /> {artifact?.currentVersion ? "Review source change" : "Accept source"}
             </button>

@@ -51,17 +51,23 @@ others. The **Agents** tab shows when each key was last used.
 System admins can see and revoke any user's keys from **Settings → Users →
 (user) → Agents**. Admins can't create keys for someone else.
 
-### Write access
+### Extra access
 
-Write access lets an agent upload documents and file them under items. Only
-system admins can grant it:
+Keys only read unless a system admin grants more:
 
-- When an admin creates their own key, they can tick **Allow write**.
-- On **Settings → Users → (user) → Agents**, an admin can click **Allow write**
-  (or **Make read-only**) on any of that user's keys. That's how the person who
-  files documents gets a write key without being an admin.
+| Access | Scope | Lets the agent |
+| --- | --- | --- |
+| **Write** | `write` | Upload and file item documents, and approve or reject pricing as the key's owner. |
+| **Act for linked users** | `delegate` | Act for whoever messages it from a [linked account](#hermes-and-chat-apps), within what the key's other access allows. For shared agents like Hermes. |
+| **Propose Canon changes** | `propose` | Open Canon change requests, add evidence, and withdraw its own requests. Never approve or reject. See [Canon proposals](#canon-proposals). |
+| **Edit aliases** | `alias:write` | Add, rename and remove item aliases. See [Item aliases](#item-aliases). |
 
-The **Access** column shows whether a key is **Read** or **Read & write**.
+- When an admin creates their own key, they tick what it may do.
+- On **Settings → Users → (user) → Agents**, an admin can use **Change access**
+  on any of that user's keys. That's how the person who files documents gets a
+  write key without being an admin.
+
+The **Access** column shows what each key can do.
 
 ## Connect Claude Code
 
@@ -91,6 +97,20 @@ mcp_servers:
 and put the key in Hermes's environment as `LUMEXIA_API_KEY`, so the key
 itself stays out of the config file.
 
+For a key that [acts for linked users](#hermes-and-chat-apps), also tell
+Lumexia which Hermes profile is connecting, so desktop and CLI sessions can be
+linked to a person. Add a header with the install id (from
+`~/.hermes/install_id`) and the profile name, in each profile's config:
+
+```yaml
+    headers:
+      Authorization: "Bearer ${LUMEXIA_API_KEY}"
+      X-Lumexia-Agent-Identity: "hermes:<install_id>:<profile>"
+```
+
+It's set by whoever configures Hermes, so the model can't claim to be another
+profile.
+
 ## Available tools
 
 | Tool | What it returns |
@@ -103,6 +123,11 @@ itself stays out of the config file.
 | `get_item_canon` | Every [Canon](/docs/canon) data type for an item, as plain text, with status, flags, version, open change requests, and whether you can edit or review it. Includes supplier statements and finished products filled with the item. |
 | `get_canon_history` | Every accepted version of a Canon value with its change request, reason, reviews, and evidence, plus open change requests and events. |
 | `get_canon_review_queue` | Change requests waiting on your review, and stale, expired, or conflicting values you edit or review. |
+| `get_canon_data_types` | Every active Canon data type and its setup: group, shape and the JSON value format to propose, subject, authored or linked source, what it applies to, dependencies, approval rules, evidence requirement, re-verification period, website key, and who can edit and review it. |
+| `search_canon_artifacts` | Canon values across items, for sweeps: filter by data type, group, status, flags (stale, unreviewed change, expired, conflict), open change requests, or item. |
+| `get_item_bom` | The bill of materials of an item's active MBPR: each material with id, reference code, concentration, step and phase. |
+| `get_material_documents_for_bom` | `get_item_documents` for every material in an item's active BOM, in one call. |
+| `list_alias_types` | The alias types and which are unique (one item per name). |
 | `list_document_types` | The document types (SDS, COA, IFRA, TDS…) with their ids. |
 | `search_suppliers` | Suppliers matching a name or alias, e.g. the company printed on a document. |
 | `get_item_documents` | An item's [document requirements](/docs/inventory/item-documents) and their status, per-lot status for lot documents, and every document on file including replaced versions, with the supplier lot and PO each was filed for and whether it's still waiting for its lot. |
@@ -134,14 +159,18 @@ Keys with write access also get:
 | `approve_pricing_examination` | Approves an examination that's pending review, as the key's owner. |
 | `reject_pricing_examination` | Rejects one, with an optional reason added as a note. Like the app, it queues a new examination of the item that carries the notes forward. |
 
-Keys that [act for linked users](#hermes-on-whatsapp) get the two pricing
+Keys that [act for linked users](#hermes-and-chat-apps) get the two pricing
 tools too, but record the review as the person who sent the message, plus:
 
 | Tool | What it does |
 | --- | --- |
-| `identify_sender` | Which Lumexia user a WhatsApp number is linked to, or how to link it. |
-| `link_identity` | Links the sender's number to their account with the code they created in Lumexia. |
-| `unlink_identity` | Unlinks the sender's number. |
+| `identify_sender` | Which Lumexia user a WhatsApp, Discord, Telegram or Slack account, or a Hermes profile, is linked to, or how to link it. |
+| `link_identity` | Links the sender's account to their Lumexia user with the code they created in Lumexia. |
+| `unlink_identity` | Unlinks the sender's account. |
+
+Keys that may propose Canon changes get the tools in
+[Canon proposals](#canon-proposals), and keys that may edit aliases get those
+in [Item aliases](#item-aliases).
 
 Tools accept either an item's id or its reference code, so an agent can go
 straight from "what's on hand for ING-1006?" to an answer. Purchase orders and
@@ -246,6 +275,61 @@ message and one **n8n Binary File** field per attachment, then hand the returned
 ids to the AI Agent node along with the attachments. Marking the Gmail thread
 read stays the way to avoid reprocessing.
 
+## Canon proposals
+
+A key with **Propose Canon changes** lets an agent fill in and keep up
+[Canon](/docs/canon) values, with people reviewing every change. The agent
+proposes; it can't approve or reject.
+
+| Tool | What it does |
+| --- | --- |
+| `propose_canon_change` | Opens a change request like the Propose form: `edit` (a new value for an authored type), `stale_confirmation` (the value is still right after something upstream changed), or `source_acceptance` (a linked type's current Lumexia value). Takes a reason, evidence (an item document, URL or note, with its date), and an `idempotencyKey`. Returns the change request (`CR-104`), the diff, the approvals needed and who can review. |
+| `attach_canon_evidence` | Adds evidence to any change request still under review. Never changes the proposed value. |
+| `withdraw_canon_change` | Withdraws a change request the key's user opened. |
+
+How it behaves:
+
+- **People decide.** A change request opened through MCP never counts the
+  requester's own approval, even if they could review. A key that acts for
+  linked users is refused with `AGENT_MUST_NOT_REVIEW` if its user holds Review
+  on the data type.
+- **Who asked.** The requester is the key's user (e.g. a **Canon Agent** user).
+  When a key acts for linked users, the person who directed the change is
+  recorded with it, and History shows "by Canon Agent for Jane".
+- **One open request per value.** If one is open, the agent adds evidence to it
+  instead. It can replace its own with `supersedeOwnOpen`.
+- **`dryRun`** goes through the same checks and returns the same diff without
+  keeping anything, so the agent can show it first.
+- **Retries are safe.** A repeated `idempotencyKey` returns the first result;
+  the same key with different arguments is refused.
+- At most 60 writes a minute per key.
+
+### Setting up a Canon Agent
+
+1. Create a user named **Canon Agent** with its own email and no app roles.
+2. As an admin, create an API key for it with **Propose Canon changes**,
+   **Edit aliases**, and **Act for linked users** if it serves several people.
+3. In **Canon Settings**, give that user **Edit** on each data type it should
+   fill in. Never **Review**: the Permissions panel warns if it has it.
+
+## Item aliases
+
+A key with **Edit aliases** can manage item aliases, for example to record each
+item's WooCommerce product id so agents can look items up by it
+(`search_items` matches aliases).
+
+| Tool | What it does |
+| --- | --- |
+| `add_item_alias` | Adds an alias of an existing type. For a unique type, a name another item already has is refused, with that item. |
+| `update_item_alias` | Renames an alias or moves it to another type (not to or from Supplier). |
+| `remove_item_alias` | Removes an alias. The item's activity log keeps what it was. |
+
+Alias types are managed in **Settings → Inventory → Alias Types**, where a type
+can be marked **Unique** (one item per name, e.g. a WooCommerce ID). A type can
+only become unique once no two items share a name of it. These tools take the
+same `idempotencyKey` and `dryRun` as Canon proposals, and every change is
+logged on the item.
+
 ## Receiving alerts
 
 `get_receiving_issues` is meant for polling. A scheduled Hermes job can call it
@@ -253,32 +337,41 @@ with `since` set to its previous run and message the right people about new
 failed inspections, missing COAs or lot mismatches, with a link to the
 receiving page. Nothing in receiving waits on these alerts; they're a nudge.
 
-## Hermes on WhatsApp
+## Hermes and chat apps
 
 A shared agent like Hermes uses one API key for everyone who messages it. To
-let people approve or reject pricing from WhatsApp under their own name:
+let people act from WhatsApp, Discord, Telegram, Slack or a Hermes session
+under their own name (reviewing pricing, proposing Canon changes, editing
+aliases):
 
 1. A system admin creates a key for Hermes with **Act for linked users** ticked
    (or clicks **Act for linked users** on an existing key). Don't also give it
    write access unless Hermes should act as the key's owner.
-2. Each person links their number once. In **Settings → User → Agents →
-   Linked Accounts** they click **Link WhatsApp** and send the code it shows to
-   Hermes from their phone. The code works once and expires after 10 minutes.
-   Sending it proves they control both the Lumexia account and the phone.
-3. From then on, when they ask Hermes to approve or reject an examination,
-   Hermes passes their number with the request and Lumexia records the
-   linked user as the reviewer. An unlinked number is refused, with
+2. Each person links each account once. In **Settings → User → Agents →
+   Linked Accounts** they click **Link account**, pick the app, and send the
+   code it shows to the bot from that account (a DM on Discord, Telegram or
+   Slack; for Hermes, a desktop or CLI session of the profile). The code works
+   once and expires after 10 minutes. Sending it proves they control both the
+   Lumexia account and the chat account. A person can link as many accounts
+   as they like; linking an account someone else had moves it to them.
+3. From then on, Hermes passes the sender's account with each request and
+   Lumexia acts as the linked user. An unlinked account is refused, with
    instructions for linking.
 
-Every review made this way is also logged with the key, the key's owner, and
-the WhatsApp number it came from. People can see and unlink their numbers in
-**Linked Accounts**; admins can unlink anyone's from **Settings → Users →
-(user) → Agents**. A key that acts for linked users never reviews pricing as
-its owner.
+Hermes desktop and CLI sessions are identified by their profile, from the
+`X-Lumexia-Agent-Identity` header in [the profile's config](#connect-hermes),
+so linking one links that profile on that machine.
+
+Everything done this way is also logged with the key, the key's owner, and the
+account it came from (and the agent's session id when it sends one). People
+can see and unlink their accounts in **Linked Accounts**; admins can unlink
+anyone's from **Settings → Users → (user) → Agents**. Five wrong codes from one
+account lock it out of linking for an hour. A key that acts for linked users
+never reviews pricing as its owner.
 
 <Callout type="warn">
-  Lumexia trusts the number Hermes sends. Configure Hermes so the sender's
-  number comes from the WhatsApp message itself, not from anything the model
+  Lumexia trusts the account id Hermes sends for chat apps. Configure Hermes so
+  the sender's id comes from the message metadata, not from anything the model
   could be talked into typing, and keep approvals to one-to-one chats.
 </Callout>
 
@@ -307,7 +400,11 @@ its owner.
 | `405 Method not allowed` | The endpoint is stateless and only accepts `POST`. Make sure the client is set to the **HTTP** (streamable HTTP) transport, not SSE. |
 | `get_item_canon` returns no entries | No Canon data types apply to that item, or the database's static records don't match the build. See [Static Records](/docs/StaticRecords). |
 | No upload, attach, or pricing review tools | The key is read-only. Ask a system admin to allow write on it (or **Act for linked users** for a shared agent). |
-| "This whatsapp number isn't linked" | The sender hasn't linked their number. They create a code under **Settings → User → Agents → Linked Accounts** and send it to Hermes. |
+| "This WhatsApp account isn't linked" (or Discord, …) | The sender hasn't linked that account. They create a code under **Settings → User → Agents → Linked Accounts** and send it to Hermes. |
+| "Hermes sessions are identified by their profile" | The profile's Lumexia server config is missing the `X-Lumexia-Agent-Identity` header. See [Connect Hermes](#connect-hermes). |
+| `AGENT_MUST_NOT_REVIEW` | The agent's user can review that data type. Remove its Review grant in **Canon Settings**. |
+| "idempotencyKey … was already used for a different request" | The agent reused a key for a different change. Each intended change needs its own key. |
+| "Rate limit" | More than 60 writes in a minute from one key. Wait a minute and continue. |
 | "Only pricing examinations that are pending review can be approved" | It was already approved or rejected, or is still queued. Check with `search_pricing_examinations`. |
 | Upload link returns `403` | The link was already used, expired (15 minutes), or its key was revoked or made read-only. Get a new link. |
 
@@ -326,15 +423,24 @@ its owner.
   redirect when there isn't one.
 - Return `jsonResult(data)` for answers and `errorResult(message)` for misses
   the agent should react to. Keep payloads compact and capped.
-- Keys carry `scopes` (`read`, plus `write` when an admin grants it). Write
-  tools are registered only for write keys (`writeRegistrars` in
-  `lib/mcp/server.ts`), so read-only agents never see them.
+- Keys carry `scopes`: `read`, plus `write`, `delegate`, `propose` and
+  `alias:write` when an admin grants them (`grantableScopes` in
+  `lib/apiKeys.ts`). Tools for each are registered only for keys with that
+  scope in `lib/mcp/server.ts`, so other agents never see them.
+- Write tools that create records go through `runWrite` in `lib/mcp/writes.ts`:
+  a per-key rate limit, idempotency keys stored in `api_idempotency_keys`, and
+  dry runs that run the real code in a transaction and roll it back.
 - `ctx.origin` is the address the agent reached Lumexia at; use it for links
   handed back to the agent.
 - Keys with the `delegate` scope act for linked users. Linked identities and
   link codes live in `linked_identities` and `identity_link_codes`
-  (`lib/linkedIdentities.ts`). Tools that act for someone take `actingFor`
-  and resolve it there; see `lib/mcp/tools/pricingReview.ts`.
+  (`lib/linkedIdentities.ts`; channels in `lib/identityChannels.ts`). Tools
+  that act for someone take `actingFor` and resolve it with `resolveActor` in
+  `lib/mcp/actingFor.ts`, which also reads the Hermes profile header.
+- Canon proposals call `lib/canon/changeRequests.ts`, the same code as the
+  Canon tab, with `skipSelfApproval` and the caller's transaction. Alias writes
+  live in `lib/aliases.ts`, whose uniqueness check the item alias dialog uses
+  too.
 - Pricing approval and rejection live in `lib/pricing/examinationReview.ts`,
   shared with the pricing review page.
 - Document downloads: `lib/apiDownloads.ts` signs links, and

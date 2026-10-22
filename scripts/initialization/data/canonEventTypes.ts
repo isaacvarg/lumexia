@@ -40,5 +40,9 @@ export const data = {
     {
       "name": "Conflict Resolved"
     },
+    {
+      "name": "Evidence Added",
+      "description": "Evidence was added to an open change request."
+    },
   ],
 };

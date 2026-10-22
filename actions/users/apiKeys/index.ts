@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "../getUser"
-import { apiKeyScopes, ApiKeyScope, createApiKey, listApiKeys, revokeApiKey as revokeKey, setApiKeyScopes } from "@/lib/apiKeys"
+import { apiKeyScopes, ApiKeyScope, createApiKey, GrantableScope, isGrantable, listApiKeys, revokeApiKey as revokeKey, setApiKeyScopes } from "@/lib/apiKeys"
 
 const EXPIRY_DAYS = { never: null, "30": 30, "90": 90, "365": 365 } as const
 
@@ -24,13 +24,15 @@ export const getUserApiKeys = async (targetUserId: string) => {
 }
 
 // Keys are always created for the signed-in user, so agents act with that user's permissions.
-// Only system admins may give a key write access (filing documents, approving pricing over MCP) or let it
-// act for linked users (a shared agent like Hermes).
-export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry; allowWrite?: boolean; allowDelegate?: boolean }) => {
+export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry; grants?: GrantableScope[] }) => {
   const user = await getUser()
+  const grants = input.grants ?? []
 
-  if ((input.allowWrite || input.allowDelegate) && !user.roles.isSystemAdmin) {
-    throw new Error("Forbidden: only system admins may create keys with write access or that act for linked users")
+  if (grants.some((scope) => !isGrantable(scope))) {
+    throw new Error("Unknown access")
+  }
+  if (grants.length > 0 && !user.roles.isSystemAdmin) {
+    throw new Error("Forbidden: only system admins may create keys with more than read access")
   }
 
   const name = input.name.trim()
@@ -41,15 +43,16 @@ export const createMyApiKey = async (input: { name: string; expiry: ApiKeyExpiry
   const days = EXPIRY_DAYS[input.expiry]
   const expiresAt = days === null ? null : new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
-  const scopes: ApiKeyScope[] = [apiKeyScopes.read]
-  if (input.allowWrite) scopes.push(apiKeyScopes.write)
-  if (input.allowDelegate) scopes.push(apiKeyScopes.delegate)
+  const scopes: ApiKeyScope[] = [apiKeyScopes.read, ...Array.from(new Set(grants))]
   return createApiKey(user.id, { name, expiresAt, scopes })
 }
 
-// Admin-only: turn write access, or acting for linked users, on or off for any user's key.
-export const setApiKeyAccess = async (apiKeyId: string, scope: typeof apiKeyScopes.write | typeof apiKeyScopes.delegate, enabled: boolean) => {
+// Admin-only: turn one kind of access on or off for any user's key.
+export const setApiKeyAccess = async (apiKeyId: string, scope: GrantableScope, enabled: boolean) => {
   const user = await getUser()
+  if (!isGrantable(scope)) {
+    throw new Error("Unknown access")
+  }
   if (!user.roles.isSystemAdmin) {
     throw new Error("Forbidden: only system admins may change a key's access")
   }

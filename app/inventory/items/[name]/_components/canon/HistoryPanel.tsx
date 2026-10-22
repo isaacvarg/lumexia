@@ -23,6 +23,18 @@ const coveredByVersions = new Set<string>([
   canonEventTypes.versionCreated,
 ])
 
+// Agents record the person who directed them on the event's payload.
+const onBehalfOfName = (payload: unknown): string | null => {
+  const onBehalfOf = (payload as { onBehalfOf?: { name?: string | null } } | null)?.onBehalfOf
+  return onBehalfOf ? onBehalfOf.name ?? "a linked user" : null
+}
+
+// Who an agent opened a change request for, from its opened event.
+const requestedFor = (history: History, changeRequestId: string) =>
+  onBehalfOfName(
+    history.events.find((e) => e.changeRequestId === changeRequestId && e.eventTypeId === canonEventTypes.changeRequestOpened)?.payload,
+  )
+
 const formatDate = (d: Date | string) =>
   new Date(d).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })
 
@@ -73,7 +85,9 @@ const PendingRequest = ({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="font-semibold">
           CR-{cr.referenceCode} · {cr.kind.name}
-          <span className="ml-2 font-normal text-base-content/60">by {cr.requestedBy.name} · {formatDate(cr.createdAt)}</span>
+          <span className="ml-2 font-normal text-base-content/60">
+            by {cr.requestedBy.name}{requestedFor(history, cr.id) && ` for ${requestedFor(history, cr.id)}`} · {formatDate(cr.createdAt)}
+          </span>
         </div>
         <span className="badge badge-warning badge-soft">
           {cr.reviews.filter((r) => r.approved).length}/{history.dataType.requiredApprovals} approvals
@@ -128,7 +142,7 @@ const PendingRequest = ({
   )
 }
 
-const VersionEntry = ({ version, previous, shapeKey }: { version: Version; previous: Version | undefined; shapeKey: ReturnType<typeof getShapeKey> }) => {
+const VersionEntry = ({ version, previous, shapeKey, forName }: { version: Version; previous: Version | undefined; shapeKey: ReturnType<typeof getShapeKey>; forName: string | null }) => {
   const cr = version.changeRequest
   const approvers = cr.reviews.filter((r) => r.approved).map((r) => r.reviewer.name)
   return (
@@ -139,7 +153,7 @@ const VersionEntry = ({ version, previous, shapeKey }: { version: Version; previ
         <span className="text-sm text-base-content/60">{formatDate(version.createdAt)}</span>
       </div>
       <p className="text-sm text-base-content/70">
-        Proposed by {cr.requestedBy.name}
+        Proposed by {cr.requestedBy.name}{forName && ` for ${forName}`}
         {approvers.length > 0 && <> · approved by {approvers.join(", ")}</>}
         {version.reverifyAt && <> · re-verify by {new Date(version.reverifyAt).toLocaleDateString()}</>}
       </p>
@@ -235,12 +249,16 @@ const HistoryPanel = ({ entry, onChanged }: { entry: CanonEntry; onChanged: () =
             <li key={t.kind === "version" ? t.version.id : t.event.id} className="mb-6 ml-5">
               <span className={`absolute -left-1.5 mt-1.5 size-3 rounded-full border-2 border-base-100 ${t.kind === "version" ? "bg-primary" : "bg-base-content/30"}`} />
               {t.kind === "version" ? (
-                <VersionEntry version={t.version} previous={t.previous} shapeKey={shapeKey} />
+                <VersionEntry version={t.version} previous={t.previous} shapeKey={shapeKey} forName={requestedFor(history, t.version.changeRequestId)} />
               ) : (
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <TbClock className="size-4 text-base-content/50" />
                   <span className="font-medium">{t.event.eventType.name}</span>
-                  {t.event.user && <span className="text-base-content/60">by {t.event.user.name}</span>}
+                  {t.event.user && (
+                    <span className="text-base-content/60">
+                      by {t.event.user.name}{onBehalfOfName(t.event.payload) && ` for ${onBehalfOfName(t.event.payload)}`}
+                    </span>
+                  )}
                   <span className="text-base-content/50">{formatDate(t.event.createdAt)}</span>
                 </div>
               )}

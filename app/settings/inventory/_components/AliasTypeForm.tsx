@@ -10,11 +10,13 @@ const AliasTypeForm = ({ setIsAdd }: { setIsAdd: Dispatch<SetStateAction<boolean
   const form = useAppForm({
     defaultValues: {
       name: 'name',
+      isUnique: false,
     },
     onSubmit: async ({ value }) => {
 
       await aliasTypeActions.createNew({
-        name: value.name
+        name: value.name,
+        isUnique: value.isUnique,
       })
       form.reset()
       setIsAdd(false)
@@ -35,6 +37,10 @@ const AliasTypeForm = ({ setIsAdd }: { setIsAdd: Dispatch<SetStateAction<boolean
         {(field) => <field.TextField
           label="Name"
         />}
+      </form.AppField>
+
+      <form.AppField name="isUnique">
+        {(field) => <field.ToggleField label="Unique (one item per name, e.g. a WooCommerce product id)" labelClass="soft" />}
       </form.AppField>
 
       <div>

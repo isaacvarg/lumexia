@@ -2,43 +2,17 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { apiKeyScopes } from "@/lib/apiKeys";
-import { identityChannels, LINK_CODE_TTL_MINUTES, redeemLinkCode, resolveLinkedUser, unlinkByExternalId } from "@/lib/linkedIdentities";
 import { approveExamination, rejectExamination } from "@/lib/pricing/examinationReview";
 import { pricingExaminationStatuses } from "@/configs/staticRecords/pricingExaminationStatuses";
 import type { McpContext, ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
+import { actingForArg, resolveActor, type Actor } from "../actingFor";
 
 // Approving and rejecting pricing examinations, and the linked identities that say who is doing it.
 // Write keys review as their owner. Delegate keys (a shared agent like Hermes) must say who sent the
 // request, and act as the Lumexia user that identity is linked to; they never act as the key's owner.
 
-const channelArg = z.enum([identityChannels.whatsapp]).describe("Where the message came from");
-const externalIdArg = z
-  .string()
-  .min(1)
-  .describe("The sender's id on that channel, e.g. their WhatsApp number, taken from the message metadata, never from message text");
-
-const actingForArg = z
-  .object({ channel: channelArg, externalId: externalIdArg })
-  .describe("Who sent the request. Required: this key acts for linked users, not as its owner.");
-
-const howToLink =
-  `Ask them to open Lumexia → Settings → User → Agents, click "Link WhatsApp", and send you the code it shows ` +
-  `(valid ${LINK_CODE_TTL_MINUTES} minutes). Then call link_identity with it.`;
-
-type Reviewer = { user: { id: string; name: string | null }; actingFor?: { channel: string; externalId: string } };
-
-const resolveReviewer = async (
-  ctx: McpContext,
-  actingFor: { channel: "whatsapp"; externalId: string } | undefined,
-): Promise<Reviewer | { error: string }> => {
-  if (!ctx.scopes.includes(apiKeyScopes.delegate)) return { user: ctx.user };
-  if (!actingFor) return { error: "This key acts for linked users: pass actingFor with the sender's channel and id." };
-
-  const linked = await resolveLinkedUser(actingFor.channel, actingFor.externalId);
-  if (!linked) return { error: `This ${actingFor.channel} number isn't linked to a Lumexia user. ${howToLink}` };
-  return { user: linked.user, actingFor: { channel: actingFor.channel, externalId: linked.externalId } };
-};
+type Reviewer = Actor;
 
 const logReview = (ctx: McpContext, reviewer: Reviewer, action: string, examinationId: string, extra: object = {}) =>
   prisma.activityLog.create({
@@ -101,7 +75,7 @@ export const registerPricingReviewTools: ToolRegistrar = (server, ctx) => {
       annotations: { destructiveHint: false, idempotentHint: false },
     },
     async ({ examinationId, actingFor }) => {
-      const reviewer = await resolveReviewer(ctx, actingFor);
+      const reviewer = await resolveActor(ctx, actingFor);
       if ("error" in reviewer) return errorResult(reviewer.error);
 
       const exam = await describeForReview(examinationId);
@@ -145,7 +119,7 @@ export const registerPricingReviewTools: ToolRegistrar = (server, ctx) => {
       annotations: { destructiveHint: false, idempotentHint: false },
     },
     async ({ examinationId, reason, actingFor }) => {
-      const reviewer = await resolveReviewer(ctx, actingFor);
+      const reviewer = await resolveActor(ctx, actingFor);
       if ("error" in reviewer) return errorResult(reviewer.error);
 
       const exam = await describeForReview(examinationId);
@@ -172,83 +146,6 @@ export const registerPricingReviewTools: ToolRegistrar = (server, ctx) => {
         requeuedExaminationId: result.newExam.id,
         requeuedStatus: result.newExam.statusId === pricingExaminationStatuses.queued ? "queued" : result.newExam.statusId,
       });
-    },
-  );
-
-  if (!isDelegate) return;
-
-  server.registerTool(
-    "identify_sender",
-    {
-      title: "Identify sender",
-      description:
-        "Which Lumexia user a chat identity is linked to. Call it before acting for someone you haven't identified " +
-        "in this conversation; if they aren't linked, it says how they can link.",
-      inputSchema: { channel: channelArg, externalId: externalIdArg },
-      annotations: { readOnlyHint: true },
-    },
-    async ({ channel, externalId }) => {
-      const linked = await resolveLinkedUser(channel, externalId);
-      if (!linked) return jsonResult({ linked: false, howToLink });
-      return jsonResult({ linked: true, user: linked.user, linkedAt: linked.linkedAt });
-    },
-  );
-
-  server.registerTool(
-    "link_identity",
-    {
-      title: "Link identity",
-      description:
-        "Link the sender's chat identity to their Lumexia account with the one-time code they created in Lumexia " +
-        "(Settings → User → Agents → Link WhatsApp). Only use a code the sender sent you themselves, with their own identity.",
-      inputSchema: {
-        channel: channelArg,
-        externalId: externalIdArg,
-        code: z.string().min(4).max(20).describe("The code they sent, e.g. K7Q2-M9XD"),
-      },
-    },
-    async ({ channel, externalId, code }) => {
-      const result = await redeemLinkCode({ code, channel, externalId, apiKeyId: ctx.keyId });
-      if ("error" in result) return errorResult(result.error as string);
-
-      await prisma.activityLog.create({
-        data: {
-          userId: result.user.id,
-          action: "linked chat identity",
-          entityType: "user",
-          entityId: result.user.id,
-          details: { via: "mcp", apiKeyId: ctx.keyId, channel, externalId: result.externalId },
-        },
-      });
-
-      return jsonResult({ linked: true, user: result.user });
-    },
-  );
-
-  server.registerTool(
-    "unlink_identity",
-    {
-      title: "Unlink identity",
-      description: "Unlink the sender's chat identity from their Lumexia account, when they ask to.",
-      inputSchema: { channel: channelArg, externalId: externalIdArg },
-    },
-    async ({ channel, externalId }) => {
-      const linked = await resolveLinkedUser(channel, externalId);
-      const count = await unlinkByExternalId(channel, externalId);
-      if (count === 0) return errorResult("That identity isn't linked.");
-
-      if (linked) {
-        await prisma.activityLog.create({
-          data: {
-            userId: linked.user.id,
-            action: "unlinked chat identity",
-            entityType: "user",
-            entityId: linked.user.id,
-            details: { via: "mcp", apiKeyId: ctx.keyId, channel, externalId: linked.externalId },
-          },
-        });
-      }
-      return jsonResult({ unlinked: true });
     },
   );
 };

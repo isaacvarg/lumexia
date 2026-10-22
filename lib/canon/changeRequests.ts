@@ -176,15 +176,38 @@ const recordReview = async (db: Db, changeRequestId: string, reviewerId: string,
   return result;
 };
 
+// Writes run in the caller's transaction when one is passed (an MCP dry run rolls it back afterwards),
+// otherwise in their own.
+const inTransaction = <T>(db: Db | undefined, fn: (tx: Db) => Promise<T>): Promise<T> =>
+  db ? fn(db) : prisma.$transaction((tx) => fn(tx));
+
+export type OpenOptions = {
+  db?: Db;
+  // agents propose, people decide: never record the requester's own approval, even if they can review
+  skipSelfApproval?: boolean;
+  // stored on the opened event, e.g. { via: "mcp", onBehalfOf } for a change an agent made for someone
+  eventPayload?: Record<string, unknown>;
+};
+
+const sourceRows = (sources: CanonSourceInput[]) =>
+  sources.map((s) => ({
+    sourceTypeId: s.sourceTypeId,
+    fileId: s.fileId ?? null,
+    url: s.url ?? null,
+    note: s.note ?? null,
+    sourceDate: s.sourceDate ?? null,
+  }));
+
 // Opens a CR. If the requester is also a reviewer, their approval is recorded right away,
 // which completes a self-approved owner edit when the type's settings allow it.
 const openChangeRequest = async (
   userId: string,
   input: OpenInput & { kindId: string; proposedContent: unknown; proposedMarker?: string | null },
+  options: OpenOptions = {},
 ) => {
-  const isReviewer = await canUser(userId, input.dataTypeId, canonCapabilities.review);
+  const isReviewer = !options.skipSelfApproval && (await canUser(userId, input.dataTypeId, canonCapabilities.review));
 
-  return prisma.$transaction(async (tx) => {
+  return inTransaction(options.db, async (tx) => {
     const dataType = await tx.canonDataType.findUniqueOrThrow({ where: { id: input.dataTypeId } });
     // item types that allow supplier statements also take item + supplier subjects
     const isSupplierStatement =
@@ -194,7 +217,6 @@ const openChangeRequest = async (
     }
 
     const artifact = await getOrCreateArtifact(tx, dataType.id, input.subject);
-    const sources = input.sources ?? [];
 
     // a source acceptance just read the live source, which counts as an observation
     if (input.proposedMarker) {
@@ -214,19 +236,17 @@ const openChangeRequest = async (
         proposedContent: input.proposedContent as any,
         proposedMarker: input.proposedMarker ?? null,
         reason: input.reason,
-        sources: {
-          create: sources.map((s) => ({
-            sourceTypeId: s.sourceTypeId,
-            fileId: s.fileId ?? null,
-            url: s.url ?? null,
-            note: s.note ?? null,
-            sourceDate: s.sourceDate ?? null,
-          })),
-        },
+        sources: { create: sourceRows(input.sources ?? []) },
       },
     });
     await tx.canonArtifactEvent.create({
-      data: { artifactId: artifact.id, eventTypeId: canonEventTypes.changeRequestOpened, changeRequestId: cr.id, userId },
+      data: {
+        artifactId: artifact.id,
+        eventTypeId: canonEventTypes.changeRequestOpened,
+        changeRequestId: cr.id,
+        userId,
+        payload: (options.eventPayload as any) ?? undefined,
+      },
     });
 
     if (isReviewer) await recordReview(tx, cr.id, userId, true);
@@ -236,7 +256,7 @@ const openChangeRequest = async (
 };
 
 // New content for an authored type.
-export const proposeEdit = async (userId: string, input: OpenInput & { proposedContent: unknown }) => {
+export const proposeEdit = async (userId: string, input: OpenInput & { proposedContent: unknown }, options: OpenOptions = {}) => {
   const dataType = await prisma.canonDataType.findUniqueOrThrow({ where: { id: input.dataTypeId } });
   if (dataType.resolverKey) throw new Error(`${dataType.name} is linked to Lumexia data; change it at its source.`);
   if (!(await canUser(userId, dataType.id, canonCapabilities.edit))) {
@@ -250,11 +270,15 @@ export const proposeEdit = async (userId: string, input: OpenInput & { proposedC
     throw new Error(`${dataType.name} requires evidence for every change.`);
   }
 
-  return openChangeRequest(userId, { ...input, kindId: canonChangeRequestKinds.edit, proposedContent: content });
+  return openChangeRequest(userId, { ...input, kindId: canonChangeRequestKinds.edit, proposedContent: content }, options);
 };
 
 // Upstream changed but the content is still right: same content, lineage moves forward.
-export const confirmStale = async (userId: string, input: { artifactId: string; reason: string }) => {
+export const confirmStale = async (
+  userId: string,
+  input: { artifactId: string; reason: string; sources?: CanonSourceInput[] },
+  options: OpenOptions = {},
+) => {
   const artifact = await prisma.canonArtifact.findUniqueOrThrow({
     where: { id: input.artifactId },
     include: { currentVersion: true },
@@ -267,36 +291,52 @@ export const confirmStale = async (userId: string, input: { artifactId: string; 
   ]);
   if (!canEdit && !canReview) throw new Error("You cannot confirm this artifact.");
 
-  return openChangeRequest(userId, {
-    dataTypeId: artifact.dataTypeId,
-    subject: subjectOf(artifact),
-    reason: input.reason,
-    kindId: canonChangeRequestKinds.staleConfirmation,
-    proposedContent: artifact.currentVersion.content,
-  });
+  return openChangeRequest(
+    userId,
+    {
+      dataTypeId: artifact.dataTypeId,
+      subject: subjectOf(artifact),
+      reason: input.reason,
+      sources: input.sources,
+      kindId: canonChangeRequestKinds.staleConfirmation,
+      proposedContent: artifact.currentVersion.content,
+    },
+    options,
+  );
 };
 
-// Linked types: propose the live source value as the new canon. Reviewers own linked types.
+// Linked types: propose the live source value as the new canon. Editors may propose it;
+// it waits for a reviewer like any other CR (a reviewer's own proposal counts as their approval).
 export const proposeSourceAcceptance = async (
   userId: string,
-  input: { dataTypeId: string; subject: CanonSubject; reason: string },
+  input: { dataTypeId: string; subject: CanonSubject; reason: string; sources?: CanonSourceInput[] },
+  options: OpenOptions = {},
 ) => {
   const dataType = await prisma.canonDataType.findUniqueOrThrow({ where: { id: input.dataTypeId } });
   if (!dataType.resolverKey) throw new Error(`${dataType.name} is not linked to a Lumexia source.`);
-  if (!(await canUser(userId, dataType.id, canonCapabilities.review))) {
-    throw new Error(`You cannot accept changes to ${dataType.name}.`);
-  }
+  const [canEdit, canReview] = await Promise.all([
+    canUser(userId, dataType.id, canonCapabilities.edit),
+    canUser(userId, dataType.id, canonCapabilities.review),
+  ]);
+  if (!canEdit && !canReview) throw new Error(`You cannot propose accepting changes to ${dataType.name}.`);
 
   const resolved = await resolveLinked(dataType.resolverKey, input.subject);
   if (!resolved) throw new Error(`There is no source value for ${dataType.name} yet.`);
 
-  return openChangeRequest(userId, {
-    ...input,
-    kindId: canonChangeRequestKinds.sourceAcceptance,
-    proposedContent: resolved.content,
-    proposedMarker: resolved.marker,
-    sources: [{ sourceTypeId: canonSourceTypes.lumexiaRecord, note: dataType.resolverKey, sourceDate: new Date() }],
-  });
+  return openChangeRequest(
+    userId,
+    {
+      ...input,
+      kindId: canonChangeRequestKinds.sourceAcceptance,
+      proposedContent: resolved.content,
+      proposedMarker: resolved.marker,
+      sources: [
+        { sourceTypeId: canonSourceTypes.lumexiaRecord, note: dataType.resolverKey, sourceDate: new Date() },
+        ...(input.sources ?? []),
+      ],
+    },
+    options,
+  );
 };
 
 export const reviewChangeRequest = async (
@@ -316,18 +356,68 @@ export const reviewChangeRequest = async (
   return prisma.$transaction((tx) => recordReview(tx, cr.id, userId, input.approved, input.comment));
 };
 
-export const withdrawChangeRequest = async (userId: string, changeRequestId: string) => {
-  const cr = await prisma.canonChangeRequest.findUniqueOrThrow({ where: { id: changeRequestId } });
+export const withdrawChangeRequest = async (
+  userId: string,
+  changeRequestId: string,
+  options: { db?: Db; eventPayload?: Record<string, unknown> } = {},
+) => {
+  const cr = await (options.db ?? prisma).canonChangeRequest.findUniqueOrThrow({ where: { id: changeRequestId } });
   if (cr.requestedById !== userId) throw new Error("Only the requester can withdraw a change request.");
   if (cr.statusId !== canonChangeRequestStatuses.underReview) throw new Error("This change request is closed.");
 
-  return prisma.$transaction(async (tx) => {
+  return inTransaction(options.db, async (tx) => {
     await tx.canonChangeRequest.update({
       where: { id: cr.id },
       data: { statusId: canonChangeRequestStatuses.withdrawn, resolvedAt: new Date() },
     });
     await tx.canonArtifactEvent.create({
-      data: { artifactId: cr.artifactId, eventTypeId: canonEventTypes.changeRequestWithdrawn, changeRequestId: cr.id, userId },
+      data: {
+        artifactId: cr.artifactId,
+        eventTypeId: canonEventTypes.changeRequestWithdrawn,
+        changeRequestId: cr.id,
+        userId,
+        payload: (options.eventPayload as any) ?? undefined,
+      },
+    });
+  });
+};
+
+// More evidence for a CR still under review. Anyone who can edit or review the type may add it;
+// the proposed value itself never changes (that takes a new CR).
+export const addChangeRequestEvidence = async (
+  userId: string,
+  input: { changeRequestId: string; sources: CanonSourceInput[] },
+  options: { db?: Db; eventPayload?: Record<string, unknown> } = {},
+) => {
+  if (input.sources.length === 0) throw new Error("Add at least one piece of evidence.");
+  const cr = await prisma.canonChangeRequest.findUniqueOrThrow({
+    where: { id: input.changeRequestId },
+    include: { artifact: true },
+  });
+  if (cr.statusId !== canonChangeRequestStatuses.underReview) throw new Error("This change request is closed.");
+
+  const [canEdit, canReview] = await Promise.all([
+    canUser(userId, cr.artifact.dataTypeId, canonCapabilities.edit),
+    canUser(userId, cr.artifact.dataTypeId, canonCapabilities.review),
+  ]);
+  if (!canEdit && !canReview) throw new Error("You cannot add evidence to this change request.");
+
+  return inTransaction(options.db, async (tx) => {
+    await tx.canonChangeRequestSource.createMany({
+      data: sourceRows(input.sources).map((row) => ({ ...row, changeRequestId: cr.id })),
+    });
+    await tx.canonArtifactEvent.create({
+      data: {
+        artifactId: cr.artifactId,
+        eventTypeId: canonEventTypes.evidenceAdded,
+        changeRequestId: cr.id,
+        userId,
+        payload: { count: input.sources.length, ...options.eventPayload } as any,
+      },
+    });
+    return tx.canonChangeRequest.findUniqueOrThrow({
+      where: { id: cr.id },
+      include: { sources: { include: { sourceType: true, file: { select: { name: true } } } } },
     });
   });
 };
