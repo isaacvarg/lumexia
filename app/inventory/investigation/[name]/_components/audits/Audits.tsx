@@ -202,7 +202,7 @@ const Audits = () => {
                   </span>
                 </div>
                 <div className="flex gap-x-2 items-center">
-                  <UserIcon image={request.requestedBy.image || ''} name={request.requestedBy.name || ''} />
+                  <UserIcon kind={request.requestedBy.kind} image={request.requestedBy.image || ''} name={request.requestedBy.name || ''} />
                   <p className="text-sm">Requested by {request.requestedBy.name}</p>
                 </div>
                 {request.notes.length > 0 && (

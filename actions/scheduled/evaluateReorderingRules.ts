@@ -6,7 +6,7 @@ import { createAuditRequest } from "@/actions/inventory/auditRequests/create"
 import { createPurchasingRequestForRule } from "@/actions/purchasing/requests/create"
 import { auditRequestStatuses } from "@/configs/staticRecords/auditRequestStatuses"
 import { requestStatuses } from "@/configs/staticRecords/requestStatuses"
-import { getSystemUser } from "@/lib/userKinds"
+import { getSystemUser } from "@/lib/systemUser"
 
 const purchasingRequestTerminalStatusIds = [
   requestStatuses.delivered,

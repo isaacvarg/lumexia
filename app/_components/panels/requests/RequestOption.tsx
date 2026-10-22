@@ -20,7 +20,7 @@ const RequestOption = ({ req }: { req: PurchasingRequest }) => {
           <h2 className="text-center items-center flex rounded-xl px-2 py-1 font-semibold text-sm font-poppins whitespace-nowrap" style={{ backgroundColor: req.priority.bgColor, color: req.priority.textColor }}>{req.priority.name}</h2>
         </div>
         <span className="shrink-0">
-          <UserIcon image={req.requestingUser.image ?? undefined} name={req.requestingUser.name ?? undefined} />
+          <UserIcon kind={req.requestingUser.kind} image={req.requestingUser.image ?? undefined} name={req.requestingUser.name ?? undefined} />
         </span>
       </div>
 

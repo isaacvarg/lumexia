@@ -8,7 +8,7 @@ import { auditRequestNoteTypes } from "@/configs/staticRecords/auditRequestNoteT
 import { procurementTypes } from "@/configs/staticRecords/procurementTypes"
 import { InterimAuditRequestNote } from "@/app/production/planning/[bprReferenceCode]/_components/bom/AuditRequest"
 import { getInventoryAuditConfig } from "@/actions/app/configs/getInventoryAuditConfig"
-import { getSystemUser } from "@/lib/userKinds"
+import { getSystemUser } from "@/lib/systemUser"
 
 export const evaluateInventoryAuditTriggers = async () => {
   const systemUser = await getSystemUser()

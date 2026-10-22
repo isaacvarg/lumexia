@@ -82,7 +82,7 @@ const StagedQualityCard = ({ staged }: { staged: BprStagingItem }) => {
           <div className="flex flex-row justify-between items-center ">
             <span className="text-base-content/50 font-semibold text-lg">{t(translations, 'stagedCardBy')}</span>
             <div className="flex gap-2">
-              <UserIcon image={staged.pulledByUser.image || ''} name={staged.pulledByUser.name || ''} />
+              <UserIcon kind={staged.pulledByUser.kind} image={staged.pulledByUser.image || ''} name={staged.pulledByUser.name || ''} />
               <span className="text-base-content font-semibold text-lg">{staged.pulledByUser.name}</span>
             </div>
           </div>

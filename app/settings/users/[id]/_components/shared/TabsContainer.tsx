@@ -2,19 +2,16 @@
 import { AnimatePresence, motion } from "framer-motion"
 import { useTabSelection } from "@/store/tabSlice"
 import React from "react"
+import { UserAdminTab } from "./TabSelector"
 
-type Props = {
-  profile: React.ReactNode
-  status: React.ReactNode
-  dashboard: React.ReactNode
-  agents: React.ReactNode
-  danger: React.ReactNode
-}
+type Props = Partial<Record<UserAdminTab, React.ReactNode>> & { profile: React.ReactNode }
 
-const TabsContainer = ({ profile, status, dashboard, agents, danger }: Props) => {
+const TabsContainer = (panels: Props) => {
 
   const { activeTab } = useTabSelection()
-  const currentTab = activeTab.userAdminDetails;
+  // Until TabSelector resets a tab this user doesn't have, show the profile.
+  const selected = activeTab.userAdminDetails
+  const currentTab: UserAdminTab = selected && panels[selected] ? selected : 'profile'
 
   return (
     <AnimatePresence mode="wait">
@@ -25,11 +22,7 @@ const TabsContainer = ({ profile, status, dashboard, agents, danger }: Props) =>
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.2 }}
       >
-        {currentTab === 'profile' && profile}
-        {currentTab === 'status' && status}
-        {currentTab === 'dashboard' && dashboard}
-        {currentTab === 'agents' && agents}
-        {currentTab === 'danger' && danger}
+        {panels[currentTab]}
       </motion.div>
     </AnimatePresence>
   )

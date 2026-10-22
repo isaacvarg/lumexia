@@ -54,7 +54,7 @@ export const transactionColumns = [
       const user = row.row.original.user;
 
       return (<div className="flex  gap-x-2">
-        <UserIcon image={user.image || ''} name={user.name || ''} />
+        <UserIcon kind={user.kind} image={user.image || ''} name={user.name || ''} />
         <p>{user.name}</p>
       </div>)
     },

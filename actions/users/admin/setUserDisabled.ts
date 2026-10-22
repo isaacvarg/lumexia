@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "../getUser"
+import { assertNotSystemUser } from "@/lib/systemUser"
 import { userRoles } from "@/configs/staticRecords/userRoles"
 
 // Admin-only: enable/disable a user. Disabling also revokes their active sessions.
@@ -12,6 +13,7 @@ export const setUserDisabled = async (targetUserId: string, disabled: boolean) =
   if (!admin.roles.isSystemAdmin) {
     throw new Error("Forbidden: only system admins may change account status")
   }
+  await assertNotSystemUser(targetUserId)
 
   if (disabled) {
     if (targetUserId === admin.id) {

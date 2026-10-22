@@ -103,7 +103,7 @@ export const getCanonDashboard = async (userId: string) => {
       where: { statusId: canonChangeRequestStatuses.underReview },
       include: {
         kind: { select: { name: true } },
-        requestedBy: { select: { name: true, image: true } },
+        requestedBy: { select: { name: true, image: true, kind: true } },
         reviews: { select: { approved: true } },
         artifact: { include: { dataType: { select: { name: true, requiredApprovals: true } }, ...subjectSelect } },
       },

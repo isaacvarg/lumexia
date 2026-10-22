@@ -6,12 +6,16 @@ import { setUserDisabled } from "@/actions/users/admin/setUserDisabled"
 import { revokeUserSessions } from "@/actions/users/admin/revokeUserSessions"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { userKinds } from "@/lib/userKinds"
 
 const AccountStatusPanel = ({ user }: { user: UserWithRolesDetail }) => {
 
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Agents never sign in; disabling one stops its API keys working.
+  const isAgent = user.kind === userKinds.agent
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true)
@@ -36,7 +40,7 @@ const AccountStatusPanel = ({ user }: { user: UserWithRolesDetail }) => {
             <span className="font-medium text-base-content">Status</span>
             <span className="text-sm text-base-content/70">
               {user.disabled
-                ? 'This account is disabled and cannot sign in.'
+                ? isAgent ? 'This agent is disabled and its API keys no longer work.' : 'This account is disabled and cannot sign in.'
                 : 'This account is active.'}
             </span>
           </div>
@@ -54,17 +58,19 @@ const AccountStatusPanel = ({ user }: { user: UserWithRolesDetail }) => {
             disabled={busy}
             onClick={() => run(() => setUserDisabled(user.id, !user.disabled))}
           >
-            {user.disabled ? 'Reactivate account' : 'Disable account'}
+            {user.disabled ? `Reactivate ${isAgent ? 'agent' : 'account'}` : `Disable ${isAgent ? 'agent' : 'account'}`}
           </button>
 
-          <button
-            type="button"
-            className="btn btn-outline"
-            disabled={busy}
-            onClick={() => run(() => revokeUserSessions(user.id))}
-          >
-            Force sign-out
-          </button>
+          {!isAgent && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={busy}
+              onClick={() => run(() => revokeUserSessions(user.id))}
+            >
+              Force sign-out
+            </button>
+          )}
         </div>
       </Card.Root>
     </div>

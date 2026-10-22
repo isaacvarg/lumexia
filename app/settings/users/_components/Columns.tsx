@@ -1,6 +1,7 @@
 import { createColumnHelper, FilterFn } from "@tanstack/react-table"
 import { UserWithRoles } from "@/actions/users/getAllUsers"
 import UserIcon from "@/components/UI/UserIcon"
+import UserKindBadge from "@/components/UI/UserKindBadge"
 
 const columnHelper = createColumnHelper<UserWithRoles>()
 
@@ -19,14 +20,24 @@ export const userColumns = [
       const user = row.row.original
       return (
         <div className="flex items-center gap-x-3">
-          <UserIcon image={user.image || ''} name={user.name || ''} />
+          <UserIcon kind={user.kind} image={user.image || ''} name={user.name || ''} />
           <span>{user.name}</span>
+          <UserKindBadge kind={user.kind} />
         </div>
       )
     },
   }),
-  columnHelper.accessor("email", {
+  // Agents and the system user have no email; show what they are instead.
+  columnHelper.accessor((user) => user.email || user.description, {
+    id: 'email',
     header: "Email",
+  }),
+  columnHelper.accessor("kind", {
+    header: "Kind",
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+    cell: (row) => <span className="capitalize">{row.getValue()}</span>,
   }),
   columnHelper.accessor((user) => user.UserRoleAssignment.map((assignment) => assignment.userRoleId), {
     id: 'roles',

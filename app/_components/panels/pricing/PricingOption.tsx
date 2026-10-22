@@ -25,7 +25,7 @@ const PricingOption = ({ exam }: { exam: ReviewablePricingExams }) => {
           </h2>
         </div>
         <span className="shrink-0">
-          <UserIcon image={exam.user.image ?? undefined} name={exam.user.name ?? undefined} />
+          <UserIcon kind={exam.user.kind} image={exam.user.image ?? undefined} name={exam.user.name ?? undefined} />
         </span>
       </div>
 

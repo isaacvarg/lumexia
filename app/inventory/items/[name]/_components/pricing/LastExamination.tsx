@@ -30,7 +30,7 @@ const LastExamination = () => {
             </tr>
             <tr>
               <td className="font-semibold">Examined By</td>
-              <td className="flex items-center gap-2"><UserIcon image={examinations[0].user.image || ''} name={examinations[0].user.name || ''} />{examinations[0].user.name}</td>
+              <td className="flex items-center gap-2"><UserIcon kind={examinations[0].user.kind} image={examinations[0].user.image || ''} name={examinations[0].user.name || ''} />{examinations[0].user.name}</td>
             </tr>
           </tbody>
         </table>
