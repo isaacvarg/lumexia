@@ -3,7 +3,7 @@ import { canonActions } from "@/actions/canon";
 import { getAllUsers } from "@/actions/users/getAllUsers";
 import itemTypeActions from "@/actions/inventory/itemTypeActions";
 import procurementTypeActions from "@/actions/inventory/procurementTypeActions";
-import { users as staticUsers } from "@/configs/staticRecords/users";
+import { userKinds } from "@/lib/userKinds";
 import { listProposingUserIds } from "@/lib/apiKeys";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
@@ -25,9 +25,9 @@ const CanonSettingsPage = async () => {
   ]);
 
   const activeUsers = users
-    // the Lumexia bot user can't edit or review
-    .filter((u) => !u.disabled && u.id !== staticUsers.lumexia)
-    .map(({ id, name, image }) => ({ id, name, image, isAgent: agentUserIds.includes(id) }));
+    // the system user (Lumexia) can't edit or review; agent users and holders of propose keys are listed as agents
+    .filter((u) => !u.disabled && u.kind !== userKinds.system)
+    .map(({ id, name, image, kind }) => ({ id, name, image, isAgent: kind === userKinds.agent || agentUserIds.includes(id) }));
 
   return (
     <div className="flex flex-col gap-y-6">
