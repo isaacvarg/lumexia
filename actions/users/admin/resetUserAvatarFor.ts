@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "../getUser"
+import { assertNotSystemUser } from "@/lib/systemUser"
 
 // Admin-only: reset a target user's avatar to the original (Discord) URL saved in
 // their `originalImage` UserConfig the first time it was replaced. Mirrors
@@ -12,6 +13,7 @@ export const resetUserAvatarFor = async (targetUserId: string) => {
   if (!admin.roles.isSystemAdmin) {
     throw new Error("Forbidden: only system admins may reset avatars")
   }
+  await assertNotSystemUser(targetUserId)
 
   const original = await prisma.userConfig.findFirst({
     where: { userId: targetUserId, name: 'originalImage' },

@@ -19,7 +19,7 @@ export const activityColumns = [
     cell: (row) => {
       return (
         <div className="flex gap-x-2">
-          <UserIcon image={row.row.original.user.image || ''} name={row.row.original.user.name || ''} />
+          <UserIcon kind={row.row.original.user.kind} image={row.row.original.user.image || ''} name={row.row.original.user.name || ''} />
           <p className="">{row.row.original.user.name}</p>
 
         </div>

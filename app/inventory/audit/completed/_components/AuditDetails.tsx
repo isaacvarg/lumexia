@@ -16,12 +16,12 @@ const AuditDetails = ({ audit }: { audit: CompletedAuditDetail }) => {
     <Card.Root>
       <div className="flex flex-col">
         <DetailRow label="Requested By">
-          <UserIcon name={audit.requestedBy.name || ''} image={audit.requestedBy.image || ''} />
+          <UserIcon kind={audit.requestedBy.kind} name={audit.requestedBy.name || ''} image={audit.requestedBy.image || ''} />
         </DetailRow>
 
         <DetailRow label="Conducted By">
           {audit.inventoryAudit ? (
-            <UserIcon name={audit.inventoryAudit.user.name || ''} image={audit.inventoryAudit.user.image || ''} />
+            <UserIcon kind={audit.inventoryAudit.user.kind} name={audit.inventoryAudit.user.name || ''} image={audit.inventoryAudit.user.image || ''} />
           ) : (
             <span className="text-zinc-500">-</span>
           )}

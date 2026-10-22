@@ -6,6 +6,7 @@ import { createAuditRequest } from "@/actions/inventory/auditRequests/create"
 import { createPurchasingRequestForRule } from "@/actions/purchasing/requests/create"
 import { auditRequestStatuses } from "@/configs/staticRecords/auditRequestStatuses"
 import { requestStatuses } from "@/configs/staticRecords/requestStatuses"
+import { getSystemUser } from "@/lib/systemUser"
 
 const purchasingRequestTerminalStatusIds = [
   requestStatuses.delivered,
@@ -20,7 +21,7 @@ export const evaluateReorderingRules = async () => {
 
   if (rules.length === 0) return
 
-  const systemUser = await prisma.user.findFirst({ where: { name: 'Lumexia' } })
+  const systemUser = await getSystemUser()
   if (!systemUser) {
     console.error('[evaluateReorderingRules] Lumexia system user not found; aborting.')
     return

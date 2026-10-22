@@ -4,7 +4,7 @@ import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
 import useToast from "@/hooks/useToast"
 import type { ApiKeyListing, GrantableScope } from "@/lib/apiKeys"
-import { ApiKeyExpiry, createMyApiKey, revokeApiKey, setApiKeyAccess } from "@/actions/users/apiKeys"
+import { ApiKeyExpiry, createAgentApiKey, createMyApiKey, revokeApiKey, setApiKeyAccess } from "@/actions/users/apiKeys"
 import { DateTime } from "luxon"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -28,10 +28,12 @@ const keyStatus = (key: ApiKeyListing) => {
 
 type Props = {
   keys: ApiKeyListing[]
-  // Admins viewing another user can revoke but not create; keys always belong to their creator.
+  // Admins viewing another person can revoke but not create; a person's keys belong to whoever created them.
   canCreate?: boolean
   // The viewer is a system admin: they can create write or delegate keys and change that access on any key.
   isAdmin?: boolean
+  // Viewing an agent user: keys are created for the agent, which never signs in to make its own.
+  agentUserId?: string
 }
 
 // Access beyond reading, granted by a system admin. Order is display order.
@@ -79,7 +81,7 @@ const grants: {
 
 const has = (key: ApiKeyListing, scope: GrantableScope) => key.scopes.includes(scope)
 
-const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
+const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false, agentUserId }: Props) => {
 
   const router = useRouter()
   const { toast } = useToast()
@@ -95,7 +97,8 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
     defaultValues: { name: '', expiry: 'never' as ApiKeyExpiry },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const { apiKey, key } = await createMyApiKey({ ...value, grants: isAdmin ? selectedGrants : [] })
+        const input = { ...value, grants: isAdmin ? selectedGrants : [] }
+        const { apiKey, key } = agentUserId ? await createAgentApiKey(agentUserId, input) : await createMyApiKey(input)
         setNewKey({ name: apiKey.name, key })
         setIsCreating(false)
         setSelectedGrants([])
@@ -160,9 +163,9 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false }: Props) => {
 
       <p className="text-base-content/70">
         API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
-        {canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin grants
+        {agentUserId ? ' this agent' : canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin grants
         more: writing documents and pricing reviews, proposing Canon changes, editing aliases, or, for a shared
-        agent like Hermes, acting for people who linked their accounts below.
+        agent like Hermes, acting for people who linked their accounts{agentUserId ? ' in Lumexia' : ' below'}.
       </p>
 
       {newKey && (

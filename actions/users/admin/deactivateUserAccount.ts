@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "../getUser"
+import { assertNotSystemUser } from "@/lib/systemUser"
 import { assertNotLastAdmin } from "./setUserDisabled"
 
 // Admin-only Danger Zone action: permanently deactivate an account by disabling
@@ -13,6 +14,7 @@ export const deactivateUserAccount = async (targetUserId: string) => {
   if (!admin.roles.isSystemAdmin) {
     throw new Error("Forbidden: only system admins may deactivate accounts")
   }
+  await assertNotSystemUser(targetUserId)
 
   if (targetUserId === admin.id) {
     throw new Error("You cannot deactivate your own account")

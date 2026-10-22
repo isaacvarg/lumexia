@@ -49,7 +49,8 @@ others. The **Agents** tab shows when each key was last used.
 </Callout>
 
 System admins can see and revoke any user's keys from **Settings → Users →
-(user) → Agents**. Admins can't create keys for someone else.
+(user) → Agents**. Admins can't create keys for other people, only for
+[agent users](#agent-users).
 
 ### Extra access
 
@@ -68,6 +69,34 @@ Keys only read unless a system admin grants more:
   write key without being an admin.
 
 The **Access** column shows what each key can do.
+
+## Agent users
+
+A key on your own account acts as you, so everything the agent does shows up
+under your name. For a shared or long-running agent (Hermes, a Canon Agent, an
+automation), create an **agent user** instead: a Lumexia user that never signs
+in and acts only through its API keys.
+
+1. As a system admin, open **Settings → Users** and click **New agent**.
+2. Give it a name (shown on everything it does, e.g. `Hermes`) and optionally a
+   description (e.g. `Hermes on WhatsApp`).
+3. On its page, give it the **roles** it needs under **Profile**. It starts with
+   none.
+4. Under **Agents**, click **New key** and tick the [extra access](#extra-access)
+   it needs. Admins create an agent's keys because it can't sign in to make its
+   own.
+
+Agent users get a bot avatar and an **Agent** chip next to their name, and the
+**Kind** filter on Settings → Users lists them. Their type can't be changed
+later. To retire one, **Disable** it under **Status**: its keys stop working at
+once and its history stays. Agents can't sign in with Discord, even if an
+account gets linked to them.
+
+To move an agent off your own key, create its agent user and key, put the new
+key in the agent's config, then revoke your old key.
+
+The **Lumexia** user is the *system* user: scheduled jobs such as reordering
+rules act as it. Its page is read-only, and it can't hold keys.
 
 ## Connect Claude Code
 
@@ -306,8 +335,8 @@ How it behaves:
 
 ### Setting up a Canon Agent
 
-1. Create a user named **Canon Agent** with its own email and no app roles.
-2. As an admin, create an API key for it with **Propose Canon changes**,
+1. Create an [agent user](#agent-users) named **Canon Agent**, with no app roles.
+2. On its page, create an API key with **Propose Canon changes**,
    **Edit aliases**, and **Act for linked users** if it serves several people.
 3. In **Canon Settings**, give that user **Edit** on each data type it should
    fill in. Never **Review**: the Permissions panel warns if it has it.
@@ -344,7 +373,8 @@ let people act from WhatsApp, Discord, Telegram, Slack or a Hermes session
 under their own name (reviewing pricing, proposing Canon changes, editing
 aliases):
 
-1. A system admin creates a key for Hermes with **Act for linked users** ticked
+1. A system admin creates a key for Hermes, ideally on its own
+   [agent user](#agent-users), with **Act for linked users** ticked
    (or clicks **Act for linked users** on an existing key). Don't also give it
    write access unless Hermes should act as the key's owner.
 2. Each person links each account once. In **Settings → User → Agents →
@@ -382,7 +412,7 @@ never reviews pricing as its owner.
   more, put Lumexia behind TLS (e.g. Caddy with its internal CA, or
   `tailscale serve`). Clients just switch the URL to `https://`.
 - **Revoking is immediate.** A revoked or expired key is rejected on its next
-  request. Disabling a user also disables all of their keys.
+  request. Disabling a user (or agent user) also disables all of their keys.
 - **Keys are never stored.** Lumexia keeps only a SHA-256 hash and the first
   few characters (shown in the list) to tell keys apart.
 - **Download links** are signed for one document and the key that asked for

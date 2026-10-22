@@ -198,7 +198,7 @@ export const getArtifactHistory = async (artifactId: string) => {
           changeRequest: {
             include: {
               kind: true,
-              requestedBy: { select: { id: true, name: true, image: true } },
+              requestedBy: { select: { id: true, name: true, image: true, kind: true } },
               reviews: { include: { reviewer: { select: { id: true, name: true, image: true } } } },
               sources: { include: { sourceType: true, file: true } },
             },
@@ -222,7 +222,7 @@ export const getArtifactHistory = async (artifactId: string) => {
         include: {
           kind: true,
           status: true,
-          requestedBy: { select: { id: true, name: true, image: true } },
+          requestedBy: { select: { id: true, name: true, image: true, kind: true } },
           reviews: { include: { reviewer: { select: { id: true, name: true, image: true } } } },
           sources: { include: { sourceType: true, file: true } },
         },
@@ -283,7 +283,7 @@ export const getReviewQueue = async (userId: string) => {
     },
     include: {
       kind: { select: { name: true } },
-      requestedBy: { select: { name: true, image: true } },
+      requestedBy: { select: { name: true, image: true, kind: true } },
       artifact: { include: { dataType: { select: { name: true } }, ...subjectSelect } },
     },
     orderBy: { createdAt: "asc" },

@@ -46,6 +46,7 @@ const ExaminationCard = ({ examination }: { examination: QcExamination }) => {
       <div className="flex justify-between items-center w-full">
         <div className="flex gap-2 items-center">
           <UserIcon
+            kind={examination.conductedBy.kind}
             image={examination.conductedBy.image || ""}
             name={examination.conductedBy.name || ""}
           />

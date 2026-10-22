@@ -23,7 +23,7 @@ export const auditColumns = [
     columnHelper.accessor("requestById", {
         id: "requester",
         header: "Requester",
-        cell: (row) => <UserIcon name={row.row.original.requestedBy.name || ''} image={row.row.original.requestedBy.image || ''} />,
+        cell: (row) => <UserIcon kind={row.row.original.requestedBy.kind} name={row.row.original.requestedBy.name || ''} image={row.row.original.requestedBy.image || ''} />,
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id));
         },
@@ -32,7 +32,7 @@ export const auditColumns = [
     columnHelper.accessor('inventoryAudit.user.id', {
         header: "Conductee",
         id: 'conductee',
-        cell: (row) => <UserIcon name={row.row.original.inventoryAudit?.user.name || ''} image={row.row.original.inventoryAudit?.user.image || ''} />,
+        cell: (row) => <UserIcon kind={row.row.original.inventoryAudit?.user.kind} name={row.row.original.inventoryAudit?.user.name || ''} image={row.row.original.inventoryAudit?.user.image || ''} />,
         filterFn: (row, id, value) => {
             return value.includes(row.getValue(id));
         },

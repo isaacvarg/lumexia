@@ -4,6 +4,7 @@ import { getAllUsers } from "@/actions/users/getAllUsers"
 import userRoleActions from "@/actions/users/userRoles"
 import { redirect } from "next/navigation"
 import UsersTable from "./_components/UsersTable"
+import NewAgent from "./_components/NewAgent"
 
 const ManageUsersPage = async () => {
 
@@ -20,6 +21,8 @@ const ManageUsersPage = async () => {
   return (
     <div className="flex flex-col gap-y-6">
       <PageTitle>Manage Users</PageTitle>
+
+      <NewAgent />
 
       <UsersTable users={users} roles={roles} />
     </div>

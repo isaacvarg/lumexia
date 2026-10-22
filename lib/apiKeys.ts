@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
+import { userKinds } from "@/lib/userKinds";
 
 // Keys let agents (Claude Code, Hermes) call Lumexia as a specific user over the MCP endpoint.
 // Only a SHA-256 hash is stored; keys are 32 random bytes, so a slow hash adds nothing.
@@ -57,18 +58,19 @@ export const authenticateApiKey = async (authorization: string | null) => {
 
   const apiKey = await prisma.apiKey.findUnique({
     where: { keyHash: hashKey(match[1]) },
-    include: { user: { select: { id: true, name: true, email: true, disabled: true } } },
+    include: { user: { select: { id: true, name: true, email: true, disabled: true, kind: true } } },
   });
 
   const now = new Date();
-  if (!apiKey || apiKey.revokedAt || apiKey.user.disabled) return null;
+  // The system user is for jobs only; it never holds usable keys.
+  if (!apiKey || apiKey.revokedAt || apiKey.user.disabled || apiKey.user.kind === userKinds.system) return null;
   if (apiKey.expiresAt && apiKey.expiresAt <= now) return null;
 
   if (!apiKey.lastUsedAt || now.getTime() - apiKey.lastUsedAt.getTime() > LAST_USED_THROTTLE_MS) {
     await prisma.apiKey.update({ where: { id: apiKey.id }, data: { lastUsedAt: now } });
   }
 
-  const { disabled, ...user } = apiKey.user;
+  const { disabled, kind, ...user } = apiKey.user;
   return { keyId: apiKey.id, user, scopes: apiKey.scopes as ApiKeyScope[] };
 };
 

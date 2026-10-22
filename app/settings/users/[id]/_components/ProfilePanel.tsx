@@ -40,7 +40,7 @@ const ProfilePanel = ({ user, allRoles }: { user: UserWithRolesDetail, allRoles:
 
       <Card.Root>
         <div className="flex items-center gap-4">
-          <UserIcon image={user.image || ''} name={user.name || ''} />
+          <UserIcon kind={user.kind} image={user.image || ''} name={user.name || ''} />
           <div className="flex flex-col">
             <span className="font-medium text-base-content">{user.name}</span>
             <span className="text-sm text-base-content/70">{user.email}</span>

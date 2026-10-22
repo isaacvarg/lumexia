@@ -22,7 +22,7 @@ const GeneralRequestCard = ({ request }: { request: GeneralRequestMinimal }) => 
         </div>
 
         <div className='flex flex-row gap-2  items-center'>
-          <UserIcon name={request.user.name || ''} image={request.user.image || ''} />
+          <UserIcon kind={request.user.kind} name={request.user.name || ''} image={request.user.image || ''} />
           <p className='font-poppins font-semibold text-sm text-base-content'>{`${request.user.name}`}</p>
         </div>
       </div>

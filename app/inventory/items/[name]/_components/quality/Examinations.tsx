@@ -88,7 +88,7 @@ const Examinations = () => {
 
               <div className="flex justify-between items-center w-full">
                 <div className=" flex gap-2 items-center">
-                  <UserIcon image={record.conductedBy.image || ''} name={record.conductedBy.name || ''} />
+                  <UserIcon kind={record.conductedBy.kind} image={record.conductedBy.image || ''} name={record.conductedBy.name || ''} />
                   <div className="font-normal text-xl text-base-content">{record.conductedBy.name || ''}</div>
                 </div>
 

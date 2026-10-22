@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "./lib/prisma";
 import { userRoles } from "@/configs/staticRecords/userRoles";
+import { userKinds } from "@/lib/userKinds";
 
 
 const isDemo = process.env.DEMO_SEED === "true";
@@ -43,9 +44,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: { disabled: true },
+        select: { disabled: true, kind: true },
       });
 
+      // Agents and the system user act only through API keys and jobs, even if a Discord account gets linked to them.
+      if (dbUser && dbUser.kind !== userKinds.human) return false;
       return !dbUser?.disabled;
     },
   },

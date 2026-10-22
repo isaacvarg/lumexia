@@ -31,7 +31,7 @@ const ChangeRequests = ({ changeRequests }: { changeRequests: CanonDashboard["ch
                 <td><span className="badge badge-sm badge-soft">{cr.kind.name}</span></td>
                 <td>
                   <span className="inline-flex items-center gap-2">
-                    <UserIcon image={cr.requestedBy.image ?? undefined} name={cr.requestedBy.name ?? undefined} />
+                    <UserIcon kind={cr.requestedBy.kind} image={cr.requestedBy.image ?? undefined} name={cr.requestedBy.name ?? undefined} />
                     {cr.requestedBy.name}
                   </span>
                 </td>

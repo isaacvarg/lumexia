@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { UserRole } from "@prisma/client"
 import { UserWithRoles } from "@/actions/users/getAllUsers"
 import { userColumns } from "./Columns"
+import { userKinds } from "@/lib/userKinds"
 
 type Props = {
   users: UserWithRoles[]
@@ -21,6 +22,15 @@ const UsersTable = ({ users, roles }: Props) => {
       columnName: "roles",
       filterLabel: "Role",
       options: toTableFilter(roles, (role) => role.id, (role) => role.name),
+    },
+    {
+      columnName: "kind",
+      filterLabel: "Kind",
+      options: [
+        { value: userKinds.human, label: "People" },
+        { value: userKinds.agent, label: "Agents" },
+        { value: userKinds.system, label: "System" },
+      ],
     },
   ]
 

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { userKinds } from "@/lib/userKinds";
 
 // Session gate for app/api route handlers. Middleware can't do this check:
 // it runs on the edge runtime, where the Prisma adapter's database sessions
@@ -26,7 +27,7 @@ export const requireApiUser = async (): Promise<ApiUser | Response> => {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, disabled: true },
+    select: { id: true, disabled: true, kind: true },
   });
 
   // A missing user means a stale session (e.g. after a reseed).
@@ -34,7 +35,8 @@ export const requireApiUser = async (): Promise<ApiUser | Response> => {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (user.disabled) {
+  // Agents and the system user never hold sessions; they use API keys.
+  if (user.disabled || user.kind !== userKinds.human) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 

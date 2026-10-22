@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { userRoles } from "@/configs/staticRecords/userRoles";
 import { getFileUrl } from "@/actions/files/getUrl";
+import { userKinds } from "@/lib/userKinds";
 
 export const getUser = async () => {
   const session = await auth();
@@ -16,6 +17,7 @@ export const getUser = async () => {
   const user = await prisma.user.findFirstOrThrow({
     where: {
       email: session.user.email,
+      kind: userKinds.human,
     },
     include: {
       UserRoleAssignment: {

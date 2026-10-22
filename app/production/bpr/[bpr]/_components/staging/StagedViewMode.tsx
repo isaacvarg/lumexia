@@ -67,7 +67,7 @@ const StagedViewMode = () => {
                 <div className="flex flex-row justify-between items-center ">
                   <span className="text-base-content/50 font-semibold text-lg">{t(translations, 'stagedCardBy')}</span>
                   <div className="flex gap-2">
-                    <UserIcon image={staging.pulledByUser.image || ''} name={staging.pulledByUser.name || ''} />
+                    <UserIcon kind={staging.pulledByUser.kind} image={staging.pulledByUser.image || ''} name={staging.pulledByUser.name || ''} />
                     <span className="text-base-content font-semibold text-lg">{staging.pulledByUser.name}</span>
                   </div>
                 </div>

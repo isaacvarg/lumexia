@@ -48,7 +48,7 @@ const CanonReviews = () => {
             >
               <span className="badge badge-warning badge-soft">Waiting for you</span>
               <span className="shrink-0">
-                <UserIcon image={cr.requestedBy.image ?? undefined} name={cr.requestedBy.name ?? undefined} />
+                <UserIcon kind={cr.requestedBy.kind} image={cr.requestedBy.image ?? undefined} name={cr.requestedBy.name ?? undefined} />
               </span>
             </Row>
           ))}
