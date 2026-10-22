@@ -9,9 +9,18 @@ export const apiKeyScopes = {
   write: "write",
   // act for users who linked a chat identity (e.g. WhatsApp) to their account; see lib/linkedIdentities.ts
   delegate: "delegate",
+  // propose Canon change requests (never review them), add evidence, withdraw its own; see lib/mcp/tools/canonWrites.ts
+  propose: "propose",
+  // add, rename and remove item aliases
+  aliasWrite: "alias:write",
 } as const;
 
 export type ApiKeyScope = (typeof apiKeyScopes)[keyof typeof apiKeyScopes];
+
+// Access beyond reading, which only a system admin may grant.
+export const grantableScopes = [apiKeyScopes.write, apiKeyScopes.delegate, apiKeyScopes.propose, apiKeyScopes.aliasWrite] as const;
+export type GrantableScope = (typeof grantableScopes)[number];
+export const isGrantable = (scope: string): scope is GrantableScope => (grantableScopes as readonly string[]).includes(scope);
 
 const KEY_PREFIX = "lmx_";
 const DISPLAY_PREFIX_LENGTH = KEY_PREFIX.length + 8;
@@ -99,4 +108,18 @@ export const revokeApiKey = async (apiKeyId: string) => {
     data: { revokedAt: new Date() },
     select: { id: true, userId: true, revokedAt: true },
   });
+};
+
+// Users who own a usable key that may propose Canon changes. Such a user must never hold Review,
+// or the proposals its agent makes could be approved without a person.
+export const listProposingUserIds = async () => {
+  const keys = await prisma.apiKey.findMany({
+    where: {
+      scopes: { has: apiKeyScopes.propose },
+      revokedAt: null,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+    select: { userId: true },
+  });
+  return Array.from(new Set(keys.map((k) => k.userId)));
 };

@@ -1679,6 +1679,8 @@ model UnitOfMeasurement {
 model AliasType {
   id        String   @id @default(uuid())
   name      String
+  // an alias of this type identifies one item, e.g. a WooCommerce product id; no two items may share it
+  isUnique  Boolean  @default(false) @map("is_unique")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   Alias     Alias[]
@@ -3793,12 +3795,33 @@ model ApiKey {
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ApiUpload      ApiUpload[]
-  LinkedIdentity LinkedIdentity[]
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ApiUpload         ApiUpload[]
+  LinkedIdentity    LinkedIdentity[]
+  ApiIdempotencyKey ApiIdempotencyKey[]
 
   @@index([userId])
   @@map("api_keys")
+}
+
+// The first result of an MCP write made with a given idempotency key, so an agent that retries
+// (a timeout, a re-run seeding script) gets the same answer instead of creating the record twice.
+// Keys are scoped to the API key that used them.
+model ApiIdempotencyKey {
+  id          String   @id @default(uuid())
+  apiKeyId    String   @map("api_key_id")
+  key         String
+  tool        String
+  // hash of the arguments, so reusing a key for a different request is refused instead of answered wrongly
+  requestHash String   @map("request_hash")
+  response    Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@unique([apiKeyId, key])
+  @@map("api_idempotency_keys")
 }
 
 // A single-use, short-lived upload link handed to an agent by the create_document_upload MCP tool.

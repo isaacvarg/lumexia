@@ -1,6 +1,7 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { authenticateApiKey } from "@/lib/apiKeys";
 import { createMcpServer } from "@/lib/mcp/server";
+import { AGENT_IDENTITY_HEADER, parseAgentIdentity } from "@/lib/mcp/actingFor";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,11 @@ export async function POST(req: Request) {
     return jsonRpcError(401, "Missing or invalid API key. Create one in Lumexia under Settings → User → Agents.");
   }
 
-  const server = createMcpServer({ ...auth, origin: requestOrigin(req) });
+  const server = createMcpServer({
+    ...auth,
+    origin: requestOrigin(req),
+    agentIdentity: parseAgentIdentity(req.headers.get(AGENT_IDENTITY_HEADER)),
+  });
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

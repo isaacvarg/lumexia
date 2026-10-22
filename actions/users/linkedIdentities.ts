@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { getUser } from "./getUser"
-import { createLinkCode, IdentityChannel, identityChannels, listLinkedIdentities } from "@/lib/linkedIdentities"
+import { createLinkCode, IdentityChannel, isIdentityChannel, listLinkedIdentities } from "@/lib/linkedIdentities"
 
 export const getMyLinkedIdentities = async () => {
   const user = await getUser()
@@ -22,7 +22,7 @@ export const getUserLinkedIdentities = async (targetUserId: string) => {
 // Codes are always for the signed-in user: sending one to the agent proves the sender is them.
 export const createMyLinkCode = async (channel: IdentityChannel) => {
   const user = await getUser()
-  if (!Object.values(identityChannels).includes(channel)) {
+  if (!isIdentityChannel(channel)) {
     throw new Error("Unknown channel")
   }
 

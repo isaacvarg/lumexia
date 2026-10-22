@@ -6,6 +6,8 @@ import Form from "@/components/Form"
 import Layout from "@/components/Layout"
 import { aliasTypes } from "@/configs/staticRecords/aliasTypes"
 import useDialog from "@/hooks/useDialog"
+import useToast from "@/hooks/useToast"
+import { checkAliasConflict } from "@/app/inventory/_actions/checkAliasConflict"
 import { useItemActions, useItemSelection } from "@/store/itemSlice"
 import { SelectOption } from "@/types/selectOption"
 import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
@@ -36,13 +38,21 @@ const AliasDialog = () => {
   const { selectedAlias, item, options } = useItemSelection();
   const { setSelectedAlias } = useItemActions()
   const { resetDialogContext } = useDialog();
+  const { toast } = useToast();
 
 
 
   const form = useForm<Inputs>({ defaultValues: { name: '', aliasTypeId: '' } })
   const wathchAliasType = form.watch('aliasTypeId');
 
-  const handleSubmit = (data: Inputs) => {
+  const handleSubmit = async (data: Inputs) => {
+    // unique alias types (e.g. a WooCommerce product id) belong to one item
+    const owner = await checkAliasConflict({ aliasTypeId: data.aliasTypeId, name: data.name, excludeAliasId: selectedAlias?.id })
+    if (owner) {
+      toast('Alias already used', `${data.name} is already an alias of ${owner.name} (${owner.referenceCode}), and this alias type is unique.`, 'error')
+      return
+    }
+
     if (selectedAlias) {
       handleUpdate(data);
       return;

@@ -44,7 +44,9 @@ const ReviewSourceForm = ({ entry, mode, onDone }: { entry: CanonEntry; mode: "a
         </h2>
         <p className="text-base-content/60">
           {mode === "accept"
-            ? "The value below comes straight from Lumexia. Accepting it makes it the canon, and anything that depends on it will be asked to review."
+            ? entry.canReview
+              ? "The value below comes straight from Lumexia. Accepting it makes it the canon, and anything that depends on it will be asked to review."
+              : "The value below comes straight from Lumexia. Proposing it sends it to this type's reviewers; once they accept it, it becomes the canon."
             : "Something this depends on changed. If the current value is still right, confirm it. Otherwise, propose a change instead."}
         </p>
       </div>
@@ -63,7 +65,7 @@ const ReviewSourceForm = ({ entry, mode, onDone }: { entry: CanonEntry; mode: "a
 
       <div className="flex justify-end">
         <button onClick={submit} disabled={submitting} className="btn btn-success">
-          {submitting ? "Submitting..." : mode === "accept" ? "Accept" : "Confirm"}
+          {submitting ? "Submitting..." : mode === "accept" ? (entry.canReview ? "Accept" : "Propose accepting") : "Confirm"}
         </button>
       </div>
     </div>

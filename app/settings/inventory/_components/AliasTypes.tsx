@@ -4,8 +4,9 @@ import { useAppForm } from "@/components/Form2"
 import SectionTitle from "@/components/Text/SectionTitle"
 import { AliasType } from "@prisma/client"
 import { aliasTypes as staticAliasType } from "@/configs/staticRecords/aliasTypes"
-import aliasTypeActions from "@/actions/inventory/aliasTypes"
 import { deleteAliasType } from "@/app/inventory/_actions/deleteAliasType"
+import { saveAliasType } from "@/app/inventory/_actions/saveAliasType"
+import useToast from "@/hooks/useToast"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { TbPlus, TbTrash } from "react-icons/tb"
@@ -15,6 +16,7 @@ import DeletionErrorAlert from "./shared/DeletionErrorAlert"
 const AliasTypes = ({ aliasTypes }: { aliasTypes: AliasType[] }) => {
 
   const router = useRouter();
+  const { toast } = useToast();
   const [isAdd, setIsAdd] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -32,10 +34,13 @@ const AliasTypes = ({ aliasTypes }: { aliasTypes: AliasType[] }) => {
     },
     onSubmit: async ({ value }) => {
 
-      await Promise.all(value.aliasTypes.map(async (at) => {
-        if (at.id === staticAliasType.supplier) return;
-        return await aliasTypeActions.update({ id: at.id }, { name: at.name });
+      const results = await Promise.all(value.aliasTypes.map(async (at) => {
+        if (at.id === staticAliasType.supplier) return null;
+        return await saveAliasType(at.id, { name: at.name, isUnique: at.isUnique });
       }));
+      results.forEach((result) => {
+        if (result && !result.success) toast('Could not save alias type', result.error, 'error');
+      });
 
       router.refresh()
       form.reset()
@@ -54,6 +59,7 @@ const AliasTypes = ({ aliasTypes }: { aliasTypes: AliasType[] }) => {
 
       <Card.Root>
         <p className="font-poppins text-xl text-base-content">The types of alternate names an item can have. Supplier Alias type is required and therefore not shown.</p>
+        <p className="text-base-content/70">Unique types identify one item, like a WooCommerce product id: no two items can share a name of that type.</p>
 
         {isAdd && <AliasTypeForm setIsAdd={setIsAdd} />}
         {!isAdd && (
@@ -81,6 +87,9 @@ const AliasTypes = ({ aliasTypes }: { aliasTypes: AliasType[] }) => {
                               {(subField) => <subField.TextField label={_.name} />}
                             </form.AppField>
                           </div>
+                          <form.AppField name={`aliasTypes[${i}].isUnique`}>
+                            {(subField) => <subField.ToggleField label="Unique" labelClass="soft" />}
+                          </form.AppField>
                           <button
                             type="button"
                             onClick={() => handleDelete(_.id)}

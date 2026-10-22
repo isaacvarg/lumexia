@@ -34,3 +34,35 @@ export const getLotQuantities = async (lots: { id: string; initialQuantity: numb
 
   return onHand;
 };
+
+// Canon data types by id or name (case-insensitive).
+export const findDataType = async (identifier: string) => {
+  const value = identifier.trim();
+  return prisma.canonDataType.findFirst({
+    where: UUID_PATTERN.test(value) ? { id: value } : { name: { equals: value, mode: "insensitive" } },
+    include: { shape: true, subjectType: true },
+  });
+};
+
+export const findSupplier = async (identifier: string) => {
+  const value = identifier.trim();
+  const matches = await prisma.supplier.findMany({
+    where: UUID_PATTERN.test(value) ? { id: value } : { name: { equals: value, mode: "insensitive" } },
+    select: { id: true, name: true },
+    take: 2,
+  });
+  return matches.length === 1 ? matches[0] : null;
+};
+
+// A finished product by id, or by name among the products filled with an item.
+export const findFinishedProduct = async (identifier: string, filledWithItemId?: string) => {
+  const value = identifier.trim();
+  const matches = await prisma.finishedProduct.findMany({
+    where: UUID_PATTERN.test(value)
+      ? { id: value }
+      : { name: { equals: value, mode: "insensitive" }, ...(filledWithItemId && { filledWithItemId }) },
+    select: { id: true, name: true, filledWithItemId: true },
+    take: 2,
+  });
+  return matches.length === 1 ? matches[0] : null;
+};
