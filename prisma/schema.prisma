@@ -3965,6 +3965,9 @@ model User {
   emailVerified                    DateTime?                         @map("email_verified")
   image                            String?
   disabled                         Boolean                           @default(false)
+  // "human" signs in with Discord; "agent" (Claude Code, Hermes…) and "system" (Lumexia) never sign in and act only through API keys or jobs; see lib/userKinds.ts
+  kind                             String                            @default("human")
+  description                      String?
   accounts                         Account[]
   sessions                         Session[]
   createdAt                        DateTime                          @default(now())

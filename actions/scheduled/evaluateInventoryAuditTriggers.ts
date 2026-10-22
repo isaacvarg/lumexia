@@ -8,9 +8,10 @@ import { auditRequestNoteTypes } from "@/configs/staticRecords/auditRequestNoteT
 import { procurementTypes } from "@/configs/staticRecords/procurementTypes"
 import { InterimAuditRequestNote } from "@/app/production/planning/[bprReferenceCode]/_components/bom/AuditRequest"
 import { getInventoryAuditConfig } from "@/actions/app/configs/getInventoryAuditConfig"
+import { getSystemUser } from "@/lib/userKinds"
 
 export const evaluateInventoryAuditTriggers = async () => {
-  const systemUser = await prisma.user.findFirst({ where: { name: 'Lumexia' } })
+  const systemUser = await getSystemUser()
   if (!systemUser) {
     console.error('[evaluateInventoryAuditTriggers] Lumexia system user not found; aborting.')
     return
