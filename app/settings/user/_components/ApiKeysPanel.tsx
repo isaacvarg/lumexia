@@ -165,7 +165,7 @@ const ApiKeysPanel = ({ keys, canCreate = true, isAdmin = false, agentUserId }: 
         API keys let agents like Claude Code or Hermes read Lumexia data through the MCP endpoint. A key acts as
         {agentUserId ? ' this agent' : canCreate ? ' you' : ' this user'}, with the same permissions. Keys are read-only unless an admin grants
         more: writing documents and pricing reviews, proposing Canon changes, editing aliases, or, for a shared
-        agent like Hermes, acting for people who linked their accounts below.
+        agent like Hermes, acting for people who linked their accounts{agentUserId ? ' in Lumexia' : ' below'}.
       </p>
 
       {newKey && (
