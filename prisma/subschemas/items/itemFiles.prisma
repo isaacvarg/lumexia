@@ -1,6 +1,8 @@
 // issuer: supplier | internal. A newer upload with the same item, file type, issuer, lot and supplier
 // sets supersededAt on the previous one. derivedFrom points an internal (rebranded) document at the
 // supplier document it was based on, so it can be flagged stale when that source is superseded.
+// surrogateFor: this item has no document of its own, so it uses another item's (same File, no copy);
+// surrogateReason says why. Flagged stale when that document is superseded. Never for lot documents.
 model ItemFile {
     id              String               @id @default(uuid())
     fileTypeId      String               @map("file_type_id")
@@ -16,6 +18,8 @@ model ItemFile {
     revision        String?
     supersededAt    DateTime?            @map("superseded_at")
     derivedFromId   String?              @map("derived_from_id")
+    surrogateForItemFileId String?       @map("surrogate_for_item_file_id")
+    surrogateReason String?              @map("surrogate_reason")
     createdAt       DateTime             @default(now()) @map("created_at")
     updatedAt       DateTime             @updatedAt @map("updated_at")
     fileType        ItemFileType @relation(fields: [fileTypeId], references: [id])
@@ -26,6 +30,8 @@ model ItemFile {
     purchaseOrder   PurchaseOrder?       @relation(fields: [purchaseOrderId], references: [id])
     derivedFrom     ItemFile?            @relation("ItemFileDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
     derivatives     ItemFile[]           @relation("ItemFileDerivation")
+    surrogateFor    ItemFile?            @relation("ItemFileSurrogate", fields: [surrogateForItemFileId], references: [id], onDelete: SetNull)
+    surrogates      ItemFile[]           @relation("ItemFileSurrogate")
 
     @@index([itemId])
     @@index([lotId])

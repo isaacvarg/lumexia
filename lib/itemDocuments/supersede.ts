@@ -26,6 +26,14 @@ export const supersedeOlderItemFiles = async (
     select: { id: true, issuedAt: true },
   });
 
+  // the item's own document replaces any surrogate standing in for it
+  if (!file.surrogateForItemFileId && !file.lotId && !file.supplierLotNumber) {
+    await db.itemFile.updateMany({
+      where: { itemId: file.itemId, fileTypeId: file.fileTypeId, surrogateForItemFileId: { not: null }, supersededAt: null, id: { notIn: batchIds } },
+      data: { supersededAt: now },
+    });
+  }
+
   const newer = siblings.some((s) => s.issuedAt && file.issuedAt && s.issuedAt > file.issuedAt);
   if (newer) {
     await db.itemFile.update({ where: { id: file.id }, data: { supersededAt: now } });

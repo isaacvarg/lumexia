@@ -137,6 +137,20 @@ describe("evaluateDocument", () => {
     assert.equal(evaluateDocument(d, r, now).status, "stale");
     assert.equal(evaluateDocument({ ...d, derivedFrom: { supersededAt: null } }, r, now).status, "current");
   });
+
+  it("is surrogate when another item's document stands in, judged by that document's dates", () => {
+    const source = { supersededAt: null, issuedAt: new Date("2024-01-01T00:00:00Z"), expiresAt: null };
+    const r = rule({ validForMonths: 36 });
+    // the surrogate's own copy of the dates is stale; the source's are the ones that count
+    const d = doc({ issuedAt: new Date("2020-01-01T00:00:00Z"), surrogateFor: source });
+    assert.equal(evaluateDocument(d, r, now).status, "surrogate");
+    assert.equal(evaluateDocument(doc({ surrogateFor: { ...source, issuedAt: new Date("2023-01-01T00:00:00Z") } }), r, now).status, "expired");
+  });
+
+  it("is stale when the document a surrogate stands in for has been replaced", () => {
+    const d = doc({ surrogateFor: { supersededAt: new Date("2026-05-01T00:00:00Z"), issuedAt: null, expiresAt: null } });
+    assert.equal(evaluateDocument(d, rule({}), now).status, "stale");
+  });
 });
 
 describe("evaluateRequirement (item scope)", () => {
@@ -147,6 +161,15 @@ describe("evaluateRequirement (item scope)", () => {
       doc({ supersededAt: new Date("2026-01-01T00:00:00Z") }),
     ];
     assert.equal(evaluateRequirement(rule({}), docs, [], now).status, "missing");
+  });
+
+  it("prefers the item's own current document over a surrogate", () => {
+    const surrogate = doc({ surrogateFor: { supersededAt: null, issuedAt: null, expiresAt: null } });
+    assert.equal(evaluateRequirement(rule({}), [surrogate], [], now).status, "surrogate");
+    const own = doc({});
+    const evaluated = evaluateRequirement(rule({}), [surrogate, own], [], now);
+    assert.equal(evaluated.status, "current");
+    assert.equal(evaluated.documents[0].documentId, own.id);
   });
 
   it("uses the best document when several suppliers have one", () => {

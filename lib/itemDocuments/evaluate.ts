@@ -16,12 +16,13 @@ import {
 const statusRank: Record<RequirementStatus, number> = {
   notApplicable: 0,
   current: 1,
-  expiring: 2,
-  undated: 3,
-  stale: 4,
-  mismatch: 5,
-  expired: 6,
-  missing: 7,
+  surrogate: 2,
+  expiring: 3,
+  undated: 4,
+  stale: 5,
+  mismatch: 6,
+  expired: 7,
+  missing: 8,
 };
 
 // Item type outweighs procurement type, which outweighs the sold condition, so e.g.
@@ -58,7 +59,9 @@ export const effectiveExpiry = (doc: DocumentRecord, requirement: Requirement): 
   return null;
 };
 
-export const evaluateDocument = (doc: DocumentRecord, requirement: Requirement, now: Date): EvaluatedDocument => {
+export const evaluateDocument = (record: DocumentRecord, requirement: Requirement, now: Date): EvaluatedDocument => {
+  // a surrogate is as valid as the document it stands in for
+  const doc = record.surrogateFor ? { ...record, issuedAt: record.surrogateFor.issuedAt, expiresAt: record.surrogateFor.expiresAt } : record;
   const expiresAt = effectiveExpiry(doc, requirement);
   const result = (status: DocumentStatus): EvaluatedDocument => ({
     documentId: doc.id,
@@ -69,6 +72,7 @@ export const evaluateDocument = (doc: DocumentRecord, requirement: Requirement, 
   if (requirement.minIssuedAt && doc.issuedAt && doc.issuedAt < requirement.minIssuedAt) return result("expired");
   if (expiresAt && expiresAt <= now) return result("expired");
   if (doc.issuer === "internal" && doc.derivedFrom?.supersededAt) return result("stale");
+  if (doc.surrogateFor?.supersededAt) return result("stale");
 
   const hasValidityRule = requirement.validForMonths != null || requirement.minIssuedAt != null;
   if (!expiresAt && hasValidityRule && !doc.issuedAt) return result("undated");
@@ -76,7 +80,7 @@ export const evaluateDocument = (doc: DocumentRecord, requirement: Requirement, 
   if (expiresAt && DateTime.fromJSDate(expiresAt).minus({ days: requirement.warnDays }).toJSDate() <= now) {
     return result("expiring");
   }
-  return result("current");
+  return result(doc.surrogateFor ? "surrogate" : "current");
 };
 
 const issuerMatches = (doc: DocumentRecord, requirement: Requirement) =>
