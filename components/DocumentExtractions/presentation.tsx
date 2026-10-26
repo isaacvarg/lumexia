@@ -66,3 +66,20 @@ export const pageLabel = (page: { index: number | null; label: string | null }) 
 
 // A PDF link that opens at the fact's page.
 export const pageHref = (url: string, index: number | null) => (index !== null ? `${url}#page=${index + 1}` : url)
+
+// How a fact reads in a list: a table row as its columns joined ("Linalool · 78-70-6 · 25-35%"), leaving out
+// the number columns kept only for search (…_min, …_max, …_value); a claim without underscores.
+export const factText = (f: { kind?: string; value: unknown; printed: string | null }) => {
+  if (f.kind === "row" && f.value && typeof f.value === "object" && !Array.isArray(f.value)) {
+    // stored JSON loses the column order, so the column naming the row goes first
+    const lead = ["chemical", "test", "hazard_class", "category", "topic", "mode", "code", "route", "basis"]
+    const rank = (k: string) => (lead.includes(k) ? lead.indexOf(k) : lead.length)
+    return Object.entries(f.value as Record<string, unknown>)
+      .filter(([k]) => !/_(min|max|value)$/.test(k))
+      .sort(([a], [b]) => rank(a) - rank(b))
+      .map(([, v]) => (Array.isArray(v) ? v.join(", ") : String(v)))
+      .join(" · ")
+  }
+  if (f.kind === "claim") return f.printed?.replace(/_/g, " ") ?? ""
+  return f.printed ?? ""
+}

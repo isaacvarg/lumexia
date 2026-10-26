@@ -6,7 +6,7 @@ import { listFactDefinitions } from "@/lib/documentExtractions/catalog"
 import { countExtractionsToReview, describeFact, documentsByContent, searchFacts, type ValueFilter } from "@/lib/documentExtractions/queries"
 import { claimStatuses, reviewStates } from "@/lib/documentExtractions/types"
 import { canonicalUnit } from "@/lib/documentExtractions/units"
-import { MethodBadge, pageLabel, reviewStateLabel } from "@/components/DocumentExtractions/presentation"
+import { factText, MethodBadge, pageLabel, reviewStateLabel } from "@/components/DocumentExtractions/presentation"
 import { slugify } from "@/utils/slug"
 import DocumentsNav from "../_components/DocumentsNav"
 
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic"
 // Facts across every current extraction, e.g. every material with a flash point under 60 °C, every Prop 65
 // row for a CAS, or every material whose supplier states it's vegan. A plain GET form, so searches can be linked.
 
-type Params = { key?: string; op?: string; value?: string; unit?: string; claim?: string; cas?: string; text?: string; review?: string; check?: string; cursor?: string }
+type Params = { item?: string; key?: string; op?: string; value?: string; unit?: string; claim?: string; cas?: string; text?: string; review?: string; check?: string; cursor?: string }
 
 const ops: { op: ValueFilter["op"]; label: string }[] = [
   { op: "lt", label: "less than" },
@@ -43,10 +43,30 @@ const FactSearchPage = async ({ searchParams }: { searchParams: Params }) => {
       : undefined
     : undefined
   const text = searchParams.text?.trim()
-  const searched = !!(searchParams.key || valueFilter || text || searchParams.claim || searchParams.cas || searchParams.review || searchParams.check)
+
+  // an item by reference code, id or name; several name matches are listed to pick from
+  const itemQuery = searchParams.item?.trim()
+  const itemMatches = itemQuery
+    ? await prisma.item.findMany({
+        where: { OR: [{ id: itemQuery }, { referenceCode: { equals: itemQuery, mode: "insensitive" } }, { name: { contains: itemQuery, mode: "insensitive" } }] },
+        select: { id: true, name: true, referenceCode: true },
+        orderBy: { name: "asc" },
+        take: 20,
+      })
+    : []
+  const item = itemMatches.find((i) => i.id === itemQuery || i.referenceCode.toLowerCase() === itemQuery?.toLowerCase()) ?? (itemMatches.length === 1 ? itemMatches[0] : null)
+  const itemShas = item
+    ? (await prisma.itemFile.findMany({ where: { itemId: item.id, supersededAt: null }, select: { file: { select: { sha256: true } } } }))
+        .map((d) => d.file.sha256)
+        .filter((s): s is string => !!s)
+    : undefined
+  const itemPending = !!itemQuery && !item
+
+  const searched = !itemPending && !!(item || searchParams.key || valueFilter || text || searchParams.claim || searchParams.cas || searchParams.review || searchParams.check)
 
   const result = searched
     ? await searchFacts(prisma, {
+        sha256s: itemShas,
         factKey: definition?.key,
         unitFamily: definition?.unitFamily,
         valueFilter: valueFilter ?? (text ? { op: "contains", value: text } : undefined),
@@ -72,6 +92,10 @@ const FactSearchPage = async ({ searchParams }: { searchParams: Params }) => {
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-3 rounded-xl border border-base-300 bg-base-100 p-4">
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium">Item</span>
+          <input name="item" defaultValue={item ? item.referenceCode : itemQuery ?? ""} placeholder="Name or code" className="input input-sm w-44" />
+        </label>
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Fact</span>
           <select name="key" defaultValue={searchParams.key ?? ""} className="select select-sm w-64">
@@ -119,6 +143,20 @@ const FactSearchPage = async ({ searchParams }: { searchParams: Params }) => {
         {searched && <Link href="/quality/documents/facts" className="btn btn-ghost btn-sm">Clear</Link>}
       </form>
 
+      {itemPending && (
+        itemMatches.length === 0 ? (
+          <p className="text-sm text-warning">No item matches “{itemQuery}”.</p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-base-content/70">Several items match; pick one:</span>
+            {itemMatches.map((i) => (
+              <Link key={i.id} href={`?${new URLSearchParams({ ...Object.fromEntries(Object.entries(searchParams).filter(([k, v]) => v && k !== "cursor")), item: i.referenceCode } as Record<string, string>)}`} className="btn btn-ghost btn-xs">
+                {i.name} <span className="text-base-content/50">{i.referenceCode}</span>
+              </Link>
+            ))}
+          </div>
+        )
+      )}
       {value && !valueFilter && (
         <p className="text-sm text-warning">Number filters need a fact with numeric values (e.g. Flash point). Use “Text contains” for anything else.</p>
       )}
@@ -158,7 +196,7 @@ const FactSearchPage = async ({ searchParams }: { searchParams: Params }) => {
                       {f.label}
                       {"component" in f && f.component && <div className="text-xs text-base-content/60">{f.component.name}{f.component.cas && ` · ${f.component.cas}`}</div>}
                     </td>
-                    <td className="align-top">{f.printed?.replace(/^not_stated$/, "not stated")}</td>
+                    <td className="align-top">{factText(f)}</td>
                     <td className="max-w-md align-top text-xs text-base-content/70">
                       {page && <span className="mr-1">{page}</span>}<q className="italic">{f.quote}</q>
                     </td>

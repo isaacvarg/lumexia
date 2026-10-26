@@ -216,6 +216,10 @@ export const mergeFactDefinition = async (db: Db, userId: string, fromId: string
     throw new ExtractionRefused(`${into.key}'s own value schema has problems; fix it first.`);
   }
   const moved = await db.extractedFact.updateMany({ where: { definitionId: fromId }, data: { definitionId: intoId } });
+  // Canon data types mapped to the old key now look at the new one
+  const mappings = await db.canonDataTypeFactDefinition.findMany({ where: { factDefinitionId: fromId }, select: { dataTypeId: true } });
+  await db.canonDataTypeFactDefinition.createMany({ data: mappings.map((m) => ({ dataTypeId: m.dataTypeId, factDefinitionId: intoId })), skipDuplicates: true });
+  await db.canonDataTypeFactDefinition.deleteMany({ where: { factDefinitionId: fromId } });
   await db.factDefinition.update({ where: { id: fromId }, data: { mergedIntoId: intoId, status: "deprecated" } });
   // keys merged into `from` earlier now point at the final key
   await db.factDefinition.updateMany({ where: { mergedIntoId: fromId }, data: { mergedIntoId: intoId } });

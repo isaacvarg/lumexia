@@ -7,6 +7,7 @@ import { canUser } from "./permissions";
 import { resolveLinked } from "./resolvers";
 import { observeLinkedSource, refreshArtifactStatus } from "./status";
 import { CanonSubject, toSubjectKey } from "./subjectKey";
+import { getItemFacts, type ItemFact } from "@/lib/documentExtractions/queries";
 
 const artifactInclude = {
   status: true,
@@ -138,8 +139,21 @@ export const getItemCanon = async (userId: string, itemId: string) => {
     })),
   );
 
+  // facts from the item's documents for each data type mapped to fact keys (evidence beside the value)
+  const mappedTypes = [...itemTypes, ...supplierTypes].map((d) => d.id);
+  const mappings = await prisma.canonDataTypeFactDefinition.findMany({
+    where: { dataTypeId: { in: mappedTypes } },
+    select: { dataTypeId: true, factDefinition: { select: { key: true } } },
+  });
+  const itemFacts = mappings.length ? await getItemFacts(prisma, itemId, Array.from(new Set(mappings.map((m) => m.factDefinition.key)))) : [];
+  const documentFacts: Record<string, ItemFact[]> = {};
+  for (const m of mappings) {
+    documentFacts[m.dataTypeId] = [...(documentFacts[m.dataTypeId] ?? []), ...itemFacts.filter((f) => f.key === m.factDefinition.key)];
+  }
+
   return {
     item: withStatements,
+    documentFacts,
     suppliers: await Promise.all(
       Array.from(supplierGroups.values()).map(async ({ supplier, dataTypeIds }) => ({
         supplier,
@@ -242,6 +256,7 @@ export const getArtifactHistory = async (artifactId: string) => {
         select: {
           id: true,
           printed: true,
+          value: true,
           quote: true,
           pageIndex: true,
           pageLabel: true,
@@ -249,7 +264,7 @@ export const getArtifactHistory = async (artifactId: string) => {
           state: true,
           verifiedAt: true,
           componentName: true,
-          definition: { select: { label: true } },
+          definition: { select: { label: true, kind: true } },
         },
       })
     : [];

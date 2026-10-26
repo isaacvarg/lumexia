@@ -45,14 +45,19 @@ Each data type carries:
 - **Re-verify after (days)** — how long an accepted value stays valid before
   it's flagged **Expired** and needs reconfirming.
 - **Scope** — restrict the type to a procurement type or specific item types.
+- **Document facts** — the [extracted facts](/docs/inventory/item-documents#extracted-facts)
+  that back this value, for example **Allergen** for an Allergens type or
+  **Composition** and **INCI name** for an Ingredient Listing. The item's
+  Canon tab shows what its documents say beside the value, and a proposal
+  can cite those facts as evidence.
 - **External key** — the WooCommerce/website field this data type corresponds
   to, for a future sync.
 
 <Callout>
   Once a data type has any artifacts, its **Source**, **Shape**, and
   **Applies to** are locked, since changing them would invalidate existing
-  values. Only its name, description, group, approvals, scope, and external
-  key remain editable.
+  values. Only its name, description, group, approvals, scope, document facts
+  and external key remain editable.
 </Callout>
 
 ### Subject types

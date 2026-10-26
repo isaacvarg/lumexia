@@ -44,6 +44,7 @@ model CanonDataType {
     parents      CanonDataTypeDependency[] @relation("CanonDependencyChild")
     children     CanonDataTypeDependency[] @relation("CanonDependencyParent")
     artifacts    CanonArtifact[]
+    factDefinitions CanonDataTypeFactDefinition[]
 
     @@map("canon_data_types")
 }

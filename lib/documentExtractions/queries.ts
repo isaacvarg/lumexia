@@ -42,6 +42,7 @@ export const describeFact = (f: FactRow) => ({
   id: f.id,
   key: f.definition.key,
   label: f.definition.label,
+  kind: f.definition.kind,
   ...(f.definition.status !== "approved" && { keyStatus: f.definition.status }),
   scope: f.scope,
   ...(f.scope === "component" && { component: { name: f.componentName, cas: f.componentCas } }),
@@ -63,7 +64,7 @@ export const describeFact = (f: FactRow) => ({
   verified: f.verifiedAt ? { by: f.verifiedBy?.name ?? null, at: day(f.verifiedAt) } : null,
 });
 
-const sortFacts = (facts: FactRow[]) =>
+const sortFacts = <F extends FactRow>(facts: F[]) =>
   [...facts].sort(
     (a, b) =>
       a.definition.displayOrder - b.definition.displayOrder ||
@@ -459,3 +460,48 @@ export const getCrossChecks = async (db: Db, filter: { checks?: readonly CrossCh
     (f) => (!filter.itemId || f.items.some((i) => i.id === filter.itemId)) && (!filter.cas || f.cas === filter.cas.trim()),
   );
 };
+
+// Every fact the item's current documents state, newest reading of each file, in catalog order. Each fact
+// carries the documents it came from (a file shared with other items appears once). keys narrows to those
+// catalog keys, e.g. the ones a Canon data type is mapped to.
+export const getItemFacts = async (db: Db, itemId: string, keys?: string[]) => {
+  const documents = await db.itemFile.findMany({
+    where: { itemId, supersededAt: null, file: { sha256: { not: null } } },
+    select: {
+      id: true,
+      file: { select: { id: true, name: true, sha256: true } },
+      fileType: { select: { name: true, abbreviaton: true } },
+      supplier: { select: { id: true, name: true } },
+      lot: { select: { lotNumber: true } },
+      surrogateFor: { select: { item: { select: { id: true, name: true } } } },
+    },
+  });
+  if (!documents.length || (keys && !keys.length)) return [];
+  const docsBySha = new Map<string, typeof documents>();
+  for (const d of documents) docsBySha.set(d.file.sha256!, [...(docsBySha.get(d.file.sha256!) ?? []), d]);
+
+  const rows = await db.extractedFact.findMany({
+    where: {
+      state: "active",
+      extraction: { status: "current", sha256: { in: Array.from(docsBySha.keys()) } },
+      ...(keys && { definition: { key: { in: keys } } }),
+    },
+    select: { ...factSelect, extraction: { select: { id: true, sha256: true, createdAt: true, reviewState: true } } },
+  });
+
+  return sortFacts(rows).map((row) => ({
+    ...describeFact(row),
+    extraction: { id: row.extraction.id, readAt: row.extraction.createdAt.toISOString(), reviewState: row.extraction.reviewState },
+    documents: (docsBySha.get(row.extraction.sha256) ?? []).map((d) => ({
+      documentId: d.id,
+      fileId: d.file.id,
+      name: d.file.name,
+      type: d.fileType.abbreviaton ?? d.fileType.name,
+      supplier: d.supplier,
+      lot: d.lot?.lotNumber ?? null,
+      surrogateFor: d.surrogateFor?.item ?? null,
+    })),
+  }));
+};
+
+export type ItemFact = Awaited<ReturnType<typeof getItemFacts>>[number];

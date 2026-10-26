@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { getUserId } from "@/actions/users/getUserId";
 import { ensureSeedCatalog, listFactDefinitions } from "@/lib/documentExtractions/catalog";
 import { documentContent } from "@/lib/documentExtractions/content";
-import { getExtraction } from "@/lib/documentExtractions/queries";
+import { getExtraction, getItemFacts } from "@/lib/documentExtractions/queries";
 import { ExtractionRefused } from "@/lib/documentExtractions/store";
 import type { FactKind, ValueSchema } from "@/lib/documentExtractions/types";
 import {
@@ -66,6 +66,12 @@ export const getDocumentExtractionView = async (documentId: string) => {
 };
 
 export type DocumentExtractionView = Awaited<ReturnType<typeof getDocumentExtractionView>>;
+
+// Everything the item's current documents state, for the Files tab summary.
+export const getItemFactsView = async (itemId: string) => {
+  await getUserId();
+  return getItemFacts(prisma, itemId);
+};
 
 export const getExtractionFullText = async (extractionId: string) => {
   await getUserId();

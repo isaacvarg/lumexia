@@ -22,6 +22,8 @@ type DataTypeInput = {
   procurementTypeId?: string | null;
   groupId?: string | null;
   itemTypeIds?: string[];
+  // fact keys whose extracted facts back this type's value
+  factDefinitionIds?: string[];
 };
 
 const subjectKindById: Record<string, string> = {
@@ -64,6 +66,7 @@ export const getAllCanonDataTypes = async () => {
       group: true,
       procurementType: true,
       itemTypes: { include: { itemType: true } },
+      factDefinitions: { include: { factDefinition: { select: { id: true, key: true, label: true } } } },
       userPermissions: { include: { user: { select: { id: true, name: true, image: true } }, capability: true } },
       teamPermissions: { include: { team: true, capability: true } },
       parents: { include: { kind: true } },
@@ -90,7 +93,7 @@ export const createCanonDataType = async (input: DataTypeInput) => {
   validateSupplierStatements(input);
   validateApprovals(input);
 
-  const { itemTypeIds = [], shapeConfig, ...data } = input;
+  const { itemTypeIds = [], factDefinitionIds = [], shapeConfig, ...data } = input;
   return prisma.canonDataType.create({
     data: {
       ...data,
@@ -98,6 +101,7 @@ export const createCanonDataType = async (input: DataTypeInput) => {
       shapeConfig: (shapeConfig ?? undefined) as any,
       recordStatusId: recordStatuses.active,
       itemTypes: { create: itemTypeIds.map((itemTypeId) => ({ itemTypeId })) },
+      factDefinitions: { create: factDefinitionIds.map((factDefinitionId) => ({ factDefinitionId })) },
     },
   });
 };
@@ -126,8 +130,14 @@ export const updateCanonDataType = async (id: string, input: Partial<DataTypeInp
     resolverKey: input.resolverKey !== undefined ? input.resolverKey : existing.resolverKey,
   });
 
-  const { itemTypeIds, shapeConfig, ...data } = input;
+  const { itemTypeIds, factDefinitionIds, shapeConfig, ...data } = input;
   return prisma.$transaction(async (tx) => {
+    if (factDefinitionIds) {
+      await tx.canonDataTypeFactDefinition.deleteMany({ where: { dataTypeId: id } });
+      await tx.canonDataTypeFactDefinition.createMany({
+        data: factDefinitionIds.map((factDefinitionId) => ({ dataTypeId: id, factDefinitionId })),
+      });
+    }
     if (itemTypeIds) {
       await tx.canonDataTypeItemType.deleteMany({ where: { dataTypeId: id } });
       await tx.canonDataTypeItemType.createMany({

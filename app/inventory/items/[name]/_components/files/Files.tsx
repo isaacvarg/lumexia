@@ -12,6 +12,7 @@ import DocumentDialog, { DocumentDialogState, documentDialogId } from "./Documen
 import DocumentLibrary from "./DocumentLibrary"
 import DocumentPreview from "./DocumentPreview"
 import LotDocumentsPanel from "./LotDocumentsPanel"
+import ItemFactsPanel from "./ItemFactsPanel"
 import RequirementsPanel from "./RequirementsPanel"
 import SurrogateDialog, { surrogateDialogId } from "./SurrogateDialog"
 import { needsAttention, StatusBadge } from "@/components/ItemDocuments/presentation"
@@ -91,6 +92,7 @@ const Files = () => {
 
         <RequirementsPanel />
         <LotDocumentsPanel />
+        <ItemFactsPanel />
         <DocumentLibrary statusByFile={statusByFile} />
       </div>
 
