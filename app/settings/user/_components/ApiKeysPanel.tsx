@@ -77,6 +77,14 @@ const grants: {
     enableConfirm: (name) => `Let ${name} add, rename and remove item aliases?`,
     disableConfirm: (name) => `Stop ${name} editing item aliases?`,
   },
+  {
+    scope: 'extract:write',
+    label: 'Write document extractions',
+    description: 'Store what supplier documents say (facts with page and quote), correct its own extractions and propose new fact keys. It can never verify facts.',
+    badge: 'badge-primary',
+    enableConfirm: (name) => `Let ${name} write document extractions? People still verify every fact.`,
+    disableConfirm: (name) => `Stop ${name} writing document extractions?`,
+  },
 ]
 
 const has = (key: ApiKeyListing, scope: GrantableScope) => key.scopes.includes(scope)

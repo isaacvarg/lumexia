@@ -14,12 +14,14 @@ export const apiKeyScopes = {
   propose: "propose",
   // add, rename and remove item aliases
   aliasWrite: "alias:write",
+  // store and correct document extractions and propose fact keys (never verify); see lib/mcp/tools/extractionWrites.ts
+  extractWrite: "extract:write",
 } as const;
 
 export type ApiKeyScope = (typeof apiKeyScopes)[keyof typeof apiKeyScopes];
 
 // Access beyond reading, which only a system admin may grant.
-export const grantableScopes = [apiKeyScopes.write, apiKeyScopes.delegate, apiKeyScopes.propose, apiKeyScopes.aliasWrite] as const;
+export const grantableScopes = [apiKeyScopes.write, apiKeyScopes.delegate, apiKeyScopes.propose, apiKeyScopes.aliasWrite, apiKeyScopes.extractWrite] as const;
 export type GrantableScope = (typeof grantableScopes)[number];
 export const isGrantable = (scope: string): scope is GrantableScope => (grantableScopes as readonly string[]).includes(scope);
 
