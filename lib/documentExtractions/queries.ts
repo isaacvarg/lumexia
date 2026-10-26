@@ -3,6 +3,8 @@ import type { Db } from "@/lib/canon/db";
 import { completenessFor, contentDocuments } from "./store";
 import { hashFiles } from "./content";
 import { toCanonical } from "./units";
+import { runCrossChecks, type CheckFact, type CrossCheckKind, type ItemRef } from "./crossChecks";
+import { aliasTypes } from "@/configs/staticRecords/aliasTypes";
 import type { DocumentExtractionStatus } from "./types";
 
 // Reading extractions. fullText is only loaded when asked for by name; lists and searches never carry it.
@@ -393,4 +395,67 @@ export const documentsByContent = async (db: Db, sha256s: string[]) => {
     bySha.set(d.file.sha256!, list);
   }
   return bySha;
+};
+
+const CROSS_CHECK_KEYS = [
+  "composition",
+  "allergen",
+  "prop65",
+  "state_right_to_know",
+  "sara_311_312",
+  "tsca_basis",
+  "exposure_limit",
+  "acute_toxicity",
+  "acute_toxicity_status",
+  "ghs_classification",
+  "hazard_statement",
+  "signal_word",
+  "section_regulatory",
+  "inci_name",
+];
+
+// Runs the cross-checks over every current extraction of a current document. Findings can be narrowed to an
+// item or a CAS afterwards; the checks themselves always look across all sheets.
+export const getCrossChecks = async (db: Db, filter: { checks?: readonly CrossCheckKind[]; itemId?: string; cas?: string } = {}) => {
+  const documents = await db.itemFile.findMany({
+    where: { supersededAt: null, file: { sha256: { not: null } } },
+    select: { file: { select: { sha256: true } }, item: { select: { id: true, name: true, referenceCode: true } } },
+  });
+  const itemsBySha = new Map<string, ItemRef[]>();
+  for (const d of documents) {
+    const list = itemsBySha.get(d.file.sha256!) ?? [];
+    if (!list.some((i) => i.id === d.item.id)) list.push(d.item);
+    itemsBySha.set(d.file.sha256!, list);
+  }
+
+  const rows = await db.extractedFact.findMany({
+    where: {
+      state: "active",
+      definition: { key: { in: CROSS_CHECK_KEYS } },
+      extraction: { status: "current", sha256: { in: Array.from(itemsBySha.keys()) } },
+    },
+    select: {
+      id: true,
+      extractionId: true,
+      componentName: true,
+      componentCas: true,
+      value: true,
+      printed: true,
+      pageIndex: true,
+      pageLabel: true,
+      quote: true,
+      definition: { select: { key: true } },
+      extraction: { select: { sha256: true } },
+    },
+  });
+  const facts: CheckFact[] = rows.map(({ definition, extraction, ...f }) => ({ ...f, key: definition.key, sha256: extraction.sha256 }));
+
+  const itemIds = Array.from(new Set(Array.from(itemsBySha.values()).flat().map((i) => i.id)));
+  const aliases = await db.alias.findMany({ where: { itemId: { in: itemIds }, aliasTypeId: aliasTypes.inciName }, select: { itemId: true, name: true } });
+  const aliasesByItem = new Map<string, string[]>();
+  for (const a of aliases) aliasesByItem.set(a.itemId, [...(aliasesByItem.get(a.itemId) ?? []), a.name]);
+
+  return runCrossChecks(facts, itemsBySha, aliasesByItem, filter.checks).filter(
+    (f) => (!filter.itemId || f.items.some((i) => i.id === filter.itemId)) && (!filter.cas || f.cas === filter.cas.trim()),
+  );
 };
