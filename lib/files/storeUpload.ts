@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import path from "path";
 import { Buffer } from "buffer";
+import { createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import { CreateBucketCommand, HeadBucketCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "@/lib/s3";
@@ -143,6 +144,7 @@ export const storeUploadedFile = async ({
       objectName: responseData.objectName,
       bucketName: responseData.bucket,
       etag: responseData.etag,
+      sha256: createHash('sha256').update(buffer).digest('hex'),
       versionId: responseData.versionId,
       size: responseData.size,
       mimeType: responseData.mimetype,

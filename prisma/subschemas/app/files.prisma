@@ -6,6 +6,8 @@ model File {
     thumbnailObjectName    String?              @unique @map("thumbnail_object_name")
     thumbnailBucketName    String?              @map("thumbnail_bucket_name")
     etag                   String
+    // set on upload; older files get it the first time an extraction needs it (lib/documentExtractions/content.ts)
+    sha256                 String?
     versionId              String?              @map("version_id")
     size                   Int
     mimeType               String               @map("mime_type")
@@ -40,5 +42,6 @@ model File {
     experimentSampleNoteFiles      ExperimentSampleNoteFile[]
     experimentSampleFiles          ExperimentSampleFile[]
 
+    @@index([sha256])
     @@map("files")
 }

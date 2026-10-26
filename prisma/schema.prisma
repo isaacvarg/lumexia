@@ -598,6 +598,8 @@ model File {
   thumbnailObjectName              String?                           @unique @map("thumbnail_object_name")
   thumbnailBucketName              String?                           @map("thumbnail_bucket_name")
   etag                             String
+  // set on upload; older files get it the first time an extraction needs it (lib/documentExtractions/content.ts)
+  sha256                           String?
   versionId                        String?                           @map("version_id")
   size                             Int
   mimeType                         String                            @map("mime_type")
@@ -636,6 +638,7 @@ model File {
   receiptFiles                     ReceiptFile[]
   inboxDocument                    InboxDocument?
 
+  @@index([sha256])
   @@map("files")
 }
 
@@ -1758,6 +1761,7 @@ model ItemFileType {
   updatedAt               DateTime                  @updatedAt @map("updated_at")
   itemFiles               ItemFile[]
   ItemDocumentRequirement ItemDocumentRequirement[]
+  factDefinitions         FactDefinitionFileType[]
 
   @@map("item_file_types")
 }
@@ -4029,6 +4033,11 @@ model User {
   inboxDocumentsChecked            InboxDocument[]                   @relation("InboxDocumentCheckedBy")
   inboxDocumentsDismissed          InboxDocument[]                   @relation("InboxDocumentDismissedBy")
   inboxFilings                     InboxFiling[]
+  documentExtractions              DocumentExtraction[]              @relation("DocumentExtractionCreatedBy")
+  factDefinitionsCreated           FactDefinition[]                  @relation("FactDefinitionCreatedBy")
+  extractedFactsVerified           ExtractedFact[]                   @relation("ExtractedFactVerifiedBy")
+  extractedFactsCreated            ExtractedFact[]                   @relation("ExtractedFactCreatedBy")
+  documentExtractionEvents         DocumentExtractionEvent[]         @relation("DocumentExtractionEventActor")
 
   @@map("users")
 }
@@ -4125,4 +4134,170 @@ model InboxFiling {
 
   @@index([inboxDocumentId])
   @@map("inbox_filings")
+}
+
+// Document extractions: what a supplier document (SDS, COA, TDS…) says, as facts with the page, quote and
+// reading method behind each. An agent with an extract:write key writes them; people verify facts. They're
+// keyed by file content (sha256), so every document backed by the same file shares one extraction, and
+// replacing a document doesn't touch it. Extractions are evidence, never Canon. See lib/documentExtractions.
+
+// status: current | superseded | failed. At most one current-or-failed extraction per sha256 (enforced in
+// lib/documentExtractions/store.ts). reviewState (unreviewed | partially_verified | verified) is recomputed
+// after every fact change, never set directly. conflicts lists verified facts a re-extraction changed or dropped.
+model DocumentExtraction {
+  id               String   @id @default(uuid())
+  sha256           String
+  status           String   @default("current")
+  supersededById   String?  @map("superseded_by_id")
+  extractorName    String?  @map("extractor_name")
+  extractorVersion String?  @map("extractor_version")
+  extractorModel   String?  @map("extractor_model")
+  methods          String[]
+  language         String?
+  pageCount        Int?     @map("page_count")
+  notes            String?
+  failureReason    String?  @map("failure_reason")
+  reviewState      String   @default("unreviewed") @map("review_state")
+  conflicts        Json?
+  createdById      String   @map("created_by_id")
+  apiKeyId         String?  @map("api_key_id")
+  onBehalfOfId     String?  @map("on_behalf_of_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  supersededBy DocumentExtraction?       @relation("DocumentExtractionSupersession", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes   DocumentExtraction[]      @relation("DocumentExtractionSupersession")
+  createdBy    User                      @relation("DocumentExtractionCreatedBy", fields: [createdById], references: [id])
+  text         DocumentExtractionText?
+  facts        ExtractedFact[]
+  events       DocumentExtractionEvent[]
+
+  @@index([sha256, status])
+  @@map("document_extractions")
+}
+
+// The document's full text, apart so default queries never load it (supplier documents may be proprietary).
+model DocumentExtractionText {
+  extractionId String   @id @map("extraction_id")
+  fullText     String   @map("full_text")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  extraction DocumentExtraction @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+
+  @@map("document_extraction_texts")
+}
+
+// The fact catalog. kind: scalar | enum | claim | row | section; valueSchema describes the value per kind
+// (see lib/documentExtractions/types.ts). status: proposed (added by an agent, usable at once) | approved |
+// deprecated. A merged key points at the key that replaced it and its facts were moved there.
+// source: seed | agent | human.
+model FactDefinition {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  label          String
+  description    String?
+  kind           String
+  valueSchema    Json     @default("{}") @map("value_schema")
+  unitFamily     String?  @map("unit_family")
+  safetyRelevant Boolean  @default(true) @map("safety_relevant")
+  displayOrder   Int      @default(1000) @map("display_order")
+  status         String   @default("proposed")
+  source         String   @default("agent")
+  mergedIntoId   String?  @map("merged_into_id")
+  createdById    String?  @map("created_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  mergedInto FactDefinition?          @relation("FactDefinitionMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom FactDefinition[]         @relation("FactDefinitionMerge")
+  createdBy  User?                    @relation("FactDefinitionCreatedBy", fields: [createdById], references: [id])
+  fileTypes  FactDefinitionFileType[]
+  facts      ExtractedFact[]
+
+  @@map("fact_definitions")
+}
+
+// The document types a fact applies to, and whether an extraction of that type is incomplete without it.
+model FactDefinitionFileType {
+  factDefinitionId String   @map("fact_definition_id")
+  fileTypeId       String   @map("file_type_id")
+  required         Boolean  @default(false)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  factDefinition FactDefinition @relation(fields: [factDefinitionId], references: [id], onDelete: Cascade)
+  fileType       ItemFileType   @relation(fields: [fileTypeId], references: [id], onDelete: Cascade)
+
+  @@id([factDefinitionId, fileTypeId])
+  @@map("fact_definition_file_types")
+}
+
+// One fact. A table row is one fact (rowIndex keeps the sheet's order), so a key may repeat.
+// scope: material | component (componentName is a chemical, never a trade name). printed is the value as
+// the sheet prints it; normalizedValue/normalizedMax are the lower/upper bound in the key's canonical unit,
+// used for numeric search. pageIndex is the 0-based PDF page, pageLabel the sheet's own page number.
+// method: text_layer | vision | ocr | human; confidence: high | medium | low; state: active | overridden.
+// A person's override is a human fact pointing at the agent fact it replaces.
+model ExtractedFact {
+  id              String    @id @default(uuid())
+  extractionId    String    @map("extraction_id")
+  definitionId    String    @map("definition_id")
+  scope           String    @default("material")
+  componentName   String?   @map("component_name")
+  componentCas    String?   @map("component_cas")
+  value           Json
+  printed         String?
+  unit            String?
+  normalizedValue Float?    @map("normalized_value")
+  normalizedMax   Float?    @map("normalized_max")
+  normalizedUnit  String?   @map("normalized_unit")
+  rowIndex        Int?      @map("row_index")
+  pageIndex       Int?      @map("page_index")
+  pageLabel       String?   @map("page_label")
+  quote           String
+  method          String
+  confidence      String
+  needsHumanCheck Boolean   @default(false) @map("needs_human_check")
+  state           String    @default("active")
+  replacesFactId  String?   @map("replaces_fact_id")
+  verifiedById    String?   @map("verified_by_id")
+  verifiedAt      DateTime? @map("verified_at")
+  createdById     String    @map("created_by_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  extraction   DocumentExtraction @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+  definition   FactDefinition     @relation(fields: [definitionId], references: [id])
+  replacesFact ExtractedFact?     @relation("ExtractedFactOverride", fields: [replacesFactId], references: [id], onDelete: SetNull)
+  overriddenBy ExtractedFact[]    @relation("ExtractedFactOverride")
+  verifiedBy   User?              @relation("ExtractedFactVerifiedBy", fields: [verifiedById], references: [id])
+  createdBy    User               @relation("ExtractedFactCreatedBy", fields: [createdById], references: [id])
+
+  @@index([extractionId])
+  @@index([definitionId, normalizedValue])
+  @@index([componentCas])
+  @@map("extracted_facts")
+}
+
+// History of every extraction and catalog change. factId and factDefinitionId aren't foreign keys, so the
+// history outlives removed facts and merged keys. See lib/documentExtractions/types.ts for the event types.
+model DocumentExtractionEvent {
+  id               String   @id @default(uuid())
+  extractionId     String?  @map("extraction_id")
+  factId           String?  @map("fact_id")
+  factDefinitionId String?  @map("fact_definition_id")
+  type             String
+  actorId          String   @map("actor_id")
+  apiKeyId         String?  @map("api_key_id")
+  onBehalfOfId     String?  @map("on_behalf_of_id")
+  reason           String?
+  payload          Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  extraction DocumentExtraction? @relation(fields: [extractionId], references: [id], onDelete: Cascade)
+  actor      User                @relation("DocumentExtractionEventActor", fields: [actorId], references: [id])
+
+  @@index([extractionId])
+  @@index([factDefinitionId])
+  @@map("document_extraction_events")
 }
