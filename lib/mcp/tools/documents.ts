@@ -28,6 +28,8 @@ export const describeItemDocuments = async (itemId: string) => {
         revision: true,
         supersededAt: true,
         derivedFromId: true,
+        surrogateReason: true,
+        surrogateFor: { select: { id: true, item: { select: { id: true, name: true } } } },
         createdAt: true,
         supplierLotNumber: true,
         supplier: { select: { id: true, name: true } },
@@ -75,6 +77,7 @@ export const describeItemDocuments = async (itemId: string) => {
       revision: f.revision,
       replaced: day(f.supersededAt),
       basedOn: f.derivedFromId ? fileName.get(f.derivedFromId) ?? f.derivedFromId : null,
+      ...(f.surrogateFor && { surrogateFor: { documentId: f.surrogateFor.id, item: f.surrogateFor.item, reason: f.surrogateReason } }),
       md5: md5Of(f.file.etag),
     })),
   };
@@ -125,7 +128,7 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
     {
       title: "Get item documents",
       description:
-        "An item's document requirements with their status (current, expiring, undated, stale, mismatch, expired, missing), " +
+        "An item's document requirements with their status (current, surrogate, expiring, undated, stale, mismatch, expired, missing), " +
         "per-lot status for lot documents, and every document on file including replaced versions. " +
         "Use before attaching a document to see what the item still needs.",
       inputSchema: { item: z.string().min(1).describe("Item id or reference code") },
@@ -145,10 +148,11 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
       description:
         "Required documents that need attention across all items: missing, expired, mismatch (a lot document printed " +
         "with a different supplier lot than the lot's), expiring, undated, or stale " +
-        "(our version is based on a supplier document that has since been replaced). Each issue has the supplier " +
+        "(our version is based on, or a surrogate stands in for, a document that has since been replaced), or surrogate " +
+        "(covered by another item's document until the item has its own). Each issue has the supplier " +
         "to ask when known. Filter to narrow it down.",
       inputSchema: {
-        statuses: z.array(z.enum(["missing", "expired", "mismatch", "expiring", "undated", "stale"])).optional().describe("Only these statuses"),
+        statuses: z.array(z.enum(["missing", "expired", "mismatch", "expiring", "undated", "stale", "surrogate"])).optional().describe("Only these statuses"),
         issuer: z.enum(["supplier", "internal"]).optional().describe("Only supplier documents or only our own"),
         item: z.string().optional().describe("Only this item (id or reference code)"),
         documentType: z.string().optional().describe("Only this document type (id, name or abbreviation)"),
