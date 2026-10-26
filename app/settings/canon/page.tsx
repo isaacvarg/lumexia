@@ -5,6 +5,8 @@ import itemTypeActions from "@/actions/inventory/itemTypeActions";
 import procurementTypeActions from "@/actions/inventory/procurementTypeActions";
 import { userKinds } from "@/lib/userKinds";
 import { listProposingUserIds } from "@/lib/apiKeys";
+import prisma from "@/lib/prisma";
+import { listFactDefinitions } from "@/lib/documentExtractions/catalog";
 import TabSelector from "./_components/shared/TabSelector";
 import TabsContainer from "./_components/shared/TabsContainer";
 import DataTypesView from "./_components/DataTypesView";
@@ -12,7 +14,7 @@ import Groups from "./_components/groups/Groups";
 import Teams from "./_components/teams/Teams";
 
 const CanonSettingsPage = async () => {
-  const [dataTypes, groups, teams, lookups, resolvers, users, itemTypes, procurementTypes, agentUserIds] = await Promise.all([
+  const [dataTypes, groups, teams, lookups, resolvers, users, itemTypes, procurementTypes, agentUserIds, factDefinitions] = await Promise.all([
     canonActions.dataTypes.getAll(),
     canonActions.groups.getAll(),
     canonActions.teams.getAll(),
@@ -22,6 +24,7 @@ const CanonSettingsPage = async () => {
     itemTypeActions.getAll(),
     procurementTypeActions.getAll(),
     listProposingUserIds(),
+    listFactDefinitions(prisma),
   ]);
 
   const activeUsers = users
@@ -44,6 +47,7 @@ const CanonSettingsPage = async () => {
             users={activeUsers}
             itemTypes={itemTypes}
             procurementTypes={procurementTypes}
+            factDefinitions={factDefinitions.map(({ id, key, label, kind, status }) => ({ id, key, label, kind, status }))}
           />
         }
         groups={<Groups groups={groups} />}

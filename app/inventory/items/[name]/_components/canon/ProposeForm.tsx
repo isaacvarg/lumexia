@@ -9,6 +9,9 @@ import type { CanonEntry, ItemCanon } from "@/lib/canon/queries"
 import { getShapeKey, parseContent } from "@/lib/canon/shapes"
 import ContentEditor, { emptyContent } from "./ContentEditor"
 import DiffView from "./DiffView"
+import { useDocumentFacts } from "./DocumentFacts"
+import ItemFactList from "@/components/DocumentExtractions/ItemFactList"
+import type { ItemFact } from "@/lib/documentExtractions/queries"
 
 type SourceRow = { sourceTypeId: string; fileId: string; url: string; note: string; sourceDate: string }
 
@@ -31,6 +34,31 @@ const ProposeForm = ({ entry, lookups, files, onDone }: Props) => {
   const [reason, setReason] = useState("")
   const [sources, setSources] = useState<SourceRow[]>([])
   const [submitting, setSubmitting] = useState(false)
+  // extracted facts from the item's documents that back this value, cited as evidence
+  const documentFacts = useDocumentFacts(entry)
+  const [cited, setCited] = useState<Map<string, ItemFact>>(new Map())
+  const toggleCited = (fact: ItemFact) =>
+    setCited((prev) => {
+      const next = new Map(prev)
+      if (next.has(fact.id)) next.delete(fact.id)
+      else next.set(fact.id, fact)
+      return next
+    })
+
+  // one source per extraction: its document, the cited facts, and their labels as the note
+  const citedSources = () => {
+    const byExtraction = new Map<string, ItemFact[]>()
+    for (const f of Array.from(cited.values())) byExtraction.set(f.extraction.id, [...(byExtraction.get(f.extraction.id) ?? []), f])
+    return Array.from(byExtraction.entries()).map(([extractionId, facts]) => ({
+      sourceTypeId: canonSourceTypes.supplierDocument,
+      fileId: facts[0].documents[0]?.fileId ?? null,
+      url: null,
+      note: `Extracted: ${Array.from(new Set(facts.map((f) => f.label))).join(", ")}`,
+      sourceDate: null,
+      extractionId,
+      factIds: facts.map((f) => f.id),
+    }))
+  }
 
   // lumexiaRecord is only for linked-source acceptance
   const sourceTypes = lookups.sourceTypes.filter((s) => s.id !== canonSourceTypes.lumexiaRecord)
@@ -48,7 +76,7 @@ const ProposeForm = ({ entry, lookups, files, onDone }: Props) => {
       toast("Missing reason", "Say why this change is needed.", "error")
       return
     }
-    if (dataType.requiresEvidence && sources.length === 0) {
+    if (dataType.requiresEvidence && sources.length === 0 && cited.size === 0) {
       toast("Missing evidence", `${dataType.name} needs evidence for every change.`, "error")
       return
     }
@@ -60,13 +88,16 @@ const ProposeForm = ({ entry, lookups, files, onDone }: Props) => {
         subject,
         proposedContent: content,
         reason,
-        sources: sources.map((s) => ({
-          sourceTypeId: s.sourceTypeId,
-          fileId: s.fileId || null,
-          url: s.url || null,
-          note: s.note || null,
-          sourceDate: s.sourceDate ? new Date(s.sourceDate) : null,
-        })),
+        sources: [
+          ...sources.map((s) => ({
+            sourceTypeId: s.sourceTypeId,
+            fileId: s.fileId || null,
+            url: s.url || null,
+            note: s.note || null,
+            sourceDate: s.sourceDate ? new Date(s.sourceDate) : null,
+          })),
+          ...citedSources(),
+        ],
       })
       if (cr.version) toast("Saved", `${dataType.name} is now v${cr.version.versionNumber}.`, "success")
       else toast("Sent for review", `Your change to ${dataType.name} is waiting for a reviewer.`, "success")
@@ -109,7 +140,17 @@ const ProposeForm = ({ entry, lookups, files, onDone }: Props) => {
           </h3>
           <button type="button" onClick={addSource} className="btn btn-ghost btn-sm"><TbPlus /> Add source</button>
         </div>
-        {sources.length === 0 && <p className="text-sm italic text-base-content/50">No sources added.</p>}
+        {documentFacts.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-base-content/70">
+              Cite what the item&apos;s documents say{cited.size > 0 && ` (${cited.size} selected)`}:
+            </p>
+            <div className="max-h-72 overflow-y-auto">
+              <ItemFactList facts={documentFacts} selected={new Set(cited.keys())} onToggle={toggleCited} />
+            </div>
+          </div>
+        )}
+        {sources.length === 0 && cited.size === 0 && <p className="text-sm italic text-base-content/50">No sources added.</p>}
         {sources.map((s, i) => (
           <div key={i} className="grid grid-cols-1 gap-2 rounded-lg border border-base-300 p-3 md:grid-cols-2">
             <select className="select select-sm w-full" value={s.sourceTypeId} onChange={(e) => setSource(i, { sourceTypeId: e.target.value })}>

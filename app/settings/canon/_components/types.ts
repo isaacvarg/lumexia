@@ -20,4 +20,6 @@ export type CanonSettingsData = {
   users: CanonUserOption[];
   itemTypes: ItemType[];
   procurementTypes: ProcurementType[];
+  // the extraction fact catalog, to map data types to the facts that back them
+  factDefinitions: { id: string; key: string; label: string; kind: string; status: string }[];
 };

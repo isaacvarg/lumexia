@@ -12,6 +12,7 @@ import type { CanonEntry, ItemCanon, ItemCanonEntry } from "@/lib/canon/queries"
 import CanonCard, { CanonAction } from "./CanonCard"
 import HistoryPanel from "./HistoryPanel"
 import ProposeForm from "./ProposeForm"
+import { DocumentFactsContext } from "./DocumentFacts"
 import ReviewSourceForm from "./ReviewSourceForm"
 import SupplierStatements from "./SupplierStatements"
 
@@ -176,6 +177,7 @@ const Canon = () => {
     canon.item.length === 0 && canon.supplierDataTypes.length === 0 && canon.finishedProducts.every((fp) => fp.entries.length === 0)
 
   return (
+    <DocumentFactsContext.Provider value={canon.documentFacts}>
     <div className="flex flex-col gap-y-8">
       <SectionTitle>Canon</SectionTitle>
 
@@ -233,6 +235,7 @@ const Canon = () => {
         )}
       </Dialog.Root>
     </div>
+    </DocumentFactsContext.Provider>
   )
 }
 

@@ -5,6 +5,7 @@ import type { CanonEntry } from "@/lib/canon/queries"
 import { getShapeKey, toCopyText } from "@/lib/canon/shapes"
 import ContentView from "./ContentView"
 import StatusBadge from "./StatusBadge"
+import DocumentFacts from "./DocumentFacts"
 
 export type CanonAction = "propose" | "confirm" | "accept" | "history"
 
@@ -113,6 +114,8 @@ const CanonCard = ({ entry, onAction, children }: Props) => {
         </div>
 
         {blocker && <p className="text-xs text-base-content/50">{blocker}</p>}
+
+        <DocumentFacts entry={entry} />
 
         {children}
       </div>

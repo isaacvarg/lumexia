@@ -88,7 +88,9 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
       description:
         "Canon (reviewed canonical data) for an item: each applicable data type with its accepted value, status, " +
         "and flags, plus supplier statements, per-supplier facts, and the canon of finished products filled with it. " +
-        "acceptedValue is the reviewed truth; liveValue appears when a linked source changed and awaits review.",
+        "acceptedValue is the reviewed truth; liveValue appears when a linked source changed and awaits review. " +
+        "documentFacts lists what the item's documents say for data types mapped to fact keys (unreviewed evidence, " +
+        "with newSinceApproved when read after the accepted version); cite them with extractionId + factIds.",
       inputSchema: {
         item: z.string().min(1).describe("Item id or reference code"),
       },
@@ -100,18 +102,45 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
 
       const canon = await getItemCanon(ctx.user.id, item.id);
 
+      // the mapped facts for an entry, compact; supplier entries only see that supplier's documents
+      const factsFor = (entry: CanonEntry) => {
+        const subject = entry.subject;
+        const approvedAt = entry.artifact?.currentVersion?.createdAt ?? null;
+        const facts = (canon.documentFacts[entry.dataType.id] ?? [])
+          .map((f) => ({ ...f, documents: subject.kind === "itemSupplier" ? f.documents.filter((d) => d.supplier?.id === subject.supplierId) : f.documents }))
+          .filter((f) => f.documents.length > 0);
+        if (!facts.length) return {};
+        return {
+          documentFacts: facts.slice(0, 50).map((f) => ({
+            factId: f.id,
+            extractionId: f.extraction.id,
+            key: f.key,
+            ...("component" in f && f.component && { component: f.component }),
+            printed: f.printed,
+            page: f.page,
+            verified: !!f.verified,
+            ...(f.needsHumanCheck && !f.verified && { needsHumanCheck: true }),
+            ...(approvedAt && new Date(f.extraction.readAt) > approvedAt && { newSinceApproved: true }),
+            documents: f.documents.map((d) => ({ documentId: d.documentId, type: d.type, supplier: d.supplier?.name ?? null })),
+          })),
+          ...(facts.length > 50 && { documentFactsTruncated: facts.length }),
+        };
+      };
+
       return jsonResult({
         item,
         entries: canon.item.map((entry) => ({
           ...summarizeEntry(entry),
+          ...factsFor(entry),
           supplierStatements: entry.supplierStatements.map((s) => ({
             supplier: s.supplier.name,
             ...summarizeEntry(s.entry),
+            ...factsFor(s.entry),
           })),
         })),
         suppliers: canon.suppliers.map((s) => ({
           supplier: s.supplier.name,
-          entries: s.entries.map(summarizeEntry),
+          entries: s.entries.map((e) => ({ ...summarizeEntry(e), ...factsFor(e) })),
         })),
         finishedProducts: canon.finishedProducts.map((fp) => ({
           finishedProduct: fp.finishedProduct.name,
@@ -249,6 +278,7 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
           subjectType: true,
           procurementType: { select: { name: true } },
           itemTypes: { select: { itemType: { select: { name: true } } } },
+          factDefinitions: { select: { factDefinition: { select: { key: true } } } },
           parents: { select: { parent: { select: { name: true } }, kind: { select: { name: true } } } },
           userPermissions: { select: { capabilityId: true, user: { select: { id: true, name: true } } } },
           teamPermissions: {
@@ -294,6 +324,7 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
               procurementType: d.procurementType?.name ?? "all",
             },
             dependsOn: d.parents.map((p) => ({ dataType: p.parent.name, via: p.kind.name })),
+            ...(d.factDefinitions.length && { factKeys: d.factDefinitions.map((f) => f.factDefinition.key) }),
             requiredApprovals: d.requiredApprovals,
             requiresDifferentReviewer: d.requiresDifferentReviewer,
             requiresEvidence: d.requiresEvidence,

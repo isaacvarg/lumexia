@@ -11,6 +11,7 @@ import { getShapeKey } from "@/lib/canon/shapes"
 import ContentView from "./ContentView"
 import DiffView from "./DiffView"
 import StatusBadge from "./StatusBadge"
+import { factText } from "@/components/DocumentExtractions/presentation"
 
 type History = Awaited<ReturnType<typeof canonActions.artifacts.getHistory>>
 type Version = History["versions"][number]
@@ -53,7 +54,7 @@ const Sources = ({ sources }: { sources: ChangeRequest["sources"] }) => {
             <ul className="w-full border-l-2 border-base-300 pl-3 text-xs">
               {s.citedFacts.map((f) => (
                 <li key={f.id} className={f.state === "overridden" ? "line-through opacity-60" : ""}>
-                  <span className="font-medium">{f.definition.label}{f.componentName && ` (${f.componentName})`}:</span> {f.printed}
+                  <span className="font-medium">{f.definition.label}{f.componentName && ` (${f.componentName})`}:</span> {factText({ kind: f.definition.kind, value: f.value, printed: f.printed })}
                   <span className="text-base-content/50">
                     {" "}· {f.pageLabel ? `p. ${f.pageLabel}` : f.pageIndex !== null ? `p. ${f.pageIndex + 1}` : ""} “{f.quote}”
                     {f.method === "human" ? " · entered by a person" : f.verifiedAt ? " · verified" : " · not verified"}

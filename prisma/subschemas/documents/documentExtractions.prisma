@@ -76,6 +76,7 @@ model FactDefinition {
     createdBy  User?                    @relation("FactDefinitionCreatedBy", fields: [createdById], references: [id])
     fileTypes  FactDefinitionFileType[]
     facts      ExtractedFact[]
+    canonDataTypes CanonDataTypeFactDefinition[]
 
     @@map("fact_definitions")
 }

@@ -192,6 +192,17 @@ export type OpenOptions = {
   eventPayload?: Record<string, unknown>;
 };
 
+// Cited extraction facts must belong to the extraction they're cited from, whoever proposes.
+const checkCitations = async (db: Db, sources: CanonSourceInput[]) => {
+  for (const s of sources) {
+    if (!s.factIds?.length) continue;
+    if (!s.extractionId) throw new Error("Cited facts need their extraction.");
+    const ids = Array.from(new Set(s.factIds));
+    const found = await db.extractedFact.count({ where: { id: { in: ids }, extractionId: s.extractionId } });
+    if (found !== ids.length) throw new Error("Some cited facts aren't part of that extraction.");
+  }
+};
+
 const sourceRows = (sources: CanonSourceInput[]) =>
   sources.map((s) => ({
     sourceTypeId: s.sourceTypeId,
@@ -213,6 +224,7 @@ const openChangeRequest = async (
   const isReviewer = !options.skipSelfApproval && (await canUser(userId, input.dataTypeId, canonCapabilities.review));
 
   return inTransaction(options.db, async (tx) => {
+    await checkCitations(tx, input.sources ?? []);
     const dataType = await tx.canonDataType.findUniqueOrThrow({ where: { id: input.dataTypeId } });
     // item types that allow supplier statements also take item + supplier subjects
     const isSupplierStatement =
@@ -408,6 +420,7 @@ export const addChangeRequestEvidence = async (
   if (!canEdit && !canReview) throw new Error("You cannot add evidence to this change request.");
 
   return inTransaction(options.db, async (tx) => {
+    await checkCitations(tx, input.sources);
     await tx.canonChangeRequestSource.createMany({
       data: sourceRows(input.sources).map((row) => ({ ...row, changeRequestId: cr.id })),
     });

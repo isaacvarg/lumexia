@@ -28,7 +28,7 @@ const tagOptionsOf = (dataType: CanonDataTypeRow | null) => {
 const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
   const router = useRouter()
   const { toast } = useToast()
-  const { lookups, resolvers, itemTypes, procurementTypes } = settings
+  const { lookups, resolvers, itemTypes, procurementTypes, factDefinitions } = settings
 
   const [name, setName] = useState(dataType?.name ?? "")
   const [description, setDescription] = useState(dataType?.description ?? "")
@@ -45,6 +45,8 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
   const [groupId, setGroupId] = useState(dataType?.groupId ?? "")
   const [itemTypeIds, setItemTypeIds] = useState<string[]>(dataType?.itemTypes.map((t) => t.itemTypeId) ?? [])
   const [externalKey, setExternalKey] = useState(dataType?.externalKey ?? "")
+  const [factDefinitionIds, setFactDefinitionIds] = useState<string[]>(dataType?.factDefinitions.map((f) => f.factDefinitionId) ?? [])
+  const [factQuery, setFactQuery] = useState("")
   const [saving, setSaving] = useState(false)
 
   const isLinked = resolverKey !== ""
@@ -91,6 +93,7 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
       procurementTypeId: procurementTypeId || null,
       groupId: groupId || null,
       itemTypeIds,
+      factDefinitionIds,
     }
 
     setSaving(true)
@@ -252,6 +255,33 @@ const DataTypeDrawer = ({ dataType, settings, onClose, onCreated }: Props) => {
               </button>
             ))}
           </div>
+        </Section>
+
+        <Section title="Document facts" hint="Facts read from supplier documents that back this value. The Canon tab shows them beside it, and a change can cite them.">
+          <div className="flex flex-wrap gap-2">
+            {factDefinitionIds.map((id) => {
+              const f = factDefinitions.find((d) => d.id === id)
+              return (
+                <button key={id} type="button" className="badge badge-lg badge-primary cursor-pointer gap-1" onClick={() => setFactDefinitionIds((ids) => ids.filter((x) => x !== id))} title="Remove">
+                  {f?.label ?? id} <TbX className="size-3" />
+                </button>
+              )
+            })}
+            {factDefinitionIds.length === 0 && <span className="text-sm text-base-content/50">None</span>}
+          </div>
+          <input className="input input-sm w-full" placeholder="Add a fact, e.g. allergen, composition, INCI" value={factQuery} onChange={(e) => setFactQuery(e.target.value)} />
+          {factQuery.trim() && (
+            <div className="flex flex-wrap gap-2">
+              {factDefinitions
+                .filter((d) => !factDefinitionIds.includes(d.id) && (d.key.includes(factQuery.trim().toLowerCase()) || d.label.toLowerCase().includes(factQuery.trim().toLowerCase())))
+                .slice(0, 12)
+                .map((d) => (
+                  <button key={d.id} type="button" className="badge badge-lg badge-ghost cursor-pointer" onClick={() => { setFactDefinitionIds((ids) => [...ids, d.id]); setFactQuery("") }}>
+                    {d.label} <span className="ml-1 font-mono text-xs text-base-content/50">{d.key}</span>
+                  </button>
+                ))}
+            </div>
+          )}
         </Section>
 
         <Section title="Website" hint="Where this appears on the website, for a future sync.">

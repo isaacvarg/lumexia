@@ -1,0 +1,13 @@
+// Fact keys whose extracted facts back a data type's value, e.g. Allergens ↔ allergen. The Canon tab shows
+// those facts beside the value, and proposing a change can cite them as evidence.
+model CanonDataTypeFactDefinition {
+    dataTypeId       String   @map("data_type_id")
+    factDefinitionId String   @map("fact_definition_id")
+    createdAt        DateTime @default(now()) @map("created_at")
+
+    dataType       CanonDataType  @relation(fields: [dataTypeId], references: [id], onDelete: Cascade)
+    factDefinition FactDefinition @relation(fields: [factDefinitionId], references: [id], onDelete: Cascade)
+
+    @@id([dataTypeId, factDefinitionId])
+    @@map("canon_data_type_fact_definitions")
+}
