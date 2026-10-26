@@ -11,6 +11,7 @@ import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 import { findDataType, findItem } from "../lookups";
 import { describeItemDocuments } from "./documents";
+import { extractionStatusForDocuments } from "@/lib/documentExtractions/queries";
 
 // Canon content is shape-specific JSON; agents get the same plain text the copy button produces.
 export const contentText = (shapeId: string, content: unknown) => {
@@ -150,6 +151,7 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
           url: s.url,
           note: s.note,
           sourceDate: s.sourceDate,
+          ...(s.extractionId && { extractionId: s.extractionId, factIds: s.factIds }),
         })),
       });
 
@@ -419,11 +421,17 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
       title: "Get material documents for BOM",
       description:
         "Documents (SDS, COA, IFRA…) for every material in an item's active BOM in one call: what each material has on " +
-        "file and what its requirements expect. Use get_document_downloads with the documentIds to read files.",
-      inputSchema: { item: z.string().min(1).describe("Item id or reference code") },
+        "file and what its requirements expect, and for each current document its extraction (missing = nobody has read " +
+        "that file yet, current, failed = unreadable, not_checked = call get_document_extraction to look it up). Read " +
+        "extractions with get_document_extraction instead of downloading documents again; use get_document_downloads " +
+        "with the documentIds for the ones still missing.",
+      inputSchema: {
+        item: z.string().min(1).describe("Item id or reference code"),
+        onlyNeedingExtraction: z.boolean().optional().describe("Only materials with documents nobody has extracted yet, and only those documents"),
+      },
       annotations: { readOnlyHint: true },
     },
-    async ({ item: identifier }) => {
+    async ({ item: identifier, onlyNeedingExtraction }) => {
       const item = await findItem(identifier);
       if (!item) return errorResult(`No item found for "${identifier}". Try search_items.`);
       const bom = await getActiveBom(item.id);
@@ -433,13 +441,38 @@ export const registerCanonTools: ToolRegistrar = (server, ctx) => {
       const documents = await Promise.all(materialIds.map((id) => describeItemDocuments(id)));
       const byId = new Map(materialIds.map((id, i) => [id, documents[i]]));
 
+      // extraction status of every current document (a shared material's file is read once for all products)
+      const current = await prisma.itemFile.findMany({
+        where: { itemId: { in: materialIds }, supersededAt: null },
+        select: { id: true, file: { select: { id: true, sha256: true, bucketName: true, objectName: true } } },
+      });
+      const extractions = await extractionStatusForDocuments(prisma, current);
+      const needs = (documentId: string) => ["missing", "not_checked"].includes(extractions.get(documentId)?.extractionStatus ?? "");
+      const counts = { current: 0, missing: 0, failed: 0, not_checked: 0 };
+      extractions.forEach((e) => counts[e.extractionStatus]++);
+
+      const materials = materialIds.map((id) => {
+        const material = bom.materials.find((m) => m.item.id === id)!;
+        const described = byId.get(id)!;
+        const docs = described.documents.map((d) => {
+          const e = extractions.get(d.documentId);
+          if (!e) return d;
+          const { sha256, ...extraction } = e;
+          return { ...d, sha256, extraction };
+        });
+        return {
+          material: material.item,
+          concentration: material.concentration,
+          ...described,
+          documents: onlyNeedingExtraction ? docs.filter((d) => needs(d.documentId)) : docs,
+        };
+      });
+
       return jsonResult({
         item,
         mbprVersion: bom.mbprVersion,
-        materials: materialIds.map((id) => {
-          const material = bom.materials.find((m) => m.item.id === id)!;
-          return { material: material.item, concentration: material.concentration, ...byId.get(id) };
-        }),
+        extractionSummary: counts,
+        materials: onlyNeedingExtraction ? materials.filter((m) => m.documents.length > 0) : materials,
       });
     },
   );

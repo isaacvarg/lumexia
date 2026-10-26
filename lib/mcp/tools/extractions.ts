@@ -2,7 +2,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { ensureSeedCatalog, listFactDefinitions } from "@/lib/documentExtractions/catalog";
 import { documentContent } from "@/lib/documentExtractions/content";
-import { describeFact, extractionStatusForDocuments, getExtraction, searchFacts } from "@/lib/documentExtractions/queries";
+import { describeFact, documentsByContent, extractionStatusForDocuments, getExtraction, searchFacts } from "@/lib/documentExtractions/queries";
 import { claimStatuses, factMethods, reviewStates } from "@/lib/documentExtractions/types";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
@@ -214,32 +214,13 @@ export const registerExtractionTools: ToolRegistrar = (server) => {
       });
       if ("error" in result) return errorResult(result.error as string);
 
-      const shas = Array.from(new Set(result.facts.map((f) => f.extraction.sha256)));
-      const documents = shas.length
-        ? await prisma.itemFile.findMany({
-            where: { file: { sha256: { in: shas } } },
-            select: {
-              id: true,
-              supersededAt: true,
-              file: { select: { sha256: true } },
-              fileType: { select: { name: true, abbreviaton: true } },
-              item: { select: { id: true, name: true, referenceCode: true } },
-              supplier: { select: { name: true } },
-            },
-          })
-        : [];
-      const docsBySha = new Map<string, unknown[]>();
-      for (const d of documents) {
-        const list = docsBySha.get(d.file.sha256!) ?? [];
-        list.push({ documentId: d.id, item: d.item, type: d.fileType.abbreviaton ?? d.fileType.name, ...(d.supplier && { supplier: d.supplier.name }), replaced: !!d.supersededAt });
-        docsBySha.set(d.file.sha256!, list);
-      }
+      const docsBySha = await documentsByContent(prisma, Array.from(new Set(result.facts.map((f) => f.extraction.sha256))));
 
       return jsonResult({
         facts: result.facts.map((f) => ({
           ...describeFact(f),
           extraction: { id: f.extraction.id, reviewState: f.extraction.reviewState, ...(f.extraction.status !== "current" && { status: f.extraction.status }) },
-          documents: docsBySha.get(f.extraction.sha256) ?? [],
+          documents: (docsBySha.get(f.extraction.sha256) ?? []).map(({ supplier, ...d }) => ({ ...d, ...(supplier && { supplier }) })),
         })),
         nextCursor: result.nextCursor,
       });

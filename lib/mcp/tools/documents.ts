@@ -2,6 +2,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { getItemDocumentStatus } from "@/lib/itemDocuments/queries";
 import { getDocumentDashboard } from "@/lib/itemDocuments/dashboard";
+import { getDocumentsNeedingExtraction } from "@/lib/documentExtractions/queries";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 import { findItem } from "../lookups";
@@ -150,9 +151,13 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
         "with a different supplier lot than the lot's), expiring, undated, or stale " +
         "(our version is based on, or a surrogate stands in for, a document that has since been replaced), or surrogate " +
         "(covered by another item's document until the item has its own). Each issue has the supplier " +
-        "to ask when known. Filter to narrow it down.",
+        "to ask when known. Filter to narrow it down. summary.extractionNeeded counts current documents nobody has " +
+        "extracted yet; pass status extraction_needed to list them (for the extraction agent's to-do list).",
       inputSchema: {
-        statuses: z.array(z.enum(["missing", "expired", "mismatch", "expiring", "undated", "stale", "surrogate"])).optional().describe("Only these statuses"),
+        statuses: z
+          .array(z.enum(["missing", "expired", "mismatch", "expiring", "undated", "stale", "surrogate", "extraction_needed"]))
+          .optional()
+          .describe("Only these statuses; extraction_needed lists documents waiting for extraction"),
         issuer: z.enum(["supplier", "internal"]).optional().describe("Only supplier documents or only our own"),
         item: z.string().optional().describe("Only this item (id or reference code)"),
         documentType: z.string().optional().describe("Only this document type (id, name or abbreviation)"),
@@ -173,9 +178,18 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
       const suppliers = new Map(data.suppliers.map((s) => [s.id, s.name]));
       const types = new Map(data.fileTypes.map((t) => [t.id, fileTypeLabel(t)]));
 
-      const issues = data.issues.filter(
+      const needingExtraction = await getDocumentsNeedingExtraction(prisma, {
+        ...(item && { itemId: item.id }),
+        ...(type && { fileTypeId: type.id }),
+        ...(sup && { supplierId: sup.id }),
+        ...(issuer && { issuer }),
+      });
+      const listExtraction = !!statuses?.includes("extraction_needed");
+      const requirementStatuses = statuses?.filter((s) => s !== "extraction_needed");
+
+      const issues = (listExtraction && !requirementStatuses?.length ? [] : data.issues).filter(
         (i) =>
-          (!statuses?.length || statuses.includes(i.status as (typeof statuses)[number])) &&
+          (!requirementStatuses?.length || requirementStatuses.includes(i.status as (typeof requirementStatuses)[number])) &&
           (!issuer || i.issuer === issuer || i.issuer === "any") &&
           (!item || i.itemId === item.id) &&
           (!documentType || i.fileTypeId === type?.id) &&
@@ -183,7 +197,19 @@ export const registerDocumentTools: ToolRegistrar = (server, ctx) => {
       );
       const max = limit ?? 100;
       return jsonResult({
-        summary: data.summary,
+        summary: { ...data.summary, extractionNeeded: needingExtraction.length },
+        ...(listExtraction && {
+          extractionNeeded: needingExtraction.slice(0, max).map((d) => ({
+            documentId: d.id,
+            name: d.file.name,
+            item: d.item,
+            document: fileTypeLabel(d.fileType),
+            supplier: d.supplier?.name ?? null,
+            lot: d.lot?.lotNumber ?? null,
+            // not_checked: the file has no stored hash yet, so it may share an extraction; get_document_extraction tells
+            status: d.extractionStatus,
+          })),
+        }),
         matching: issues.length,
         truncated: issues.length > max,
         issues: issues.slice(0, max).map((i) => ({

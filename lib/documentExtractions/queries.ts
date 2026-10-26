@@ -345,3 +345,52 @@ export const getExtractionReviewQueue = async (db: Db) => {
 };
 
 export type ExtractionReviewQueue = Awaited<ReturnType<typeof getExtractionReviewQueue>>;
+
+// Current documents whose file nobody has extracted yet, among document types the fact catalog covers
+// (product images and the like never need reading). Files without a stored hash count too; the agent
+// hashes them when it reads them.
+export const getDocumentsNeedingExtraction = async (db: Db, where: Prisma.ItemFileWhereInput = {}) => {
+  const coveredTypes = await db.factDefinitionFileType.findMany({ distinct: ["fileTypeId"], select: { fileTypeId: true } });
+  const documents = await db.itemFile.findMany({
+    where: { ...where, supersededAt: null, fileTypeId: { in: coveredTypes.map((t) => t.fileTypeId) } },
+    select: {
+      id: true,
+      createdAt: true,
+      file: { select: { id: true, name: true, sha256: true, bucketName: true, objectName: true } },
+      fileType: { select: { name: true, abbreviaton: true } },
+      item: { select: { id: true, name: true, referenceCode: true } },
+      supplier: { select: { id: true, name: true } },
+      lot: { select: { lotNumber: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  const statuses = await extractionStatusForDocuments(db, documents, 0);
+  return documents
+    .filter((d) => ["missing", "not_checked"].includes(statuses.get(d.id)!.extractionStatus))
+    .map((d) => ({ ...d, extractionStatus: statuses.get(d.id)!.extractionStatus as "missing" | "not_checked" }));
+};
+
+// Item documents filed with each of these file contents, current ones first.
+export const documentsByContent = async (db: Db, sha256s: string[]) => {
+  const documents = sha256s.length
+    ? await db.itemFile.findMany({
+        where: { file: { sha256: { in: sha256s } } },
+        select: {
+          id: true,
+          supersededAt: true,
+          file: { select: { sha256: true } },
+          fileType: { select: { name: true, abbreviaton: true } },
+          item: { select: { id: true, name: true, referenceCode: true } },
+          supplier: { select: { name: true } },
+        },
+        orderBy: [{ supersededAt: { sort: "asc", nulls: "first" } }, { createdAt: "desc" }],
+      })
+    : [];
+  const bySha = new Map<string, { documentId: string; item: { id: string; name: string; referenceCode: string }; type: string; supplier: string | null; replaced: boolean }[]>();
+  for (const d of documents) {
+    const list = bySha.get(d.file.sha256!) ?? [];
+    list.push({ documentId: d.id, item: d.item, type: d.fileType.abbreviaton ?? d.fileType.name, supplier: d.supplier?.name ?? null, replaced: !!d.supersededAt });
+    bySha.set(d.file.sha256!, list);
+  }
+  return bySha;
+};
