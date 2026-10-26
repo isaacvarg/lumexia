@@ -44,7 +44,7 @@ const StatCards = ({ summary }: { summary: DocumentDashboard["summary"] }) => (
       icon={TbClockExclamation}
       label="Needs review"
       value={String(summary.review)}
-      hint="Missing dates, or our version's source was replaced"
+      hint="Missing dates, a replaced source, or another item's document standing in"
       tone={summary.review > 0 ? "bg-info/15 text-info" : "bg-success/10 text-success"}
     />
   </div>

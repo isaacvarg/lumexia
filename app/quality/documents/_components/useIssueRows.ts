@@ -20,8 +20,9 @@ export const severity: Record<RequirementStatus, number> = {
   stale: 3,
   undated: 4,
   expiring: 5,
-  current: 6,
-  notApplicable: 7,
+  surrogate: 6,
+  current: 7,
+  notApplicable: 8,
 }
 
 // Joins each issue with the names it refers to, sorted by severity then item.

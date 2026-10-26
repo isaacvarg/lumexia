@@ -7,6 +7,8 @@ type FilesActions = {
   upload: (prefill?: Partial<DocumentFormValue>) => void
   edit: (file: ItemFile) => void
   preview: (file: ItemFile) => void
+  // use another item's document of this type until this item has its own
+  chooseSurrogate: (fileTypeId: string) => void
 }
 
 export const FilesContext = createContext<FilesActions | null>(null)

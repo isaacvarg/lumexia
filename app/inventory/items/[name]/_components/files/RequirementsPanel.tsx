@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link"
-import { TbReplace, TbSettings, TbUpload } from "react-icons/tb"
+import { TbLink, TbReplace, TbSettings, TbUpload } from "react-icons/tb"
 import { useItemSelection } from "@/store/itemSlice"
 import { EvaluatedRequirement } from "@/lib/itemDocuments/types"
 import { useFilesActions } from "./FilesContext"
@@ -8,7 +8,7 @@ import { formatDate, issuerLabel, needsAttention, statusDisplay, StatusBadge } f
 
 const RequirementRow = ({ evaluated }: { evaluated: EvaluatedRequirement }) => {
   const { documents: itemDocuments, files } = useItemSelection()
-  const { upload, preview } = useFilesActions()
+  const { upload, preview, chooseSurrogate } = useFilesActions()
   const { requirement, status, documents } = evaluated
   const fileType = itemDocuments.fileTypes.find((t) => t.id === requirement.fileTypeId)
   const best = documents[0]
@@ -39,6 +39,7 @@ const RequirementRow = ({ evaluated }: { evaluated: EvaluatedRequirement }) => {
           {file ? (
             <button type="button" onClick={() => preview(file)} className="group flex max-w-full flex-wrap items-center gap-x-2 text-left text-sm text-base-content/70">
               <span className="truncate group-hover:underline">{file.file.name}</span>
+              {file.surrogateFor && <span className="text-base-content/50">· from {file.surrogateFor.item.name}</span>}
               {file.supplier && <span className="text-base-content/50">· {file.supplier.name}</span>}
               {file.issuedAt && <span className="text-base-content/50">· issued {formatDate(file.issuedAt)}</span>}
               {best.effectiveExpiresAt && <span className="text-base-content/50">· expires {formatDate(best.effectiveExpiresAt)}</span>}
@@ -52,6 +53,11 @@ const RequirementRow = ({ evaluated }: { evaluated: EvaluatedRequirement }) => {
 
       <div className="flex items-center gap-2 self-end sm:self-auto">
         {(!optional || status !== "missing") && <StatusBadge status={status} />}
+        {requirement.issuer !== "internal" && (status === "missing" || file?.surrogateFor) && (
+          <button type="button" onClick={() => chooseSurrogate(requirement.fileTypeId)} className="btn btn-ghost btn-sm" title="Use another item's document until this item has its own">
+            <TbLink /> {file?.surrogateFor ? "Change surrogate" : "Use another item's"}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => upload(prefill)}

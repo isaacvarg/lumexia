@@ -1,6 +1,8 @@
 'use client'
 import { useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
+import { slugify } from "@/utils/slug"
 import { TbArchive, TbArrowBackUp, TbExternalLink, TbPencil, TbReplace, TbTrash, TbX } from "react-icons/tb"
 import { useItemSelection } from "@/store/itemSlice"
 import { DocumentStatus } from "@/lib/itemDocuments/types"
@@ -18,6 +20,8 @@ const Detail = ({ label, children }: { label: string; children: React.ReactNode 
 )
 
 type Props = { file: ItemFile; status?: DocumentStatus; onClose: () => void }
+
+const itemFilesHref = (item: { id: string; name: string }) => `/inventory/items/${slugify(item.name)}?id=${item.id}&tab=files`
 
 const DocumentPreview = ({ file, status, onClose }: Props) => {
   const { files } = useItemSelection()
@@ -90,6 +94,20 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
               <Detail label="Based on">
                 <button type="button" onClick={() => preview(source)} className="link">{source.file.name}</button>
                 {source.supersededAt && <span className="ml-1 text-warning">(replaced)</span>}
+              </Detail>
+            )}
+            {file.surrogateFor && (
+              <Detail label="Stands in for">
+                <Link href={itemFilesHref(file.surrogateFor.item)} className="link">{file.surrogateFor.item.name}&apos;s document</Link>
+                {file.surrogateFor.supersededAt && <span className="ml-1 text-warning">(replaced)</span>}
+                {file.surrogateReason && <span className="block font-normal text-base-content/60">{file.surrogateReason}</span>}
+              </Detail>
+            )}
+            {file.surrogates.length > 0 && (
+              <Detail label="Also used by">
+                {file.surrogates.map((s) => (
+                  <Link key={s.id} href={itemFilesHref(s.item)} className="link block">{s.item.name}</Link>
+                ))}
               </Detail>
             )}
             {derived.length > 0 && (

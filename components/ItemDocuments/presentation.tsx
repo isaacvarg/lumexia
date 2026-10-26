@@ -7,6 +7,7 @@ import {
   TbClockExclamation,
   TbMinus,
   TbArrowsDiff,
+  TbLink,
   TbRefreshAlert,
 } from "react-icons/tb"
 import { DateTime } from "luxon"
@@ -14,9 +15,10 @@ import { RequirementStatus } from "@/lib/itemDocuments/types"
 
 export const statusDisplay: Record<RequirementStatus, { label: string; badge: string; text: string; icon: IconType; hint: string }> = {
   current: { label: "Current", badge: "badge-success", text: "text-success", icon: TbCircleCheck, hint: "On file and valid" },
+  surrogate: { label: "Surrogate", badge: "badge-warning", text: "text-warning", icon: TbLink, hint: "Another item's document stands in until this item has its own" },
   expiring: { label: "Expiring", badge: "badge-warning", text: "text-warning", icon: TbClockExclamation, hint: "Expires soon" },
   undated: { label: "Needs dates", badge: "badge-info", text: "text-info", icon: TbCalendarQuestion, hint: "Add an issue or expiry date so it can be checked" },
-  stale: { label: "Source updated", badge: "badge-warning", text: "text-warning", icon: TbRefreshAlert, hint: "The supplier document it was based on has been replaced" },
+  stale: { label: "Source updated", badge: "badge-warning", text: "text-warning", icon: TbRefreshAlert, hint: "The document it's based on, or stands in for, has been replaced" },
   mismatch: { label: "Lot mismatch", badge: "badge-warning", text: "text-warning", icon: TbArrowsDiff, hint: "The supplier lot printed on it differs from this lot's supplier lot" },
   expired: { label: "Expired", badge: "badge-error", text: "text-error", icon: TbAlertTriangle, hint: "Past its expiry or issued before the cutoff" },
   missing: { label: "Missing", badge: "badge-error", text: "text-error", icon: TbCircleDashed, hint: "No document on file" },

@@ -8,6 +8,12 @@ import { createActivityLog } from "@/utils/auxiliary/createActivityLog"
 
 export const handleDeleteFile = async (file: ItemFile) => {
 
+  // items using this document as a surrogate no longer have one
+  await prisma.itemFile.updateMany({
+    where: { surrogateForItemFileId: file.id, supersededAt: null },
+    data: { supersededAt: new Date() },
+  });
+
   const itemFileRes = await prisma.itemFile.delete({
     where: {
       id: file.id
