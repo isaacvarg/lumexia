@@ -187,7 +187,7 @@ export const getSupplierCanonEntry = async (userId: string, itemId: string, supp
 // The full history behind an artifact: every version with its CR, reviews, evidence and lineage,
 // plus non-version events. The UI merges both into one timeline.
 export const getArtifactHistory = async (artifactId: string) => {
-  return prisma.canonArtifact.findUniqueOrThrow({
+  const history = await prisma.canonArtifact.findUniqueOrThrow({
     where: { id: artifactId },
     include: {
       dataType: { include: { shape: true } },
@@ -233,6 +233,35 @@ export const getArtifactHistory = async (artifactId: string) => {
       },
     },
   });
+
+  // facts cited from document extractions, as they read now (a later correction shows; a removed fact drops out)
+  const factIds = [...history.versions.flatMap((v) => v.changeRequest?.sources ?? []), ...history.changeRequests.flatMap((cr) => cr.sources)].flatMap((s) => s.factIds);
+  const facts = factIds.length
+    ? await prisma.extractedFact.findMany({
+        where: { id: { in: Array.from(new Set(factIds)) } },
+        select: {
+          id: true,
+          printed: true,
+          quote: true,
+          pageIndex: true,
+          pageLabel: true,
+          method: true,
+          state: true,
+          verifiedAt: true,
+          componentName: true,
+          definition: { select: { label: true } },
+        },
+      })
+    : [];
+  const factById = new Map(facts.map((f) => [f.id, f]));
+  const withFacts = <S extends { factIds: string[] }>(sources: S[]) =>
+    sources.map((s) => ({ ...s, citedFacts: s.factIds.map((id) => factById.get(id)).filter((f): f is (typeof facts)[number] => !!f) }));
+
+  return {
+    ...history,
+    versions: history.versions.map((v) => ({ ...v, changeRequest: v.changeRequest && { ...v.changeRequest, sources: withFacts(v.changeRequest.sources) } })),
+    changeRequests: history.changeRequests.map((cr) => ({ ...cr, sources: withFacts(cr.sources) })),
+  };
 };
 
 // For a scheduled sweep: catches expiries and linked-source edits nobody has viewed yet.

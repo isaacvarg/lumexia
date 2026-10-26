@@ -39,6 +39,7 @@ export const getItemDocumentStatuses = async (
           expiresAt: true,
           supersededAt: true,
           derivedFrom: { select: { supersededAt: true } },
+          surrogateFor: { select: { supersededAt: true, issuedAt: true, expiresAt: true } },
         },
       },
       lot: {

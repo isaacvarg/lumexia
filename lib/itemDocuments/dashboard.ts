@@ -4,7 +4,7 @@ import { getItemDocumentStatuses, ItemDocumentStatus } from "./queries";
 import { RequirementStatus } from "./types";
 
 // Statuses that put a required document on the dashboard; "current" and "notApplicable" don't.
-export const attentionStatuses: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring"];
+export const attentionStatuses: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring", "surrogate"];
 
 // Where an issue's supplier came from: the document on file, the lot's purchase order, or (for a missing
 // item-level document) the supplier the item was most recently ordered from.
@@ -171,7 +171,7 @@ export const getDocumentDashboard = async (db: Db, now: Date = new Date()) => {
       missing: countBy("missing"),
       expired: countBy("expired"),
       expiring: countBy("expiring"),
-      review: countBy("stale") + countBy("undated"),
+      review: countBy("stale") + countBy("undated") + countBy("surrogate"),
     },
     issues,
     items: items.map((i) => ({ id: i.id, name: i.name, referenceCode: i.referenceCode, itemTypeId: i.itemTypeId, itemTypeName: i.itemType.name })),

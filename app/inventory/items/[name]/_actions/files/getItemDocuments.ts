@@ -2,12 +2,14 @@
 
 import prisma from "@/lib/prisma"
 import { getItemDocumentStatus } from "@/lib/itemDocuments/queries"
+import { extractionStatusForDocuments } from "@/lib/documentExtractions/queries"
 
 // Requirement statuses for the Files tab, plus the item's lots so uploads can be attached to one
 // (received lots carry their purchase order's supplier, used to prefill the upload form) and the
 // suppliers the item has been ordered from, most recent first, to suggest for item-level documents.
+// extractions: what the extraction agent has read from each document's file (files are never hashed here).
 export const getItemDocuments = async (itemId: string) => {
-  const [status, lots, orders] = await Promise.all([
+  const [status, lots, orders, files] = await Promise.all([
     getItemDocumentStatus(prisma, itemId),
     prisma.lot.findMany({
       where: { itemId },
@@ -30,7 +32,12 @@ export const getItemDocuments = async (itemId: string) => {
       select: { createdAt: true, supplier: { select: { id: true, name: true } } },
       orderBy: { createdAt: "desc" },
     }),
+    prisma.itemFile.findMany({
+      where: { itemId },
+      select: { id: true, file: { select: { id: true, sha256: true, bucketName: true, objectName: true } } },
+    }),
   ])
+  const extractions = await extractionStatusForDocuments(prisma, files, 0)
 
   const orderedFrom = new Map<string, { id: string; name: string; lastOrderedAt: Date }>()
   for (const o of orders) {
@@ -47,6 +54,7 @@ export const getItemDocuments = async (itemId: string) => {
     requirements,
     fileTypes,
     orderedFrom: Array.from(orderedFrom.values()),
+    extractions: Object.fromEntries(extractions),
     lots: lots.map((l) => ({
       id: l.id,
       lotNumber: l.lotNumber,

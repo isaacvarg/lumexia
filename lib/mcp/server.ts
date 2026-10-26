@@ -14,6 +14,8 @@ import { registerInboxTools, registerInboxWriteTools } from "./tools/inbox";
 import { registerCanonWriteTools } from "./tools/canonWrites";
 import { registerAliasReadTools, registerAliasWriteTools } from "./tools/aliasWrites";
 import { registerIdentityTools } from "./tools/identity";
+import { registerExtractionTools } from "./tools/extractions";
+import { registerExtractionWriteTools } from "./tools/extractionWrites";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -34,6 +36,7 @@ const registrars: ToolRegistrar[] = [
   registerReceivingTools,
   registerInboxTools,
   registerAliasReadTools,
+  registerExtractionTools,
 ];
 // only keys an admin granted write access see these
 const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools, registerInboxWriteTools];
@@ -55,6 +58,9 @@ export const createMcpServer = (ctx: McpContext) => {
         "that arrived by email and wait to be filed or checked. " +
         "Canon data types and their value formats come from get_canon_data_types; search_canon_artifacts sweeps " +
         "across items; get_item_bom and get_material_documents_for_bom cover formulas and their materials' documents. " +
+        "Document extractions hold what supplier documents say, fact by fact with page and quote: read them with " +
+        "get_document_extraction, get_item_extractions and search_document_extractions before downloading and reading a " +
+        "document again. They're unreviewed evidence until people verify facts, never Canon. " +
         (ctx.scopes.includes(apiKeyScopes.delegate)
           ? "This key serves several people over chat (WhatsApp, Discord, Telegram, Slack) or Hermes sessions. Whenever " +
             "you act for someone (pricing review, Canon proposals, aliases), pass actingFor with the sender's channel and " +
@@ -75,6 +81,12 @@ export const createMcpServer = (ctx: McpContext) => {
           ? "You can add, rename and remove item aliases with the existing alias types (list_alias_types). Unique types " +
             "such as a WooCommerce product id belong to one item: if add_item_alias reports the owner, tell the person " +
             "rather than moving it. "
+          : "") +
+        (ctx.scopes.includes(apiKeyScopes.extractWrite)
+          ? "You can store document extractions. Check get_document_extraction first (another document may share the file). " +
+            "Read the text layer first and use page images or OCR only where it's missing; quote the document exactly and give " +
+            "each fact's page. Use catalog keys (list_fact_definitions) and create a key only when none fits. Never mark " +
+            "facts verified; people do. If a document can't be read, mark_extraction_failed. "
           : "") +
         (ctx.scopes.includes(apiKeyScopes.write)
           ? "To file documents from local files: read each file to identify the item, document type, issuer " +
@@ -98,6 +110,7 @@ export const createMcpServer = (ctx: McpContext) => {
   if (ctx.scopes.includes(apiKeyScopes.delegate)) registerIdentityTools(server, ctx);
   if (ctx.scopes.includes(apiKeyScopes.propose)) registerCanonWriteTools(server, ctx);
   if (ctx.scopes.includes(apiKeyScopes.aliasWrite)) registerAliasWriteTools(server, ctx);
+  if (ctx.scopes.includes(apiKeyScopes.extractWrite)) registerExtractionWriteTools(server, ctx);
 
   return server;
 };

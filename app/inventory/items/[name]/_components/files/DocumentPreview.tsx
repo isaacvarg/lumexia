@@ -1,6 +1,9 @@
 'use client'
 import { useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { slugify } from "@/utils/slug"
 import { TbArchive, TbArrowBackUp, TbExternalLink, TbPencil, TbReplace, TbTrash, TbX } from "react-icons/tb"
 import { useItemSelection } from "@/store/itemSlice"
 import { DocumentStatus } from "@/lib/itemDocuments/types"
@@ -9,6 +12,8 @@ import { useDocumentCommands } from "./DocumentMenu"
 import { useFilesActions } from "./FilesContext"
 import { FileIcon } from "./DocumentLibrary"
 import { formatDate, issuerLabel, StatusBadge } from "@/components/ItemDocuments/presentation"
+import ExtractionPanel from "@/components/DocumentExtractions/ExtractionPanel"
+import { ExtractionBadge } from "@/components/DocumentExtractions/presentation"
 
 const Detail = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex justify-between gap-4 py-1.5 text-sm">
@@ -19,8 +24,11 @@ const Detail = ({ label, children }: { label: string; children: React.ReactNode 
 
 type Props = { file: ItemFile; status?: DocumentStatus; onClose: () => void }
 
+const itemFilesHref = (item: { id: string; name: string }) => `/inventory/items/${slugify(item.name)}?id=${item.id}&tab=files`
+
 const DocumentPreview = ({ file, status, onClose }: Props) => {
-  const { files } = useItemSelection()
+  const router = useRouter()
+  const { files, documents } = useItemSelection()
   const { upload, preview } = useFilesActions()
   const commands = useDocumentCommands(file)
   const isPdf = file.file.mimeType === "application/pdf"
@@ -60,6 +68,7 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
                 {file.fileType.name}
               </span>
               {file.supersededAt ? <span className="badge badge-ghost badge-sm">Replaced</span> : status && <StatusBadge status={status} />}
+              <ExtractionBadge summary={documents.extractions[file.id]} size="sm" />
             </div>
           </div>
           <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-square" aria-label="Close"><TbX /></button>
@@ -92,6 +101,20 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
                 {source.supersededAt && <span className="ml-1 text-warning">(replaced)</span>}
               </Detail>
             )}
+            {file.surrogateFor && (
+              <Detail label="Stands in for">
+                <Link href={itemFilesHref(file.surrogateFor.item)} className="link">{file.surrogateFor.item.name}&apos;s document</Link>
+                {file.surrogateFor.supersededAt && <span className="ml-1 text-warning">(replaced)</span>}
+                {file.surrogateReason && <span className="block font-normal text-base-content/60">{file.surrogateReason}</span>}
+              </Detail>
+            )}
+            {file.surrogates.length > 0 && (
+              <Detail label="Also used by">
+                {file.surrogates.map((s) => (
+                  <Link key={s.id} href={itemFilesHref(s.item)} className="link block">{s.item.name}</Link>
+                ))}
+              </Detail>
+            )}
             {derived.length > 0 && (
               <Detail label="Our versions">
                 {derived.map((d) => (
@@ -100,6 +123,11 @@ const DocumentPreview = ({ file, status, onClose }: Props) => {
               </Detail>
             )}
           </dl>
+
+          <section className="flex flex-col gap-2">
+            <h3 className="font-semibold">Extracted facts</h3>
+            <ExtractionPanel documentId={file.id} fileUrl={file.url} onChanged={() => router.refresh()} />
+          </section>
         </div>
 
         <footer className="flex flex-wrap gap-2 border-t border-base-300 p-4">

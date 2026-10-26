@@ -9,6 +9,8 @@ import { getAllUom } from "@/actions/inventory/getAllUom"
 import { getAllUomConversions } from "@/actions/inventory/uomConversions/getAll"
 import procurementTypeActions from "@/actions/inventory/procurementTypeActions"
 import { getAllDocumentRequirements } from "@/actions/inventory/documentRequirements"
+import { getFactCatalog } from "@/actions/documentExtractions"
+import FactCatalog from "./_components/documents/FactCatalog"
 import InventoryAuditSettingsForm from "./_components/InventoryAuditSettingsForm"
 import InventoryConfiguration from "./_components/InventoryConfiguration"
 import UnitsConfiguration from "./_components/UnitsConfiguration"
@@ -19,7 +21,7 @@ import InventorySettingsHelper from "./_components/shared/InventorySettingsHelpe
 
 const InventorySettingsPage = async () => {
 
-  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes, uoms, uomConversions, procurementTypes, documentRequirements] = await Promise.all([
+  const [configs, itemTypes, inventoryTypes, itemTypesWithConfig, aliasTypes, fileTypes, uoms, uomConversions, procurementTypes, documentRequirements, factCatalog] = await Promise.all([
     appActions.configs.ensureInventoryAuditConfigs(),
     itemTypeActions.getAll(),
     inventoryTypeActions.getAll(),
@@ -30,6 +32,7 @@ const InventorySettingsPage = async () => {
     getAllUomConversions(),
     procurementTypeActions.getAll(),
     getAllDocumentRequirements(),
+    getFactCatalog(),
   ])
 
   return (
@@ -50,12 +53,15 @@ const InventorySettingsPage = async () => {
           />
         }
         documents={
-          <DocumentRequirements
-            requirements={documentRequirements}
-            itemTypes={itemTypes}
-            procurementTypes={procurementTypes}
-            fileTypes={fileTypes}
-          />
+          <div className="flex flex-col gap-10">
+            <DocumentRequirements
+              requirements={documentRequirements}
+              itemTypes={itemTypes}
+              procurementTypes={procurementTypes}
+              fileTypes={fileTypes}
+            />
+            <FactCatalog catalog={factCatalog} fileTypes={fileTypes} />
+          </div>
         }
         units={
           <UnitsConfiguration uoms={uoms} conversions={uomConversions} />

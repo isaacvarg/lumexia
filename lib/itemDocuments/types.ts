@@ -6,10 +6,11 @@ export type DocumentIssuer = "supplier" | "internal";
 export type RequirementIssuer = DocumentIssuer | "any";
 export type RequirementLotOrigin = "received" | "produced" | "both";
 
-// Per document, from best to worst: current, expiring, undated, stale, mismatch, expired.
+// Per document, from best to worst: current, surrogate, expiring, undated, stale, mismatch, expired.
+// surrogate: another item's document standing in for this item's own; it counts, but someone should get the real one.
 // mismatch: a lot document whose printed supplier lot differs from the lot's supplier lot.
 // A requirement adds missing (no candidate document) and, for lot scope, notApplicable (no lots to check).
-export type DocumentStatus = "current" | "expiring" | "undated" | "stale" | "mismatch" | "expired";
+export type DocumentStatus = "current" | "surrogate" | "expiring" | "undated" | "stale" | "mismatch" | "expired";
 export type RequirementStatus = DocumentStatus | "missing" | "notApplicable";
 
 export type Requirement = Pick<
@@ -47,6 +48,8 @@ export type DocumentRecord = {
   expiresAt: Date | null;
   supersededAt: Date | null;
   derivedFrom: { supersededAt: Date | null } | null;
+  // the other item's document this one stands in for; its dates are the ones that count
+  surrogateFor?: { supersededAt: Date | null; issuedAt: Date | null; expiresAt: Date | null } | null;
 };
 
 export type LotRecord = {

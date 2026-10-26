@@ -1,5 +1,7 @@
 // Evidence behind a proposed value: where it came from and when.
 // fileId can point at a file already attached to the item (e.g. its SDS) or a new upload.
+// extractionId + factIds cite facts the extraction agent read from a document (factIds aren't foreign keys,
+// so a citation survives a fact being corrected or removed later).
 model CanonChangeRequestSource {
     id              String    @id @default(uuid())
     changeRequestId String    @map("change_request_id")
@@ -8,12 +10,15 @@ model CanonChangeRequestSource {
     url             String?
     note            String?
     sourceDate      DateTime? @map("source_date")
+    extractionId    String?   @map("extraction_id")
+    factIds         String[]  @default([]) @map("fact_ids")
     createdAt       DateTime  @default(now()) @map("created_at")
     updatedAt       DateTime  @updatedAt @map("updated_at")
 
     changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
     sourceType    CanonSourceType    @relation(fields: [sourceTypeId], references: [id])
     file          File?              @relation(fields: [fileId], references: [id])
+    extraction    DocumentExtraction? @relation(fields: [extractionId], references: [id], onDelete: SetNull)
 
     @@map("canon_change_request_sources")
 }

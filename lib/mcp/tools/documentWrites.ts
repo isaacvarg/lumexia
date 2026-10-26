@@ -1,7 +1,14 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { createUploadTokens, UPLOAD_TTL_MINUTES } from "@/lib/apiUploads";
-import { createItemDocuments, ItemDocumentDetails, setItemDocumentReplaced, updateItemDocument } from "@/lib/itemDocuments/mutations";
+import {
+  createItemDocuments,
+  createSurrogateDocument,
+  ItemDocumentDetails,
+  setItemDocumentReplaced,
+  SurrogateRefused,
+  updateItemDocument,
+} from "@/lib/itemDocuments/mutations";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 import { findItem } from "../lookups";
@@ -54,17 +61,51 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
         "File an uploaded document (fileId from an upload link) under an item, with its type, issuer and details. " +
         "Like uploading in the Files tab, it replaces older current versions of the same document (same type, issuer, " +
         "lot and supplier). Current versions from a different or no supplier are left alone unless listed in " +
-        "alsoReplaceDocumentIds; they're returned so you can ask. Returns the item's document status afterwards.",
+        "alsoReplaceDocumentIds; they're returned so you can ask. Returns the item's document status afterwards. " +
+        "When an item has no document of its own and another item's can stand in (e.g. the same material from another " +
+        "supplier), pass surrogateFor instead of fileId and details: the other item's document is shared, counts as " +
+        "'surrogate' until the item gets its own, and turns stale if that document is replaced. Not for lot documents.",
       inputSchema: {
-        fileId: z.string().describe("fileId returned by the upload link"),
+        fileId: z.string().optional().describe("fileId returned by the upload link (not with surrogateFor)"),
         item: z.string().describe("Item id or reference code"),
         ...detailsSchema,
+        documentType: detailsSchema.documentType.optional().describe("Document type id, name or abbreviation, e.g. SDS (not with surrogateFor)"),
+        issuer: detailsSchema.issuer.optional().describe("supplier or internal (not with surrogateFor)"),
         alsoReplaceDocumentIds: z.array(z.string()).optional().describe("Other current documents this one replaces"),
+        surrogateFor: z
+          .object({
+            documentId: z.string().describe("The other item's current document to use"),
+            reason: z.string().min(3).max(1000).describe("Why it can stand in, e.g. 'same CAS, other supplier; real SDS requested'"),
+          })
+          .optional(),
       },
     },
     async (args) => {
+      if (args.surrogateFor) {
+        if (args.fileId) return errorResult("Pass surrogateFor or fileId, not both.");
+        const item = await findItem(args.item);
+        if (!item) return errorResult(`No item found for "${args.item}". Try search_items.`);
+        try {
+          const result = await createSurrogateDocument(actor, item.id, args.surrogateFor.documentId, args.surrogateFor.reason);
+          const after = await describeItemDocuments(item.id);
+          const document = after.documents.find((d) => d.documentId === result.itemFileId);
+          return jsonResult({
+            item,
+            documentId: result.itemFileId,
+            surrogateFor: result.source,
+            replacedSurrogates: result.replacedIds,
+            document,
+            requirements: after.requirements.filter((r) => r.current.some((c) => c.documentId === result.itemFileId) || r.document === document?.type),
+          });
+        } catch (error) {
+          if (error instanceof SurrogateRefused) return errorResult(error.message);
+          throw error;
+        }
+      }
+      if (!args.fileId || !args.documentType || !args.issuer) return errorResult("Pass fileId, documentType and issuer (or surrogateFor).");
+      const fileId = args.fileId;
       const upload = await prisma.apiUpload.findUnique({
-        where: { fileId: args.fileId },
+        where: { fileId },
         select: { apiKeyId: true, file: { select: { name: true, itemFiles: { select: { id: true } } } } },
       });
       if (!upload || upload.apiKeyId !== ctx.keyId) {
@@ -74,13 +115,13 @@ export const registerDocumentWriteTools: ToolRegistrar = (server, ctx) => {
 
       const item = await findItem(args.item);
       if (!item) return errorResult(`No item found for "${args.item}". Try search_items.`);
-      const resolved = await resolveDetails(item.id, args);
+      const resolved = await resolveDetails(item.id, { ...args, documentType: args.documentType, issuer: args.issuer });
       if ("error" in resolved) return errorResult(resolved.error);
 
       const result = await createItemDocuments(
         actor,
         item.id,
-        [{ fileId: args.fileId, name: upload.file!.name }],
+        [{ fileId, name: upload.file!.name }],
         resolved.details,
         args.alsoReplaceDocumentIds ?? []
       );

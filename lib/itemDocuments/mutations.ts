@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { Db } from "@/lib/canon/db";
 import { supersedeOlderItemFiles } from "./supersede";
+import { getItemDocumentStatus } from "./queries";
 import { cleanSupplierLot, sameSupplierLot } from "./supplierLots";
 import { DocumentIssuer } from "./types";
 
@@ -157,4 +158,80 @@ export const setItemDocumentReplaced = async (actor: Actor, itemFileId: string, 
     replaced ? `Marked ${file.file.name} as replaced` : `Restored ${file.file.name} as current`
   );
   return file;
+};
+
+export class SurrogateRefused extends Error {}
+
+// Lets an item use another item's document until it has its own (e.g. the same material from another
+// supplier). The new document shares the source's file, type, issuer, supplier and dates; it counts toward
+// requirements as "surrogate" and turns stale when the source is replaced. A new surrogate replaces the
+// item's previous surrogate for that type. Lot documents can't stand in for anything.
+export const createSurrogateDocument = async (actor: Actor, itemId: string, sourceDocumentId: string, reason: string) => {
+  const why = reason.trim();
+  if (!why) throw new SurrogateRefused("Say why this document can stand in (e.g. same CAS, other supplier; real SDS requested).");
+
+  const source = await prisma.itemFile.findUnique({
+    where: { id: sourceDocumentId },
+    select: {
+      id: true,
+      itemId: true,
+      fileId: true,
+      fileTypeId: true,
+      issuer: true,
+      supplierId: true,
+      lotId: true,
+      supplierLotNumber: true,
+      issuedAt: true,
+      expiresAt: true,
+      revision: true,
+      supersededAt: true,
+      surrogateForItemFileId: true,
+      file: { select: { name: true } },
+      fileType: { select: { name: true } },
+      item: { select: { name: true } },
+    },
+  });
+  if (!source) throw new SurrogateRefused("That document doesn't exist.");
+  if (source.itemId === itemId) throw new SurrogateRefused("Pick a document from another item.");
+  if (source.supersededAt) throw new SurrogateRefused("That document has been replaced; use its current version.");
+  if (source.surrogateForItemFileId) throw new SurrogateRefused(`That document is itself a surrogate on ${source.item.name}; use the original.`);
+  if (source.lotId || source.supplierLotNumber) throw new SurrogateRefused("Lot documents (like a COA) can't stand in for another item.");
+
+  const status = await getItemDocumentStatus(prisma, itemId);
+  if (status?.requirements.some((r) => r.requirement.fileTypeId === source.fileTypeId && r.requirement.scope === "lot")) {
+    throw new SurrogateRefused(`${source.fileType.name} is a lot document for this item; a surrogate can't cover lots.`);
+  }
+  const own = await prisma.itemFile.findFirst({
+    where: { itemId, fileTypeId: source.fileTypeId, lotId: null, supplierLotNumber: null, supersededAt: null, surrogateForItemFileId: null },
+    select: { file: { select: { name: true } } },
+  });
+  if (own) throw new SurrogateRefused(`This item already has its own current ${source.fileType.name} (${own.file.name}).`);
+
+  const now = new Date();
+  const { created, replaced } = await prisma.$transaction(async (tx) => {
+    const previous = await tx.itemFile.findMany({
+      where: { itemId, fileTypeId: source.fileTypeId, supersededAt: null, surrogateForItemFileId: { not: null } },
+      select: { id: true },
+    });
+    await tx.itemFile.updateMany({ where: { id: { in: previous.map((p) => p.id) } }, data: { supersededAt: now } });
+    const created = await tx.itemFile.create({
+      data: {
+        itemId,
+        fileId: source.fileId,
+        fileTypeId: source.fileTypeId,
+        issuer: source.issuer,
+        supplierId: source.supplierId,
+        issuedAt: source.issuedAt,
+        expiresAt: source.expiresAt,
+        revision: source.revision,
+        surrogateForItemFileId: source.id,
+        surrogateReason: why,
+      },
+      select: { id: true },
+    });
+    return { created, replaced: previous.map((p) => p.id) };
+  });
+
+  await log(actor, "uploadFile", itemId, `Using ${source.file.name} from ${source.item.name} as a surrogate ${source.fileType.name}: ${why}`);
+  return { itemFileId: created.id, replacedIds: replaced, source: { documentId: source.id, itemId: source.itemId, itemName: source.item.name } };
 };

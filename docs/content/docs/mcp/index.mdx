@@ -62,6 +62,7 @@ Keys only read unless a system admin grants more:
 | **Act for linked users** | `delegate` | Act for whoever messages it from a [linked account](#hermes-and-chat-apps), within what the key's other access allows. For shared agents like Hermes. |
 | **Propose Canon changes** | `propose` | Open Canon change requests, add evidence, and withdraw its own requests. Never approve or reject. See [Canon proposals](#canon-proposals). |
 | **Edit aliases** | `alias:write` | Add, rename and remove item aliases. See [Item aliases](#item-aliases). |
+| **Write document extractions** | `extract:write` | Store what supplier documents say as facts, correct its own readings, and propose new fact keys. Never verify. See [Document extractions](#document-extractions). |
 
 - When an admin creates their own key, they tick what it may do.
 - On **Settings → Users → (user) → Agents**, an admin can use **Change access**
@@ -155,12 +156,17 @@ profile.
 | `get_canon_data_types` | Every active Canon data type and its setup: group, shape and the JSON value format to propose, subject, authored or linked source, what it applies to, dependencies, approval rules, evidence requirement, re-verification period, website key, and who can edit and review it. |
 | `search_canon_artifacts` | Canon values across items, for sweeps: filter by data type, group, status, flags (stale, unreviewed change, expired, conflict), open change requests, or item. |
 | `get_item_bom` | The bill of materials of an item's active MBPR: each material with id, reference code, concentration, step and phase. |
-| `get_material_documents_for_bom` | `get_item_documents` for every material in an item's active BOM, in one call. |
+| `get_material_documents_for_bom` | `get_item_documents` for every material in an item's active BOM, in one call, with each current document's [extraction](#document-extractions) status and a count per status. `onlyNeedingExtraction` keeps only the documents nobody has read yet. |
 | `list_alias_types` | The alias types and which are unique (one item per name). |
 | `list_document_types` | The document types (SDS, COA, IFRA, TDS…) with their ids. |
 | `search_suppliers` | Suppliers matching a name or alias, e.g. the company printed on a document. |
 | `get_item_documents` | An item's [document requirements](/docs/inventory/item-documents) and their status, per-lot status for lot documents, and every document on file including replaced versions, with the supplier lot and PO each was filed for and whether it's still waiting for its lot. |
-| `get_document_issues` | Required documents that need attention across all items (missing, expired, mismatch, expiring, undated, stale), with the supplier to ask when known. Filter by status, issuer, item, document type, or supplier. |
+| `get_document_issues` | Required documents that need attention across all items (missing, expired, mismatch, expiring, undated, stale, surrogate), with the supplier to ask when known. Filter by status, issuer, item, document type, or supplier. `summary.extractionNeeded` counts current documents nobody has extracted; the status `extraction_needed` lists them. |
+| `list_fact_definitions` | The fact catalog: every key an extraction can store, its shape, unit, whether it's safety-relevant, and the document types that use or require it. |
+| `get_document_extraction` | What a document says, fact by fact, with page, quote, reading method, confidence and who verified it, plus what's missing and every document sharing the file. By document id or sha256. Full text only on request. |
+| `get_item_extractions` | The extraction status of each of an item's current documents. |
+| `search_document_extractions` | Facts across extractions, e.g. every flash point under 60 °C, every Prop 65 row for a CAS, or stated vegan claims. Never full text. |
+| `get_extraction_cross_checks` | Where sheets disagree: one CAS under several names, Prop 65 / TSCA / state right-to-know listed differently, component hazards missing from a material's classification, and INCI names that don't match the item's INCI aliases. Each finding comes with its facts. |
 | `find_documents_by_checksum` | Whether files (by MD5, from `md5sum`) were already uploaded, and which item documents they're attached to. |
 | `get_document_downloads` | Download links for item documents, valid 15 minutes. The agent saves each with `curl -o`, so the file never passes through the model. |
 | `search_purchase_orders` | Purchase orders, newest first, with supplier, status, lines, and total. Filter by supplier, item, status, or creation date. Cancelled orders are left out unless asked for. |
@@ -179,7 +185,7 @@ Keys with write access also get:
 | Tool | What it does |
 | --- | --- |
 | `create_document_upload` | Returns single-use upload links, valid 15 minutes. The agent uploads each file with `curl -F file=@…`, so file contents never pass through the model. PDFs and images, up to 50 MB. |
-| `attach_item_document` | Files an uploaded document under an item with its type, issuer, supplier, lot, supplier lot, PO, dates, revision, and the supplier document it's based on. Given only the supplier lot, it goes on our lot with that supplier lot, or waits until one is received. Like uploading in the Files tab, it replaces older versions of the same document and reports other current versions from a different supplier. |
+| `attach_item_document` | Files an uploaded document under an item with its type, issuer, supplier, lot, supplier lot, PO, dates, revision, and the supplier document it's based on. Given only the supplier lot, it goes on our lot with that supplier lot, or waits until one is received. Like uploading in the Files tab, it replaces older versions of the same document and reports other current versions from a different supplier. With `surrogateFor` (another item's document and a reason) instead of a file, that document stands in until the item has its own. |
 | `update_item_document` | Changes a filed document's details. Never replaces other documents. |
 | `set_document_replaced` | Marks a document replaced, or restores it as current. |
 | `file_inbox_document` | Files an inbox document under an item, with the same details as `attach_item_document` and a required `reason`. No upload needed. It shows in the inbox as filed by the agent until someone checks it. |
@@ -198,8 +204,9 @@ tools too, but record the review as the person who sent the message, plus:
 | `unlink_identity` | Unlinks the sender's account. |
 
 Keys that may propose Canon changes get the tools in
-[Canon proposals](#canon-proposals), and keys that may edit aliases get those
-in [Item aliases](#item-aliases).
+[Canon proposals](#canon-proposals), keys that may edit aliases get those
+in [Item aliases](#item-aliases), and keys that may write extractions get those in
+[Document extractions](#document-extractions).
 
 Tools accept either an item's id or its reference code, so an agent can go
 straight from "what's on hand for ING-1006?" to an answer. Purchase orders and
@@ -312,7 +319,7 @@ proposes; it can't approve or reject.
 
 | Tool | What it does |
 | --- | --- |
-| `propose_canon_change` | Opens a change request like the Propose form: `edit` (a new value for an authored type), `stale_confirmation` (the value is still right after something upstream changed), or `source_acceptance` (a linked type's current Lumexia value). Takes a reason, evidence (an item document, URL or note, with its date), and an `idempotencyKey`. Returns the change request (`CR-104`), the diff, the approvals needed and who can review. |
+| `propose_canon_change` | Opens a change request like the Propose form: `edit` (a new value for an authored type), `stale_confirmation` (the value is still right after something upstream changed), or `source_acceptance` (a linked type's current Lumexia value). Takes a reason, evidence (an item document, an extraction and the facts it cites, a URL or a note, with its date), and an `idempotencyKey`. Returns the change request (`CR-104`), the diff, the approvals needed and who can review. |
 | `attach_canon_evidence` | Adds evidence to any change request still under review. Never changes the proposed value. |
 | `withdraw_canon_change` | Withdraws a change request the key's user opened. |
 
@@ -337,7 +344,8 @@ How it behaves:
 
 1. Create an [agent user](#agent-users) named **Canon Agent**, with no app roles.
 2. On its page, create an API key with **Propose Canon changes**,
-   **Edit aliases**, and **Act for linked users** if it serves several people.
+   **Edit aliases**, **Write document extractions**, and **Act for linked
+   users** if it serves several people.
 3. In **Canon Settings**, give that user **Edit** on each data type it should
    fill in. Never **Review**: the Permissions panel warns if it has it.
 
@@ -358,6 +366,64 @@ can be marked **Unique** (one item per name, e.g. a WooCommerce ID). A type can
 only become unique once no two items share a name of it. These tools take the
 same `idempotencyKey` and `dryRun` as Canon proposals, and every change is
 logged on the item.
+
+## Document extractions
+
+An extraction is what a supplier document (SDS, COA, TDS, IFRA…) says, stored as
+facts: each with its page, the exact quote, how it was read, and how sure the
+agent was. An agent reads a file once; every audit after that reads the facts
+instead of downloading the document again. Extractions are evidence, not
+[Canon](/docs/canon): they never change Canon, but a change request can cite
+them.
+
+**One extraction per file.** Extractions belong to a file's contents (its
+sha256), so a file filed under several items, or uploaded twice, is read once.
+Replacing a document doesn't touch the old file's extraction; the new file
+simply has none yet.
+
+A key with **Write document extractions** gets:
+
+| Tool | What it does |
+| --- | --- |
+| `store_document_extraction` | Stores the facts read from a document, with the document's `sha256` (refused if it isn't that document's file). If the file already has an extraction, `supersedeExisting` replaces it: checks people made carry over to identical facts, and verified facts that changed or disappeared come back as conflicts. |
+| `update_extraction_facts` | Adds, changes or removes facts on the current extraction, with a reason. Changing a fact someone verified resets their check. |
+| `mark_extraction_failed` | Records that a file can't be read (password, blank scan…), so audits stop retrying. A later successful extraction replaces it. |
+| `create_fact_definition` | Adds a key to the fact catalog when none fits. It's usable at once as **proposed**, treated as safety-relevant until reviewed, and refused if it looks like an existing key unless the agent confirms with a reason. |
+
+How it behaves:
+
+- **Text first.** The agent reads the PDF's text layer, then page images
+  (`vision`) where text is missing, and OCR last. Facts read by vision or OCR on
+  safety-relevant keys (flash point, hazards, allergens, IFRA limits…) wait for
+  a person's check.
+- **One fact per table row.** Four exposure limits are four facts, in the
+  sheet's order. A section that's present but empty is recorded as such, so it
+  isn't confused with one nobody read.
+- **People verify; agents never do.** People verify or correct facts in the
+  document preview on the Files tab, or in **Quality → Documents → Extractions**,
+  the review queue. A correction keeps the agent's reading and adds the
+  person's; agents can't change it.
+- **Catalog.** Keys live in **Settings → Inventory → Documents → Fact catalog**,
+  where people approve proposed keys, mark which document types require them,
+  and merge duplicates. Writing a merged key lands on the key it was merged
+  into.
+- **Fact search.** **Quality → Documents → Facts** searches facts across all
+  extractions, like `search_document_extractions`.
+- **Cross-checks.** `get_extraction_cross_checks`, and the **Cross-checks** tab
+  of the review queue, compare sheets so agents don't have to. The
+  classification check uses GHS generic cut-offs only (1%, or 0.1% for
+  category 1 CMRs and sensitisers), without specific limits, M factors or
+  additivity, so its findings are prompts to check; a sheet's own section 2
+  classification stands.
+- **Citing in Canon.** `propose_canon_change` and `attach_canon_evidence` take
+  `extractionId` and `factIds` in evidence; reviewers see the cited facts with
+  their page and quote.
+- Writes take the same `idempotencyKey` and `dryRun` as Canon proposals, and
+  every change is logged on the extraction.
+
+A typical audit: `get_material_documents_for_bom` → `get_document_extraction`
+for each current document → read and `store_document_extraction` only the files
+that are still `missing`.
 
 ## Receiving alerts
 
@@ -454,7 +520,7 @@ never reviews pricing as its owner.
 - Return `jsonResult(data)` for answers and `errorResult(message)` for misses
   the agent should react to. Keep payloads compact and capped.
 - Keys carry `scopes`: `read`, plus `write`, `delegate`, `propose` and
-  `alias:write` when an admin grants them (`grantableScopes` in
+  `alias:write` and `extract:write` when an admin grants them (`grantableScopes` in
   `lib/apiKeys.ts`). Tools for each are registered only for keys with that
   scope in `lib/mcp/server.ts`, so other agents never see them.
 - Write tools that create records go through `runWrite` in `lib/mcp/writes.ts`:
@@ -471,6 +537,13 @@ never reviews pricing as its owner.
   Canon tab, with `skipSelfApproval` and the caller's transaction. Alias writes
   live in `lib/aliases.ts`, whose uniqueness check the item alias dialog uses
   too.
+- Document extractions live in `lib/documentExtractions/`: `store.ts` for the
+  agent's writes, `human.ts` for what only people do (verify, correct, catalog
+  edits; server actions in `actions/documentExtractions.ts`), `queries.ts` for
+  reads, `validate.ts` and `units.ts` for checking and normalizing facts, and
+  `seedCatalog.ts` for the starter keys, added to the database the first time
+  the catalog is used. `File.sha256` is set on upload, and for older files the
+  first time an extraction needs it (`content.ts`).
 - Pricing approval and rejection live in `lib/pricing/examinationReview.ts`,
   shared with the pricing review page.
 - Document downloads: `lib/apiDownloads.ts` signs links, and

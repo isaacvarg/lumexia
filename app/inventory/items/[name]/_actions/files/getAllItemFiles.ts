@@ -12,6 +12,9 @@ export const getAllItemFiles = async (itemId: string) => {
       fileType: true,
       lot: { select: { id: true, lotNumber: true } },
       supplier: { select: { id: true, name: true } },
+      // another item's document this one stands in for, and the items using this one that way
+      surrogateFor: { select: { id: true, supersededAt: true, item: { select: { id: true, name: true } } } },
+      surrogates: { where: { supersededAt: null }, select: { id: true, item: { select: { id: true, name: true } } } },
       file: {
         include: {
           uploadedBy: true,

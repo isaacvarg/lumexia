@@ -8,6 +8,7 @@ import { ItemFile } from "../../_actions/files/getAllItemFiles"
 import { useFilesActions } from "./FilesContext"
 import { formatDate, issuerLabel, StatusBadge } from "@/components/ItemDocuments/presentation"
 import DocumentMenu from "./DocumentMenu"
+import { ExtractionBadge } from "@/components/DocumentExtractions/presentation"
 
 const versionKey = (f: ItemFile) => [f.fileTypeId, f.issuer, f.lotId ?? "", f.lotId ? "" : f.supplierLotNumber ?? "", f.supplierId ?? ""].join("|")
 
@@ -27,6 +28,7 @@ export const FileIcon = ({ file, size = "size-10" }: { file: ItemFile; size?: st
 
 const DocumentRow = ({ file, status, versions }: { file: ItemFile; status?: DocumentStatus; versions: ItemFile[] }) => {
   const { preview } = useFilesActions()
+  const { documents } = useItemSelection()
   const [open, setOpen] = useState(false)
   const replaced = !!file.supersededAt
   const meta = [
@@ -59,6 +61,7 @@ const DocumentRow = ({ file, status, versions }: { file: ItemFile; status?: Docu
           </span>
           <span className="w-14 text-xs text-base-content/60">{issuerLabel(file.issuer)}</span>
           <span className="w-28">{status && !replaced && <StatusBadge status={status} size="xs" />}</span>
+          <span className="w-28">{!replaced && <ExtractionBadge summary={documents.extractions[file.id]} />}</span>
           {file.file.fileTags.slice(0, 2).map((ft) => (
             <span key={ft.id} className="rounded px-1.5 text-xs" style={{ backgroundColor: ft.tag.bgColor, color: ft.tag.textColor }}>{ft.tag.name}</span>
           ))}

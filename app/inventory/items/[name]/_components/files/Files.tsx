@@ -1,5 +1,6 @@
 'use client'
 import { useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { TbUpload } from "react-icons/tb"
 import useDialog from "@/hooks/useDialog"
 import { useItemSelection } from "@/store/itemSlice"
@@ -12,16 +13,19 @@ import DocumentLibrary from "./DocumentLibrary"
 import DocumentPreview from "./DocumentPreview"
 import LotDocumentsPanel from "./LotDocumentsPanel"
 import RequirementsPanel from "./RequirementsPanel"
+import SurrogateDialog, { surrogateDialogId } from "./SurrogateDialog"
 import { needsAttention, StatusBadge } from "@/components/ItemDocuments/presentation"
 
-const attentionOrder: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring"]
-const rank = (s: DocumentStatus) => ["current", "expiring", "undated", "stale", "mismatch", "expired"].indexOf(s)
+const attentionOrder: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring", "surrogate"]
+const rank = (s: DocumentStatus) => ["current", "surrogate", "expiring", "undated", "stale", "mismatch", "expired"].indexOf(s)
 
 const Files = () => {
   const { documents, files } = useItemSelection()
   const { showDialog } = useDialog()
   const [dialog, setDialog] = useState<DocumentDialogState | null>(null)
-  const [previewId, setPreviewId] = useState<string | null>(null)
+  // ?document=<id> opens that document, e.g. from the extraction review queue
+  const [previewId, setPreviewId] = useState<string | null>(useSearchParams().get("document"))
+  const [surrogateTypeId, setSurrogateTypeId] = useState<string | null>(null)
   const previewFile = previewId ? files.find((f) => f.id === previewId) : undefined
 
   const actions = useMemo(() => ({
@@ -34,6 +38,10 @@ const Files = () => {
       showDialog(documentDialogId)
     },
     preview: (file: ItemFile) => setPreviewId(file.id),
+    chooseSurrogate: (fileTypeId: string) => {
+      setSurrogateTypeId(fileTypeId)
+      showDialog(surrogateDialogId)
+    },
   }), [showDialog])
 
   // a file can satisfy several requirements (or lots); show its best status
@@ -87,6 +95,7 @@ const Files = () => {
       </div>
 
       <DocumentDialog state={dialog} />
+      <SurrogateDialog fileTypeId={surrogateTypeId} />
       {previewFile && (
         <DocumentPreview file={previewFile} status={statusByFile.get(previewFile.id)} onClose={() => setPreviewId(null)} />
       )}

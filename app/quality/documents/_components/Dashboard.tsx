@@ -9,7 +9,7 @@ import IssueTable from "./IssueTable"
 import SupplierView from "./SupplierView"
 import { useIssueRows } from "./useIssueRows"
 
-const statusOptions: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring"]
+const statusOptions: RequirementStatus[] = ["missing", "expired", "mismatch", "stale", "undated", "expiring", "surrogate"]
 
 type Filters = {
   statuses: RequirementStatus[]
@@ -29,6 +29,7 @@ const presets: { label: string; filters: Partial<Filters> }[] = [
   { label: "Expired or expiring", filters: { statuses: ["expired", "expiring"] } },
   { label: "Lot documents missing", filters: { scope: "lot", statuses: ["missing"] } },
   { label: "Needs dates", filters: { statuses: ["undated"] } },
+  { label: "Covered by a surrogate", filters: { statuses: ["surrogate"] } },
 ]
 
 const sameFilters = (a: Filters, b: Filters) =>
