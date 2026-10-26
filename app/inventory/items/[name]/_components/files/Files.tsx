@@ -1,5 +1,6 @@
 'use client'
 import { useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { TbUpload } from "react-icons/tb"
 import useDialog from "@/hooks/useDialog"
 import { useItemSelection } from "@/store/itemSlice"
@@ -22,7 +23,8 @@ const Files = () => {
   const { documents, files } = useItemSelection()
   const { showDialog } = useDialog()
   const [dialog, setDialog] = useState<DocumentDialogState | null>(null)
-  const [previewId, setPreviewId] = useState<string | null>(null)
+  // ?document=<id> opens that document, e.g. from the extraction review queue
+  const [previewId, setPreviewId] = useState<string | null>(useSearchParams().get("document"))
   const [surrogateTypeId, setSurrogateTypeId] = useState<string | null>(null)
   const previewFile = previewId ? files.find((f) => f.id === previewId) : undefined
 
