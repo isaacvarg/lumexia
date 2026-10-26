@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { Db } from "@/lib/canon/db";
 import { completenessFor, contentDocuments } from "./store";
 import { hashFiles } from "./content";
@@ -151,12 +151,13 @@ export const getExtraction = async (db: Db, sha256: string, options: { includeFu
 };
 
 // Extraction status for a set of item documents, keyed by document id. Files without a hash are hashed
-// (a limited number per call); those still unhashed come back as not checked.
+// (at most hashLimit per call; pages pass 0 so they never wait on storage); unhashed ones come back as not checked.
 export const extractionStatusForDocuments = async (
   db: Db,
   documents: { id: string; file: { id: string; sha256: string | null; bucketName: string; objectName: string } }[],
+  hashLimit = 25,
 ) => {
-  const hashes = await hashFiles(documents.map((d) => d.file));
+  const hashes = await hashFiles(documents.map((d) => d.file), hashLimit);
   const shas = Array.from(new Set(Array.from(hashes.values()).filter((h): h is string => !!h)));
   const extractions = shas.length
     ? await db.documentExtraction.findMany({
@@ -270,3 +271,77 @@ export const searchFacts = async (db: Db, search: FactSearch) => {
   const page = rows.slice(0, search.limit);
   return { facts: page, nextCursor: rows.length > search.limit ? page[page.length - 1]?.id ?? null : null };
 };
+
+const toCheckWhere = { needsHumanCheck: true, verifiedAt: null, state: "active" } as const;
+
+export const countExtractionsToReview = (db: Db) =>
+  db.documentExtraction.count({ where: { status: "current", facts: { some: toCheckWhere } } });
+
+// What people should look at: facts read from page images or OCR waiting for a check, re-reads that changed
+// verified facts, and documents the agent couldn't read. Each with the current documents filed with that file.
+export const getExtractionReviewQueue = async (db: Db) => {
+  const select = {
+    id: true,
+    sha256: true,
+    status: true,
+    reviewState: true,
+    methods: true,
+    extractorName: true,
+    failureReason: true,
+    conflicts: true,
+    createdAt: true,
+    _count: { select: { facts: { where: toCheckWhere } } },
+    facts: { where: toCheckWhere, select: { definition: { select: { label: true } } } },
+  } as const;
+  const [toCheck, withConflicts, failed] = await Promise.all([
+    db.documentExtraction.findMany({ where: { status: "current", facts: { some: toCheckWhere } }, select, orderBy: { createdAt: "asc" } }),
+    db.documentExtraction.findMany({ where: { status: "current", NOT: { conflicts: { equals: Prisma.DbNull } } }, select, orderBy: { createdAt: "desc" } }),
+    db.documentExtraction.findMany({ where: { status: "failed" }, select, orderBy: { createdAt: "desc" } }),
+  ]);
+
+  const shas = Array.from(new Set([...toCheck, ...withConflicts, ...failed].map((e) => e.sha256)));
+  const documents = shas.length
+    ? await db.itemFile.findMany({
+        where: { file: { sha256: { in: shas } }, supersededAt: null },
+        select: {
+          id: true,
+          file: { select: { sha256: true, name: true } },
+          fileType: { select: { name: true, abbreviaton: true } },
+          item: { select: { id: true, name: true, referenceCode: true } },
+          supplier: { select: { name: true } },
+        },
+      })
+    : [];
+  const docsBySha = new Map<string, typeof documents>();
+  for (const d of documents) docsBySha.set(d.file.sha256!, [...(docsBySha.get(d.file.sha256!) ?? []), d]);
+
+  const row = (e: (typeof toCheck)[number]) => ({
+    id: e.id,
+    status: e.status,
+    reviewState: e.reviewState,
+    methods: e.methods,
+    extractor: e.extractorName,
+    failureReason: e.failureReason,
+    conflicts: Array.isArray(e.conflicts) ? e.conflicts.length : 0,
+    toCheck: e._count.facts,
+    keysToCheck: Array.from(new Set(e.facts.map((f) => f.definition.label))),
+    createdAt: e.createdAt,
+    documents: (docsBySha.get(e.sha256) ?? []).map((d) => ({
+      id: d.id,
+      name: d.file.name,
+      type: d.fileType.abbreviaton ?? d.fileType.name,
+      item: d.item,
+      supplier: d.supplier?.name ?? null,
+    })),
+  });
+
+  // documents no longer filed anywhere current don't need a person
+  const live = (rows: ReturnType<typeof row>[]) => rows.filter((r) => r.documents.length > 0);
+  return {
+    toCheck: live(toCheck.map(row)),
+    conflicts: live(withConflicts.map(row).filter((r) => r.conflicts > 0)),
+    failed: live(failed.map(row)),
+  };
+};
+
+export type ExtractionReviewQueue = Awaited<ReturnType<typeof getExtractionReviewQueue>>;
