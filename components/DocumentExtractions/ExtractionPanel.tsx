@@ -12,7 +12,7 @@ import {
   verifyExtractedFact,
 } from "@/actions/documentExtractions"
 import FactValueForm, { FactShape } from "./FactValueForm"
-import { MethodBadge, pageHref, pageLabel, reviewStateLabel } from "./presentation"
+import { factText, MethodBadge, pageHref, pageLabel, reviewStateLabel } from "./presentation"
 
 // What the extraction agent read from a document's file, fact by fact, where people verify facts and
 // correct the agent. Used in the Files tab's document preview and the extraction review queue.
@@ -85,7 +85,7 @@ const FactRow = ({ fact, shape, fileUrl, onChanged }: { fact: Fact; shape?: Fact
             {"component" in fact && fact.component && (
               <span className="font-medium">{fact.component.name ?? fact.component.cas}{fact.component.name && fact.component.cas && <span className="font-normal text-base-content/50"> · {fact.component.cas}</span>}:</span>
             )}
-            <span className={overridden ? "line-through" : ""}>{shape?.kind === "claim" ? fact.printed?.replace(/_/g, " ") : fact.printed}</span>
+            <span className={overridden ? "line-through" : ""}>{factText({ kind: shape?.kind, value: fact.value, printed: fact.printed })}</span>
             <MethodBadge method={fact.method} />
             {fact.confidence !== "high" && <span className="badge badge-ghost badge-xs">{fact.confidence} confidence</span>}
             {fact.needsHumanCheck && !fact.verified && !overridden && (
