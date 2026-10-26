@@ -36,6 +36,8 @@ const evidenceArg = z
   .object({
     sourceType: z.enum(sourceTypeNames).describe("Kind of evidence"),
     documentId: z.string().uuid().optional().describe("An item document (documentId from get_item_documents), e.g. the SDS it came from"),
+    extractionId: z.string().uuid().optional().describe("A document extraction (get_document_extraction) whose facts back the value"),
+    factIds: z.array(z.string().uuid()).max(50).optional().describe("The facts of that extraction cited, e.g. the composition rows"),
     url: z.string().url().optional(),
     note: z.string().max(4000).optional().describe("What the evidence says or where in the document, e.g. 'SDS section 3'"),
     sourceDate: z
@@ -44,7 +46,8 @@ const evidenceArg = z
       .optional()
       .describe("Date of the evidence (YYYY-MM-DD), e.g. the document's issue date; drives re-verification"),
   })
-  .refine((e) => e.documentId || e.url || e.note, { message: "Evidence needs a documentId, url or note." });
+  .refine((e) => e.documentId || e.extractionId || e.url || e.note, { message: "Evidence needs a documentId, extractionId, url or note." })
+  .refine((e) => !e.factIds?.length || e.extractionId, { message: "factIds need their extractionId." });
 
 const subjectArg = z
   .object({
@@ -77,12 +80,27 @@ const toSources = async (evidence: z.infer<typeof evidenceArg>[]): Promise<Canon
       if (!document) return { error: `No item document with id ${e.documentId}.` };
       fileId = document.fileId;
     }
+    if (e.extractionId) {
+      const extraction = await prisma.documentExtraction.findUnique({ where: { id: e.extractionId }, select: { sha256: true, status: true } });
+      if (!extraction || extraction.status === "failed") return { error: `No readable extraction with id ${e.extractionId}.` };
+      const cited = e.factIds?.length
+        ? await prisma.extractedFact.count({ where: { id: { in: e.factIds }, extractionId: e.extractionId } })
+        : 0;
+      if (e.factIds?.length && cited !== new Set(e.factIds).size) return { error: `Some factIds aren't facts of extraction ${e.extractionId}.` };
+      // the reviewer opens the document the facts came from
+      if (!fileId) {
+        const file = await prisma.file.findFirst({ where: { sha256: extraction.sha256 }, select: { id: true } });
+        fileId = file?.id ?? null;
+      }
+    }
     sources.push({
       sourceTypeId: sourceTypeIdBySnake[e.sourceType],
       fileId,
       url: e.url ?? null,
       note: e.note ?? null,
       sourceDate: e.sourceDate ? new Date(`${e.sourceDate}T00:00:00Z`) : null,
+      extractionId: e.extractionId ?? null,
+      factIds: e.factIds ? Array.from(new Set(e.factIds)) : [],
     });
   }
   return sources;
@@ -304,6 +322,7 @@ export const registerCanonWriteTools: ToolRegistrar = (server, ctx) => {
                 url: s.url,
                 note: s.note,
                 sourceDate: s.sourceDate,
+                ...(s.extractionId && { extractionId: s.extractionId, factIds: s.factIds }),
               })),
             };
           },

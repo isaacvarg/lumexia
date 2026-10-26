@@ -878,12 +878,15 @@ model CanonChangeRequestSource {
   url             String?
   note            String?
   sourceDate      DateTime? @map("source_date")
+  extractionId    String?   @map("extraction_id")
+  factIds         String[]  @default([]) @map("fact_ids")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  changeRequest CanonChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
-  sourceType    CanonSourceType    @relation(fields: [sourceTypeId], references: [id])
-  file          File?              @relation(fields: [fileId], references: [id])
+  changeRequest CanonChangeRequest  @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+  sourceType    CanonSourceType     @relation(fields: [sourceTypeId], references: [id])
+  file          File?               @relation(fields: [fileId], references: [id])
+  extraction    DocumentExtraction? @relation(fields: [extractionId], references: [id], onDelete: SetNull)
 
   @@map("canon_change_request_sources")
 }
@@ -4171,12 +4174,13 @@ model DocumentExtraction {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  supersededBy DocumentExtraction?       @relation("DocumentExtractionSupersession", fields: [supersededById], references: [id], onDelete: SetNull)
-  supersedes   DocumentExtraction[]      @relation("DocumentExtractionSupersession")
-  createdBy    User                      @relation("DocumentExtractionCreatedBy", fields: [createdById], references: [id])
+  supersededBy DocumentExtraction?        @relation("DocumentExtractionSupersession", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes   DocumentExtraction[]       @relation("DocumentExtractionSupersession")
+  createdBy    User                       @relation("DocumentExtractionCreatedBy", fields: [createdById], references: [id])
   text         DocumentExtractionText?
   facts        ExtractedFact[]
   events       DocumentExtractionEvent[]
+  canonSources CanonChangeRequestSource[]
 
   @@index([sha256, status])
   @@map("document_extractions")

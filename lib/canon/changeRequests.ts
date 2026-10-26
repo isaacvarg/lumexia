@@ -21,6 +21,9 @@ export type CanonSourceInput = {
   url?: string | null;
   note?: string | null;
   sourceDate?: Date | null;
+  // facts from a document extraction this evidence cites
+  extractionId?: string | null;
+  factIds?: string[];
 };
 
 type OpenInput = {
@@ -196,6 +199,8 @@ const sourceRows = (sources: CanonSourceInput[]) =>
     url: s.url ?? null,
     note: s.note ?? null,
     sourceDate: s.sourceDate ?? null,
+    extractionId: s.extractionId ?? null,
+    factIds: s.factIds ?? [],
   }));
 
 // Opens a CR. If the requester is also a reviewer, their approval is recorded right away,

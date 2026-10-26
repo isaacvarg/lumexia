@@ -49,6 +49,19 @@ const Sources = ({ sources }: { sources: ChangeRequest["sources"] }) => {
           {s.url && <a href={s.url} target="_blank" rel="noreferrer" className="link link-primary inline-flex items-center gap-1"><TbLink className="size-4" />link</a>}
           {s.note && <span className="text-base-content/70">{s.note}</span>}
           {s.sourceDate && <span className="text-base-content/50">dated {new Date(s.sourceDate).toLocaleDateString()}</span>}
+          {s.citedFacts.length > 0 && (
+            <ul className="w-full border-l-2 border-base-300 pl-3 text-xs">
+              {s.citedFacts.map((f) => (
+                <li key={f.id} className={f.state === "overridden" ? "line-through opacity-60" : ""}>
+                  <span className="font-medium">{f.definition.label}{f.componentName && ` (${f.componentName})`}:</span> {f.printed}
+                  <span className="text-base-content/50">
+                    {" "}· {f.pageLabel ? `p. ${f.pageLabel}` : f.pageIndex !== null ? `p. ${f.pageIndex + 1}` : ""} “{f.quote}”
+                    {f.method === "human" ? " · entered by a person" : f.verifiedAt ? " · verified" : " · not verified"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </li>
       ))}
     </ul>
