@@ -20,7 +20,9 @@ change** (to replace the current one) on a card to open the proposal form:
 3. If the data type requires it, add **Evidence**: a source type (supplier
    document, internal test, regulatory reference, scientific reference,
    internal judgment, or Lumexia record), plus a file, URL, or note and a
-   source date.
+   source date. If the data type is mapped to [document facts](#what-the-documents-say),
+   tick the facts that back your value instead; each document's facts become
+   one piece of evidence, and reviewers see them with their page and quote.
 4. **Submit**.
 
 If you're also the sole or self-approving reviewer for that data type, the
@@ -34,6 +36,21 @@ approvals.
   has been granted Edit, the card shows that nobody can edit it yet, with a
   link to **Canon Settings** → **Teams and Permissions**.
 </Callout>
+
+## What the documents say
+
+When a data type is mapped to document facts (in its
+[settings](/docs/canon/data-types#configuring-a-data-type)), its card shows
+**What the documents say**: the facts the extraction agent read from the
+item's current documents, with the document, page and exact quote of each.
+For a supplier statement, only that supplier's documents count.
+
+- Facts are evidence, not approved values. Each shows whether someone verified
+  it, it's waiting for a check, or it hasn't been checked yet.
+- **Documents differ** marks a fact that the item's documents state in
+  different ways.
+- **New since approved** counts facts read after the current version was
+  accepted, so you can tell when a newer document may change the value.
 
 ## Reviewing a change request
 

@@ -417,7 +417,10 @@ How it behaves:
   classification stands.
 - **Citing in Canon.** `propose_canon_change` and `attach_canon_evidence` take
   `extractionId` and `factIds` in evidence; reviewers see the cited facts with
-  their page and quote.
+  their page and quote. Data types mapped to fact keys (Settings → Canon)
+  list them as `factKeys` in `get_canon_data_types`, and `get_item_canon`
+  returns each value's `documentFacts`, flagging facts read after the accepted
+  version (`newSinceApproved`).
 - Writes take the same `idempotencyKey` and `dryRun` as Canon proposals, and
   every change is logged on the extraction.
 

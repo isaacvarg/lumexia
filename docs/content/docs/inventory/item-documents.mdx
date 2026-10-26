@@ -58,7 +58,8 @@ never count, because where they came from is unknown.
 | **Current** | On file and valid. |
 | **Expiring** | Valid, but inside the warning window. |
 | **Needs dates** | On file, but without an issue or expiry date, so it can't be checked. |
-| **Source updated** | Our document is based on a supplier document that has since been replaced. |
+| **Surrogate** | Another item's document stands in until this item has its own. It counts, but should be replaced. |
+| **Source updated** | Our document is based on, or a surrogate stands in for, a document that has since been replaced. |
 | **Expired** | Past its expiry, or issued before the cutoff. |
 | **Missing** | Nothing on file. |
 
@@ -78,6 +79,28 @@ supplier, the lot (for lot documents), the issue date, and for our own
 documents, which supplier document it's based on. Suppliers the item is
 ordered from are listed first.
 
+When an item has no document of its own but another item's applies (the
+same material from another supplier, say), use **Use another item's** on the
+requirement, pick that item's current document and say why. It counts as a
+**Surrogate** until you upload the item's own, which replaces it.
+
+### Extracted facts
+
+The extraction agent reads supplier documents (SDS, COA, TDS, IFRA…) into
+facts: each with the page, the exact quote, and how it was read. A file filed
+under several items is read once.
+
+- Each document in **All documents** shows whether it has been read
+  (**Not extracted**, **N to check**, **Extracted**, **Verified**,
+  **Unreadable**).
+- Opening a document shows its **Extracted facts**. Check a fact against the
+  document with **Verify**, or **Correct** it; a correction keeps the agent's
+  reading and can be reverted. Facts read from page images or OCR on
+  safety-relevant facts wait for a person's check.
+- **Extracted facts**, above the document list, gathers every fact the item's
+  current documents state, grouped by kind, and flags facts where documents
+  differ. **Search** opens them in fact search.
+
 A new upload **replaces** the older version of the same document (same type,
 issuer, lot, and supplier). If a current version exists from a different
 supplier, the upload dialog asks whether to replace it too. Editing a
@@ -94,6 +117,20 @@ across all items, with:
 - Filters by status, issuer, item type, document type, and supplier.
 - A **By supplier** view grouping supplier documents by who to ask, with a
   **Copy request list** to paste into an email.
+
+## Extraction review and fact search
+
+- **Quality → Documents → Extractions** lists facts waiting for a check,
+  facts a re-read changed after someone verified them, unreadable documents,
+  and **Cross-checks**: one CAS under different names, Prop 65 / TSCA /
+  right-to-know listings that disagree, component hazards missing from a
+  material's classification, and INCI names that don't match the item's INCI
+  aliases.
+- **Quality → Documents → Facts** searches facts across items, or for one
+  item: for example every flash point under 60 °C, or every vegan claim.
+- **Settings → Inventory → Documents → Fact catalog** lists the kinds of facts
+  that can be recorded. Approve kinds the agent proposed, mark which document
+  types require them, and merge duplicates.
 
 ## Document inbox
 
