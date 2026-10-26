@@ -2,7 +2,8 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { ensureSeedCatalog, listFactDefinitions } from "@/lib/documentExtractions/catalog";
 import { documentContent } from "@/lib/documentExtractions/content";
-import { describeFact, documentsByContent, extractionStatusForDocuments, getExtraction, searchFacts } from "@/lib/documentExtractions/queries";
+import { describeFact, documentsByContent, extractionStatusForDocuments, getCrossChecks, getExtraction, searchFacts } from "@/lib/documentExtractions/queries";
+import { crossCheckKinds } from "@/lib/documentExtractions/crossChecks";
 import { claimStatuses, factMethods, reviewStates } from "@/lib/documentExtractions/types";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
@@ -224,6 +225,36 @@ export const registerExtractionTools: ToolRegistrar = (server) => {
         })),
         nextCursor: result.nextCursor,
       });
+    },
+  );
+
+  server.registerTool(
+    "get_extraction_cross_checks",
+    {
+      title: "Get extraction cross-checks",
+      description:
+        "Checks across all current extractions, so you don't have to compare sheets yourself: same_cas_different_names " +
+        "(one CAS under several chemical names), regulatory_disagreement (Prop 65, TSCA basis or state right-to-know " +
+        "listed differently by different sheets, or listed on one but not on another that contains the chemical and " +
+        "captured its regulatory section), implied_classification (a component hazard above its GHS generic cut-off that " +
+        "the material's stated classification leaves out; specific limits, M factors and additivity aren't applied, so " +
+        "these are prompts to check, and the sheet's own section 2 stands), inci_mismatch (stated INCI names or " +
+        "composition chemicals that don't match the item's INCI aliases). Each finding has its facts with page and quote.",
+      inputSchema: {
+        checks: z.array(z.enum(crossCheckKinds)).optional().describe("Only these checks (default all)"),
+        item: z.string().optional().describe("Only findings involving this item (id or reference code)"),
+        cas: z.string().optional().describe("Only findings about this CAS"),
+        limit: z.number().int().min(1).max(500).optional().describe("Max findings (default 100)"),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    async ({ checks, item: itemArg, cas, limit }) => {
+      const item = itemArg ? await findItem(itemArg) : null;
+      if (itemArg && !item) return errorResult(`No item found for "${itemArg}".`);
+      await ensureSeedCatalog();
+      const findings = await getCrossChecks(prisma, { checks, itemId: item?.id, cas });
+      const max = limit ?? 100;
+      return jsonResult({ matching: findings.length, truncated: findings.length > max, findings: findings.slice(0, max) });
     },
   );
 };
