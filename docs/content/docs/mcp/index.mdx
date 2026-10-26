@@ -166,6 +166,7 @@ profile.
 | `get_document_extraction` | What a document says, fact by fact, with page, quote, reading method, confidence and who verified it, plus what's missing and every document sharing the file. By document id or sha256. Full text only on request. |
 | `get_item_extractions` | The extraction status of each of an item's current documents. |
 | `search_document_extractions` | Facts across extractions, e.g. every flash point under 60 °C, every Prop 65 row for a CAS, or stated vegan claims. Never full text. |
+| `get_extraction_cross_checks` | Where sheets disagree: one CAS under several names, Prop 65 / TSCA / state right-to-know listed differently, component hazards missing from a material's classification, and INCI names that don't match the item's INCI aliases. Each finding comes with its facts. |
 | `find_documents_by_checksum` | Whether files (by MD5, from `md5sum`) were already uploaded, and which item documents they're attached to. |
 | `get_document_downloads` | Download links for item documents, valid 15 minutes. The agent saves each with `curl -o`, so the file never passes through the model. |
 | `search_purchase_orders` | Purchase orders, newest first, with supplier, status, lines, and total. Filter by supplier, item, status, or creation date. Cancelled orders are left out unless asked for. |
@@ -408,6 +409,12 @@ How it behaves:
   into.
 - **Fact search.** **Quality → Documents → Facts** searches facts across all
   extractions, like `search_document_extractions`.
+- **Cross-checks.** `get_extraction_cross_checks`, and the **Cross-checks** tab
+  of the review queue, compare sheets so agents don't have to. The
+  classification check uses GHS generic cut-offs only (1%, or 0.1% for
+  category 1 CMRs and sensitisers), without specific limits, M factors or
+  additivity, so its findings are prompts to check; a sheet's own section 2
+  classification stands.
 - **Citing in Canon.** `propose_canon_change` and `attach_canon_evidence` take
   `extractionId` and `factIds` in evidence; reviewers see the cited facts with
   their page and quote.
