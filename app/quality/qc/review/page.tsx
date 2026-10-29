@@ -2,6 +2,7 @@ import Link from "next/link"
 import PageTitle from "@/components/Text/PageTitle"
 import prisma from "@/lib/prisma"
 import { getQcReviewQueue, type QcReviewQueue } from "@/lib/qcCoaImport/queries"
+import { BaselineButtons, ResultButtons } from "./_components/ReviewButtons"
 
 // always reflect the latest imports
 export const dynamic = "force-dynamic"
@@ -39,13 +40,14 @@ const Queue = ({ queue }: { queue: QcReviewQueue }) => (
   <div className="flex flex-col gap-y-8">
     <Section title="Baselines to approve" hint="The first supplier COA of a resold item sets the standard later lots are checked against." count={queue.pendingBaselines.length}>
       <table className="table table-sm">
-        <thead><tr><th>Item</th><th>Source COA</th><th>Since</th></tr></thead>
+        <thead><tr><th>Item</th><th>Source COA</th><th>Since</th><th></th></tr></thead>
         <tbody>
           {queue.pendingBaselines.map((b) => (
             <tr key={b.id}>
               <td><ItemLink item={b.item} /></td>
               <td>{b.sourceItemFile?.file.name ?? "—"}{b.sourceItemFile?.supplierLotNumber ? ` (supplier lot ${b.sourceItemFile.supplierLotNumber})` : ""}</td>
               <td>{b.createdAt.toLocaleDateString()}</td>
+              <td><BaselineButtons itemId={b.item.id} /></td>
             </tr>
           ))}
         </tbody>
@@ -54,7 +56,7 @@ const Queue = ({ queue }: { queue: QcReviewQueue }) => (
 
     <Section title="Results to confirm" hint="Imported from a supplier COA and kept off generated COAs until a person confirms them." count={queue.needsReview.length}>
       <table className="table table-sm">
-        <thead><tr><th>Item / lot</th><th>Test</th><th>Result</th><th>Why</th><th>Verdicts</th></tr></thead>
+        <thead><tr><th>Item / lot</th><th>Test</th><th>Result</th><th>Why</th><th>Verdicts</th><th></th></tr></thead>
         <tbody>
           {queue.needsReview.map((r) => {
             const lot = r.qcRecord.examinedLot
@@ -66,6 +68,7 @@ const Queue = ({ queue }: { queue: QcReviewQueue }) => (
                 <td>{r.value} {r.qcItemParameter.parameter.uom}</td>
                 <td>{reasons.map((x) => <span key={x} className="badge badge-soft badge-warning badge-sm mr-1">{reasonLabels[x] ?? x}</span>)}</td>
                 <td><Outcome label="ours" value={r.computedOutcome} /><Outcome label="Hermes" value={r.suggestedOutcome} /><Outcome label="supplier" value={r.supplierOutcome} /></td>
+                <td><ResultButtons resultId={r.id} /></td>
               </tr>
             )
           })}

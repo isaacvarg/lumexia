@@ -363,3 +363,47 @@ export const undoCoaImport = async (db: Db, actor: CoaImportActor, input: { lotI
   await db.qcCoaImport.update({ where: { id: existing.id }, data: { supersededAt: new Date() } });
   return { removed, keptEditedResultIds: kept };
 };
+
+// What only people do, from the UI (never over MCP): approve an item's baseline, confirm or reject an
+// imported result. Every change is logged.
+
+// Approving makes later lots (and this item's earlier imports) count against the baseline: earlier imports are
+// run again so their results get computed outcomes and their records a verdict. Hermes's suggestions carry over.
+export const approveBaseline = async (db: Db, actor: CoaImportActor, itemId: string) => {
+  const baseline = await db.qcItemBaseline.findUnique({ where: { itemId } });
+  if (!baseline) throw new CoaImportRefused("This item has no baseline to approve.");
+  if (baseline.status === "approved") return { rechecked: 0 };
+  await db.qcItemBaseline.update({ where: { itemId }, data: { status: "approved", approvedById: actor.userId, approvedAt: new Date() } });
+
+  const imports = await db.qcCoaImport.findMany({ where: { supersededAt: null, lot: { itemId } }, select: { lotId: true, itemFileId: true, qcRecordId: true } });
+  for (const imp of imports) {
+    if (imp.qcRecordId) await log(db, actor, imp.qcRecordId, { action: "update", table: "qc_item_baselines", recordId: baseline.id, field: "status", oldValue: "pending", newValue: "approved" });
+    const suggested = await db.qcParameterResult.findMany({ where: { source: "supplierCoa", sourceItemFileId: imp.itemFileId, suggestedOutcome: { not: null }, qcRecord: { examinedLotId: imp.lotId } }, select: { sourceFactId: true, suggestedOutcome: true } });
+    await importLotCoaResults(db, actor, {
+      lotId: imp.lotId,
+      documentId: imp.itemFileId,
+      suggestions: suggested.flatMap((r) => (r.sourceFactId ? [{ factId: r.sourceFactId, outcome: r.suggestedOutcome as Outcome }] : [])),
+    });
+  }
+  return { rechecked: imports.length };
+};
+
+const loadReviewResult = async (db: Db, resultId: string) => {
+  const result = await db.qcParameterResult.findUnique({ where: { id: resultId } });
+  if (!result || result.source !== "supplierCoa") throw new CoaImportRefused("That result no longer exists.");
+  return result;
+};
+
+export const confirmResult = async (db: Db, actor: CoaImportActor, resultId: string) => {
+  const result = await loadReviewResult(db, resultId);
+  if (result.reviewState === "accepted") return;
+  await db.qcParameterResult.update({ where: { id: resultId }, data: { reviewState: "accepted", confirmedById: actor.userId, confirmedAt: new Date() } });
+  await log(db, actor, result.qcRecordId, { action: "update", table: "qc_parameter_results", recordId: resultId, field: "reviewState", oldValue: result.reviewState, newValue: "accepted" });
+};
+
+// The reading is wrong: the result goes, and importing the COA again would bring it back from the facts.
+export const rejectResult = async (db: Db, actor: CoaImportActor, resultId: string) => {
+  const result = await loadReviewResult(db, resultId);
+  await db.qcParameterResult.delete({ where: { id: resultId } });
+  await log(db, actor, result.qcRecordId, { action: "delete", table: "qc_parameter_results", recordId: resultId, field: "value", oldValue: result.value, newValue: "" });
+};
