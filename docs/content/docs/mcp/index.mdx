@@ -147,7 +147,7 @@ profile.
 | --- | --- |
 | `whoami` | The user the key acts as, and the key's scopes. Handy to confirm the connection. |
 | `search_items` | Items matching a name, reference code, or alias (INCI name, trade name, …), with the alias that matched. Archived items are excluded unless asked for. |
-| `get_item` | One item by id or reference code: type, procurement, status, all aliases, and total quantity on hand. |
+| `get_item` | One item by id or reference code: whether it is sold to customers (`soldToCustomers`), type, procurement, status, all aliases, and total quantity on hand. |
 | `get_item_lots` | An item's lots with supplier lot, expiry, quantity on hand and origin (purchase order and supplier, or batch). Only lots with stock unless asked, newest first. |
 | `get_lot` | A lot by our lot number or the supplier's: item, supplier lot and dates, quantity on hand, origin, how it was received (inspection, flags), QC records with every parameter result, and notes. Lot numbers can repeat across items, so this may return several. |
 | `get_item_canon` | Every [Canon](/docs/canon) data type for an item, as plain text, with status, flags, version, open change requests, and whether you can edit or review it. Includes supplier statements and finished products filled with the item. |
