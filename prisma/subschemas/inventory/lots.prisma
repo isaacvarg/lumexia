@@ -20,6 +20,7 @@ model Lot {
     lotOrigin       LotOrigin?
     uom             UnitOfMeasurement @relation(fields: [uomId], references: [id])
     qcRecords       QcRecord[]
+    qcCoaImports QcCoaImport[]
     notes LotNote[]
     purchaseOrderItem PurchaseOrderItem?
     receiptLine     ReceiptLine?      @relation(fields: [receiptLineId], references: [id])

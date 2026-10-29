@@ -1,0 +1,37 @@
+// Supplier COA import state. QcItemBaseline: one per item; the first COA of an isSold item becomes the
+// pending baseline until a person approves it. QcCoaImport: one row per lot and COA document, for
+// idempotency, undo and supersede; report holds the per-row import report (json).
+model QcItemBaseline {
+    id               String    @id @default(uuid())
+    itemId           String    @unique @map("item_id")
+    status           String    @default("pending")
+    sourceItemFileId String?   @map("source_item_file_id")
+    approvedById     String?   @map("approved_by_id")
+    approvedAt       DateTime? @map("approved_at")
+    createdAt        DateTime  @default(now()) @map("created_at")
+    updatedAt        DateTime  @updatedAt @map("updated_at")
+    item             Item      @relation(fields: [itemId], references: [id])
+    sourceItemFile   ItemFile? @relation(fields: [sourceItemFileId], references: [id], onDelete: SetNull)
+    approvedBy       User?     @relation("QcItemBaselineApprovedBy", fields: [approvedById], references: [id])
+
+    @@map("qc_item_baselines")
+}
+
+model QcCoaImport {
+    id           String    @id @default(uuid())
+    lotId        String    @map("lot_id")
+    itemFileId   String    @map("item_file_id")
+    qcRecordId   String?   @map("qc_record_id")
+    createdById  String    @map("created_by_id")
+    report       Json?
+    supersededAt DateTime? @map("superseded_at")
+    createdAt    DateTime  @default(now()) @map("created_at")
+    updatedAt    DateTime  @updatedAt @map("updated_at")
+    lot          Lot       @relation(fields: [lotId], references: [id])
+    itemFile     ItemFile  @relation(fields: [itemFileId], references: [id])
+    qcRecord     QcRecord? @relation(fields: [qcRecordId], references: [id], onDelete: SetNull)
+    createdBy    User      @relation(fields: [createdById], references: [id])
+
+    @@unique([lotId, itemFileId])
+    @@map("qc_coa_imports")
+}

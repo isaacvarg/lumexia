@@ -7,6 +7,7 @@ model QcRecord {
     examinedLotId             String                 @map("examined_lot_id")
     linkedBprId               String?                @map("linked_bpr_id")
     linkedPurchaseOrderItemId String?                @map("linked_purchase_order_item_id")
+    sourceItemFileId String? @map("source_item_file_id")
     createdAt                 DateTime               @default(now()) @map("created_at")
     updatedAt                 DateTime               @updatedAt @map("updated_at")
     status                    QcRecordStatus         @relation(fields: [statusId], references: [id])
@@ -18,6 +19,7 @@ model QcRecord {
     qcParameterResults        QcParameterResult[]
     qcRecordNotes             QcRecordNote[]
     qcAuditLogs               QcAuditLog[]
+    coaImports QcCoaImport[]
 
     @@map("qc_records")
 }

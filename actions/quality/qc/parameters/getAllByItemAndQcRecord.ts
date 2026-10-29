@@ -10,6 +10,7 @@ export const getAllQcParametersByItemAndQcRecord = async (itemId: string, qcReco
       results: {
         some: {
           qcRecordId,
+          reviewState: "accepted",
         }
       }
     },
@@ -32,6 +33,8 @@ export const getAllQcParametersByItemAndQcRecord = async (itemId: string, qcReco
       results: {
         where: {
           qcRecordId,
+          // results from a supplier COA that a person still has to confirm stay off generated COAs
+          reviewState: "accepted",
         },
         include: {
           parameterInputResults: true,

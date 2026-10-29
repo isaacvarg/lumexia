@@ -3,7 +3,7 @@ import { EvaluatedRequirement, RequirementStatus } from "@/lib/itemDocuments/typ
 
 // Nothing at receiving blocks; these mark what needs a look afterwards. Only the inspection result is
 // stored. The rest are worked out from current data, so e.g. a COA filed a week later clears docsMissing.
-export type ReceivingFlag = "inspection" | "overReceived" | "shortReceived" | "noSupplierLot" | "docsMissing" | "lotMismatch";
+export type ReceivingFlag = "inspection" | "overReceived" | "shortReceived" | "noSupplierLot" | "docsMissing" | "lotMismatch" | "outOfSpec";
 
 const QUANTITY_EPSILON = 1e-6;
 
@@ -24,12 +24,14 @@ export const lotRequirementStatuses = (requirements: EvaluatedRequirement[], lot
     return lot ? [{ requirement: r.requirement, status: lot.status, documents: lot.documents }] : [];
   });
 
-export const lotFlags = (lot: { id: string; supplierLotNumber: string | null }, requirements: EvaluatedRequirement[]): ReceivingFlag[] => {
+// outOfSpec: the lot's supplier COA failed the item's approved baseline (see lib/qcCoaImport)
+export const lotFlags = (lot: { id: string; supplierLotNumber: string | null; outOfSpec?: boolean }, requirements: EvaluatedRequirement[]): ReceivingFlag[] => {
   const flags: ReceivingFlag[] = [];
   if (!lot.supplierLotNumber) flags.push("noSupplierLot");
   const statuses = lotRequirementStatuses(requirements, lot.id);
   if (statuses.some((s) => s.requirement.level === "required" && missingStatuses.includes(s.status))) flags.push("docsMissing");
   if (statuses.some((s) => s.status === "mismatch")) flags.push("lotMismatch");
+  if (lot.outOfSpec) flags.push("outOfSpec");
   return flags;
 };
 

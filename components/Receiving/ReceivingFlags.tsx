@@ -1,5 +1,5 @@
 import { IconType } from "react-icons"
-import { TbAlertTriangle, TbArrowsDiff, TbFileAlert, TbHash, TbPackageExport, TbPackageImport } from "react-icons/tb"
+import { TbAlertTriangle, TbArrowsDiff, TbFileAlert, TbFlask, TbHash, TbPackageExport, TbPackageImport } from "react-icons/tb"
 import type { ReceivingFlag } from "@/lib/receiving/flags"
 
 export const flagDisplay: Record<ReceivingFlag, { label: string; badge: string; icon: IconType; hint: string }> = {
@@ -8,6 +8,7 @@ export const flagDisplay: Record<ReceivingFlag, { label: string; badge: string; 
   shortReceived: { label: "Rest still expected", badge: "badge-info", icon: TbPackageExport, hint: "Less arrived than ordered; the rest stays open on the PO" },
   noSupplierLot: { label: "No supplier lot", badge: "badge-warning", icon: TbHash, hint: "The supplier's lot number wasn't recorded" },
   docsMissing: { label: "Docs missing", badge: "badge-warning", icon: TbFileAlert, hint: "A required lot document (e.g. COA) isn't on file yet" },
+  outOfSpec: { label: "Out of spec", badge: "badge-error", icon: TbFlask, hint: "The supplier COA failed the item's approved baseline" },
   lotMismatch: { label: "COA lot mismatch", badge: "badge-warning", icon: TbArrowsDiff, hint: "A document on this lot names a different supplier lot" },
 }
 

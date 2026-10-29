@@ -7,6 +7,8 @@ model QcItemSpecification {
     valueB String? @map("value_b")
     specificationType String @map("specification_type")
     displayOnCoa Boolean @default(true) @map("display_on_coa")
+    createdById       String? @map("created_by_id")
+    sourceItemFileId String? @map("source_item_file_id")
     createdAt               DateTime    @default(now()) @map("created_at")
     updatedAt               DateTime    @updatedAt @map("updated_at")
     itemParameter QcItemParameter @relation(fields: [itemParameterId], references: [id])

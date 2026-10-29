@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { outOfSpecLotIds } from "@/lib/qcCoaImport/queries";
 import { getFileUrl } from "@/actions/files/getUrl";
 import { getItemDocumentStatuses } from "@/lib/itemDocuments/queries";
 import { findWaitingDocuments } from "@/lib/itemDocuments/mutations";
@@ -80,6 +81,7 @@ export const getReceivingData = async (purchaseOrderId: string) => {
 
   const expectations = await getItemExpectations(Array.from(new Set(rows.map((r) => r.itemId))), requirementsByItem, purchaseOrderId);
 
+  const outOfSpec = await outOfSpecLotIds(prisma, receipts.flatMap((r) => r.lines.flatMap((l) => l.lots.map((lot) => lot.id))));
   const receiptViews = await Promise.all(
     receipts.map(async (receipt) => ({
       id: receipt.id,
@@ -112,7 +114,7 @@ export const getReceivingData = async (purchaseOrderId: string) => {
               quantity: lot.purchaseOrderItem?.quantity ?? null,
               initialQuantity: lot.initialQuantity,
               inventoryUom: lot.uom.abbreviation,
-              flags: lotFlags(lot, requirements),
+              flags: lotFlags({ ...lot, outOfSpec: outOfSpec.has(lot.id) }, requirements),
               documents: lotRequirementStatuses(requirements, lot.id).map((s) => ({ fileTypeId: s.requirement.fileTypeId, level: s.requirement.level, status: s.status })),
             })),
           };

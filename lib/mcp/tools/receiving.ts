@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { outOfSpecLotIds } from "@/lib/qcCoaImport/queries";
 import prisma from "@/lib/prisma";
 import { getItemDocumentStatuses } from "@/lib/itemDocuments/queries";
 import { failedChecks, CheckAnswers } from "@/lib/receiving/checks";
@@ -6,7 +7,7 @@ import { lineFlags, lotFlags, ReceivingFlag } from "@/lib/receiving/flags";
 import type { ToolRegistrar } from "../server";
 import { errorResult, jsonResult } from "../results";
 
-const flagValues = ["inspection", "overReceived", "shortReceived", "noSupplierLot", "docsMissing", "lotMismatch"] as const satisfies readonly ReceivingFlag[];
+const flagValues = ["inspection", "overReceived", "shortReceived", "noSupplierLot", "docsMissing", "lotMismatch", "outOfSpec"] as const satisfies readonly ReceivingFlag[];
 
 const MAX_DAYS = 90;
 
@@ -19,7 +20,7 @@ export const registerReceivingTools: ToolRegistrar = (server, ctx) => {
         "Deliveries received since a time whose lines need a look: failed dock inspection (inspection), more than " +
         "ordered (overReceived), less than ordered with the rest still open (shortReceived), a lot without the " +
         "supplier's lot number (noSupplierLot), a required lot document like the COA not on file (docsMissing), or a " +
-        "lot document printed for another supplier lot (lotMismatch). Document flags reflect what's on file now, so " +
+        "lot document printed for another supplier lot (lotMismatch), or a supplier COA that failed the item's approved baseline (outOfSpec). Document flags reflect what's on file now, so " +
         "they clear once the document arrives. Poll with `since` set to the last check to notify people of new issues.",
       inputSchema: {
         since: z.string().datetime({ offset: true }).optional().describe("ISO time; receipts after this (default: last 24 hours)"),
@@ -62,10 +63,11 @@ export const registerReceivingTools: ToolRegistrar = (server, ctx) => {
       const statuses = await getItemDocumentStatuses(prisma, { id: { in: itemIds } });
       const requirements = new Map(statuses.map((s) => [s.itemId, s.requirements]));
 
+      const outOfSpec = await outOfSpecLotIds(prisma, lines.flatMap((l) => l.lots.map((lot) => lot.id)));
       const rows = lines
         .map((line) => {
           const reqs = requirements.get(line.purchaseOrderItem.item.id) ?? [];
-          const lots = line.lots.map((lot) => ({ lotNumber: lot.lotNumber, supplierLot: lot.supplierLotNumber, flags: lotFlags(lot, reqs) }));
+          const lots = line.lots.map((lot) => ({ lotNumber: lot.lotNumber, supplierLot: lot.supplierLotNumber, flags: lotFlags({ ...lot, outOfSpec: outOfSpec.has(lot.id) }, reqs) }));
           const all = Array.from(new Set([...lineFlags(line), ...lots.flatMap((l) => l.flags)]));
           const po = line.receipt.purchaseOrder;
           return {
