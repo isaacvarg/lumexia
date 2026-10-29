@@ -16,6 +16,7 @@ import { registerAliasReadTools, registerAliasWriteTools } from "./tools/aliasWr
 import { registerIdentityTools } from "./tools/identity";
 import { registerExtractionTools } from "./tools/extractions";
 import { registerExtractionWriteTools } from "./tools/extractionWrites";
+import { registerQcCoaImportTools, registerQcReadTools } from "./tools/qcCoaImport";
 import { apiKeyScopes } from "@/lib/apiKeys";
 
 // Who is calling: the user behind the API key, and what the key allows. origin is the address the
@@ -37,6 +38,7 @@ const registrars: ToolRegistrar[] = [
   registerInboxTools,
   registerAliasReadTools,
   registerExtractionTools,
+  registerQcReadTools,
 ];
 // only keys an admin granted write access see these
 const writeRegistrars: ToolRegistrar[] = [registerDocumentWriteTools, registerInboxWriteTools];
@@ -111,6 +113,7 @@ export const createMcpServer = (ctx: McpContext) => {
   if (ctx.scopes.includes(apiKeyScopes.propose)) registerCanonWriteTools(server, ctx);
   if (ctx.scopes.includes(apiKeyScopes.aliasWrite)) registerAliasWriteTools(server, ctx);
   if (ctx.scopes.includes(apiKeyScopes.extractWrite)) registerExtractionWriteTools(server, ctx);
+  if (ctx.scopes.includes(apiKeyScopes.extractWrite)) registerQcCoaImportTools(server, ctx);
 
   return server;
 };
