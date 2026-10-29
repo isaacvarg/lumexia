@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { outOfSpecLotIds } from "@/lib/qcCoaImport/queries";
 import { getFileUrl } from "@/actions/files/getUrl";
 import { getItemDocumentStatus } from "@/lib/itemDocuments/queries";
 import { cleanSupplierLot, sameSupplierLot } from "@/lib/itemDocuments/supplierLots";
@@ -80,7 +81,7 @@ export const getLotReceipt = async (lotId: string) => {
     failedChecks: failedChecks(line.checks as CheckAnswers).map((c) => c.label),
     issueNote: line.issueNote,
     photos: await Promise.all(line.files.map(async (f) => ({ id: f.file.id, name: f.file.name, url: await getFileUrl(f.file.bucketName, f.file.objectName) }))),
-    flags: [...lineFlags(line), ...lotFlags(lot, status?.requirements ?? [])],
+    flags: [...lineFlags(line), ...lotFlags({ ...lot, outOfSpec: (await outOfSpecLotIds(prisma, [lotId])).has(lotId) }, status?.requirements ?? [])],
   };
 };
 

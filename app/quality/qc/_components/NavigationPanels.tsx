@@ -17,6 +17,7 @@ const NavigationPanels = () => {
       </button>
       <button className="btn btn-xl btn-secondary min-h-32 hover:btn-secondary/30 hover:cursor-pointer" onClick={() => router.push('/quality/qc/examination/')}>Examinations</button>
       <button className="btn btn-xl btn-secondary min-h-32 hover:btn-secondary/30 hover:cursor-pointer" onClick={() => router.push('/quality/qc/parameters/')}>Parameters</button>
+      <button className="btn btn-xl btn-secondary min-h-32 hover:btn-secondary/30 hover:cursor-pointer" onClick={() => router.push('/quality/qc/review/')}>Review</button>
 
     </div>
   )
