@@ -254,7 +254,8 @@ export const importLotCoaResults = async (db: Db, actor: CoaImportActor, input: 
       suggested: suggestion?.outcome ?? null,
       supplier: outcomeOf(value.outcome),
     };
-    const extraTest = baselineApproved && !spec && !parameterCreated;
+    // a test the baseline COA already reported (even one with no printable limit) isn't an addition
+    const extraTest = baselineApproved && !spec && !parameterCreated && !!baselineRow && itemParameter.createdAt > baselineRow.createdAt;
     if (extraTest) proposedAdditions.push(test);
     const review = decideReview({
       confidence: fact.confidence,
