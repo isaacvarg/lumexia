@@ -1522,6 +1522,7 @@ model Lot {
   lotOrigin         LotOrigin?
   uom               UnitOfMeasurement  @relation(fields: [uomId], references: [id])
   qcRecords         QcRecord[]
+  qcCoaImports QcCoaImport[]
   notes             LotNote[]
   purchaseOrderItem PurchaseOrderItem?
   ItemFile          ItemFile[]
@@ -1805,6 +1806,8 @@ model ItemFile {
   derivatives            ItemFile[]     @relation("ItemFileDerivation")
   surrogateFor           ItemFile?      @relation("ItemFileSurrogate", fields: [surrogateForItemFileId], references: [id], onDelete: SetNull)
   surrogates             ItemFile[]     @relation("ItemFileSurrogate")
+  qcBaselines QcItemBaseline[]
+  qcCoaImports QcCoaImport[]
   inboxFiling            InboxFiling?
 
   @@index([itemId])
@@ -1910,6 +1913,7 @@ model Item {
   pricingExaminations                  PricingExamination[]
   consumerContainerArchives            ConsumerContainerArchive[]
   qcItemParameters                     QcItemParameter[]
+  qcBaseline QcItemBaseline?
   discrepancyAuditItems                DiscrepancyAuditItem[]
   discreteUnitOfMeasurementConversions DiscreteUnitOfMeasurementConversion[]
   reorderingRule                       ReorderingRule?
@@ -3235,6 +3239,8 @@ model QcItemSpecification {
   valueB                  String?                    @map("value_b")
   specificationType       String                     @map("specification_type")
   displayOnCoa            Boolean                    @default(true) @map("display_on_coa")
+  createdById       String? @map("created_by_id")
+  sourceItemFileId String? @map("source_item_file_id")
   createdAt               DateTime                   @default(now()) @map("created_at")
   updatedAt               DateTime                   @updatedAt @map("updated_at")
   itemParameter           QcItemParameter            @relation(fields: [itemParameterId], references: [id])
@@ -3297,6 +3303,16 @@ model QcParameterResult {
   qcItemParameterId     String                   @map("qc_item_parameter_id")
   value                 String
   runNumber             Int                      @default(1) @map("run_number")
+  reviewState       String    @default("accepted") @map("review_state")
+  reviewReasons     Json?     @map("review_reasons")
+  source            String    @default("manual")
+  sourceItemFileId  String?   @map("source_item_file_id")
+  sourceFactId      String?   @map("source_fact_id")
+  computedOutcome   String?   @map("computed_outcome")
+  suggestedOutcome  String?   @map("suggested_outcome")
+  supplierOutcome   String?   @map("supplier_outcome")
+  confirmedById     String?   @map("confirmed_by_id")
+  confirmedAt       DateTime? @map("confirmed_at")
   createdAt             DateTime                 @default(now()) @map("created_at")
   updatedAt             DateTime                 @updatedAt @map("updated_at")
   qcRecord              QcRecord                 @relation(fields: [qcRecordId], references: [id])
@@ -3422,6 +3438,7 @@ model QcRecord {
   examinedLotId             String                 @map("examined_lot_id")
   linkedBprId               String?                @map("linked_bpr_id")
   linkedPurchaseOrderItemId String?                @map("linked_purchase_order_item_id")
+  sourceItemFileId String? @map("source_item_file_id")
   createdAt                 DateTime               @default(now()) @map("created_at")
   updatedAt                 DateTime               @updatedAt @map("updated_at")
   status                    QcRecordStatus         @relation(fields: [statusId], references: [id])
@@ -3433,6 +3450,7 @@ model QcRecord {
   qcParameterResults        QcParameterResult[]
   qcRecordNotes             QcRecordNote[]
   qcAuditLogs               QcAuditLog[]
+  coaImports QcCoaImport[]
   QcRecordFile              QcRecordFile[]
 
   @@map("qc_records")
@@ -4001,6 +4019,8 @@ model User {
   qcRecords                        QcRecord[]
   qcRecordNotes                    QcRecordNote[]
   qcAuditLog                       QcAuditLog[]
+  qcBaselinesApproved QcItemBaseline[] @relation("QcItemBaselineApprovedBy")
+  qcCoaImports QcCoaImport[]
   files                            File[]
   poAccountingAuditLogd            PoAccountingAuditLog[]
   generalRequests                  GeneralRequest[]
@@ -4326,4 +4346,42 @@ model CanonDataTypeFactDefinition {
 
   @@id([dataTypeId, factDefinitionId])
   @@map("canon_data_type_fact_definitions")
+}
+
+// Supplier COA import state. QcItemBaseline: one per item; the first COA of an isSold item becomes the
+// pending baseline until a person approves it. QcCoaImport: one row per lot and COA document, for
+// idempotency, undo and supersede; report holds the per-row import report (json).
+model QcItemBaseline {
+  id               String    @id @default(uuid())
+  itemId           String    @unique @map("item_id")
+  status           String    @default("pending")
+  sourceItemFileId String?   @map("source_item_file_id")
+  approvedById     String?   @map("approved_by_id")
+  approvedAt       DateTime? @map("approved_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  item             Item      @relation(fields: [itemId], references: [id])
+  sourceItemFile   ItemFile? @relation(fields: [sourceItemFileId], references: [id], onDelete: SetNull)
+  approvedBy       User?     @relation("QcItemBaselineApprovedBy", fields: [approvedById], references: [id])
+
+  @@map("qc_item_baselines")
+}
+
+model QcCoaImport {
+  id           String    @id @default(uuid())
+  lotId        String    @map("lot_id")
+  itemFileId   String    @map("item_file_id")
+  qcRecordId   String?   @map("qc_record_id")
+  createdById  String    @map("created_by_id")
+  report       Json?
+  supersededAt DateTime? @map("superseded_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lot          Lot       @relation(fields: [lotId], references: [id])
+  itemFile     ItemFile  @relation(fields: [itemFileId], references: [id])
+  qcRecord     QcRecord? @relation(fields: [qcRecordId], references: [id], onDelete: SetNull)
+  createdBy    User      @relation(fields: [createdById], references: [id])
+
+  @@unique([lotId, itemFileId])
+  @@map("qc_coa_imports")
 }

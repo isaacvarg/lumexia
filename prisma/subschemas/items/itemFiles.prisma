@@ -32,6 +32,8 @@ model ItemFile {
     derivatives     ItemFile[]           @relation("ItemFileDerivation")
     surrogateFor    ItemFile?            @relation("ItemFileSurrogate", fields: [surrogateForItemFileId], references: [id], onDelete: SetNull)
     surrogates      ItemFile[]           @relation("ItemFileSurrogate")
+    qcBaselines QcItemBaseline[]
+    qcCoaImports QcCoaImport[]
 
     @@index([itemId])
     @@index([lotId])

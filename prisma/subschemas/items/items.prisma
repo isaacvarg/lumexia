@@ -28,6 +28,7 @@ model Item {
     pricingExaminations          PricingExamination[]
     consumerContainerArchives    ConsumerContainerArchive[]
     qcItemParameters             QcItemParameter[]
+    qcBaseline QcItemBaseline?
     discrepancyAuditItems        DiscrepancyAuditItem[]
     discreteUnitOfMeasurementConversions                 DiscreteUnitOfMeasurementConversion[]
     reorderingRule               ReorderingRule?

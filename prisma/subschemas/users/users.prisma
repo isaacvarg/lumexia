@@ -27,6 +27,8 @@ model User {
     qcRecords             QcRecord[]
     qcRecordNotes         QcRecordNote[]
     qcAuditLog            QcAuditLog[]
+    qcBaselinesApproved QcItemBaseline[] @relation("QcItemBaselineApprovedBy")
+    qcCoaImports QcCoaImport[]
     files                 File[]
     poAccountingAuditLogd PoAccountingAuditLog[]
     generalRequests       GeneralRequest[]
