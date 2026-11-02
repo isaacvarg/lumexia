@@ -1,6 +1,7 @@
 import Link from "next/link"
 import PageTitle from "@/components/Text/PageTitle"
 import prisma from "@/lib/prisma"
+import { getSlug } from "@/utils/general/getSlug"
 import { getQcReviewQueue, type QcReviewQueue } from "@/lib/qcCoaImport/queries"
 import { BaselineButtons, ResultButtons } from "./_components/ReviewButtons"
 
@@ -16,9 +17,9 @@ const reasonLabels: Record<string, string> = {
   extraTest: "Not in baseline",
 }
 
-type ItemRef = { name: string; referenceCode: string }
+type ItemRef = { id: string; name: string; referenceCode: string }
 const ItemLink = ({ item }: { item: ItemRef }) => (
-  <Link href={`/inventory/items/${encodeURIComponent(item.name)}`} className="link link-hover">
+  <Link href={`/inventory/items/${getSlug(item.name)}?id=${item.id}`} className="link link-hover">
     {item.name} <span className="text-base-content/60">{item.referenceCode}</span>
   </Link>
 )
