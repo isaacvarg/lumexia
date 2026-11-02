@@ -18,8 +18,31 @@ describe("parseSpecification", () => {
     assert.deepEqual(parseSpecification("min 98"), { type: "min", valueA: "98", valueB: null });
     assert.deepEqual(parseSpecification("> 98"), { type: "min", valueA: "98", valueB: null });
   });
+  it("reads every printed form of a one-sided limit, keeping the printed precision", () => {
+    const max = (valueA: string) => ({ type: "max", valueA, valueB: null });
+    const min = (valueA: string) => ({ type: "min", valueA, valueB: null });
+    const cases: [string, unknown][] = [
+      ["0.8 max", max("0.8")], ["2 max", max("2")], ["10.0 max", max("10.0")], ["  10.0   MAX ", max("10.0")], ["0.8 max %", max("0.8")], ["0.8 % max", max("0.8")], ["0.3 Maximum", max("0.3")],
+      ["max 10.0", max("10.0")], ["≤ 2", max("2")], ["<= 2.0", max("2.0")], ["< 2", max("2")], ["not more than 2.0", max("2.0")], ["NMT 2.0", max("2.0")], ["nmt 0,50", max("0.50")],
+      ["90.0 min", min("90.0")], ["90.0 MIN.", min("90.0")], ["min 90.0", min("90.0")], ["≥ 90", min("90")], [">= 90.0", min("90.0")], ["> 90", min("90")], ["not less than 90.0", min("90.0")], ["NLT 90.0", min("90.0")],
+    ];
+    for (const [text, expected] of cases) assert.deepEqual(parseSpecification(text), expected, text);
+  });
   it("leaves text specs without a limit", () => {
-    for (const text of ["Conforms", "White powder", "Report", "", null]) assert.equal(parseSpecification(text), null);
+    for (const text of ["Conforms", "White powder", "Report", "", "   ", "Clear oily liquid", "Conforms to Limits", "Very slight, Characteristic", null]) assert.equal(parseSpecification(text), null);
+  });
+});
+
+describe("parseSpecification on the castor oil COA", () => {
+  const ranges = ["0.957-0.961", "160 - 168", "0.7 – 1.5", "2.5 – 6.0", "2.5 – 7.0", "85.0 – 92.0", "2.0 – 4.0", "2.5 – 5.0", "0.2 – 0.8"];
+  const maxes = ["0.8 max", "0.3 max", "2 max", "10.0 max", "2.0 max", "2.5 max", "1.0 max", "1.0 max", "1.0 max"];
+  const mins = ["90.0 min"];
+  const qualitative = ["Clear oily liquid", "Very slight, Characteristic", "Conforms", "Conforms to Limits", "Conforms"];
+  it("seeds 19 of the 24 rows: 9 range, 9 max, 1 min", () => {
+    const types = [...ranges, ...maxes, ...mins, ...qualitative].map((text) => parseSpecification(text)?.type ?? null);
+    const count = (t: string | null) => types.filter((x) => x === t).length;
+    assert.equal(types.length, 24);
+    assert.deepEqual([count("range"), count("max"), count("min"), count(null)], [9, 9, 1, 5]);
   });
 });
 

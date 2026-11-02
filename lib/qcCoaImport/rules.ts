@@ -21,7 +21,7 @@ export const parseResultNumber = (result: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-// "5.0 - 7.0", "5.0–7.0 %", "≤ 0.5", "NMT 0.5 ppm", "max 0.5", "≥ 98", "NLT 98", "> 98". Anything else
+// "5.0 - 7.0", "5.0–7.0 %", "≤ 0.5", "NMT 0.5 ppm", "max 0.5", "0.5 max", "≥ 98", "NLT 98", "98 min", "> 98". Anything else
 // ("Conforms", "White powder", "Report") has no limit we can compare.
 export const parseSpecification = (text: string | null | undefined): ParsedSpecification | null => {
   const s = (text ?? "").trim();
@@ -31,10 +31,16 @@ export const parseSpecification = (text: string | null | undefined): ParsedSpeci
     const [a, b] = [toNumber(range[1]), toNumber(range[2])];
     if (a <= b) return { type: "range", valueA: String(a), valueB: String(b) };
   }
+  // a one-sided limit keeps the precision it was printed with ("10.0" stays "10.0")
+  const printed = (text: string) => text.replace(",", ".");
+  const UNIT = String.raw`(?:\s*(?:%|[a-zA-Zµμ°/][a-zA-Z0-9µμ°/. ]*))?`;
   const max = s.match(new RegExp(`^(?:≤|<=|<|nmt|max(?:imum)?\\.?|not more than)\\s*(${NUMBER})`, "i"));
-  if (max) return { type: "max", valueA: String(toNumber(max[1])), valueB: null };
+  if (max) return { type: "max", valueA: printed(max[1]), valueB: null };
   const min = s.match(new RegExp(`^(?:≥|>=|>|nlt|min(?:imum)?\\.?|not less than)\\s*(${NUMBER})`, "i"));
-  if (min) return { type: "min", valueA: String(toNumber(min[1])), valueB: null };
+  if (min) return { type: "min", valueA: printed(min[1]), valueB: null };
+  // "0.8 max", "2 max %", "90.0 min", "0.3 % maximum"
+  const trailing = s.match(new RegExp(`^(${NUMBER})${UNIT}\\s+(max(?:imum)?|min(?:imum)?)\\.?${UNIT}$`, "i"));
+  if (trailing) return { type: trailing[2].toLowerCase().startsWith("max") ? "max" : "min", valueA: printed(trailing[1]), valueB: null };
   return null;
 };
 
