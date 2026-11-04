@@ -11,7 +11,7 @@ import LotBasics from "./LotBasics"
 import LotReceiving from "./LotReceiving"
 import LotNotes from "./LotNotes"
 import Alert from "@/components/Alert"
-import { qcExaminationTypes } from "@/configs/staticRecords/qcExaminationTypes"
+import { CoaHasNoResults, selectCoaExamination } from "@/lib/coa/examination"
 import { generateCoa } from "../../_actions/coa/generateCoa"
 import { useRouter } from "next/navigation"
 
@@ -35,25 +35,23 @@ const LotDetails = () => {
   const handleGenerateCoa = async () => {
     if (!selectedLot || !item) return;
 
-    const finishedProductRecords = qcRecords.filter(
-      (r) =>
-        r.examinedLot?.id === selectedLot.id &&
-        r.examinationType.id === qcExaminationTypes.finishedProduct
-    );
+    const record = selectCoaExamination(qcRecords, selectedLot.id);
 
-    if (finishedProductRecords.length === 0) {
+    if (!record) {
       showDialog("coaMissingExamDialog");
       return;
     }
-
-    const record = finishedProductRecords.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )[0];
 
     setIsGenerating(true);
     try {
       await generateCoa(item, selectedLot.lotNumber, record);
       router.refresh();
+    } catch (error) {
+      if (error instanceof CoaHasNoResults) {
+        showDialog("coaNoResultsDialog");
+        return;
+      }
+      throw error;
     } finally {
       setIsGenerating(false);
     }
@@ -71,12 +69,23 @@ const LotDetails = () => {
 
       <Alert.Root identifier="coaMissingExamDialog">
         <Alert.Content
-          title="No Finished Product Examination"
+          title="No Examination for Certificate"
           action={() => {}}
           actionLabel="OK"
           actionColor="neutral"
         >
-          This lot does not have a Finished Product examination record. Please conduct a Finished Product examination before generating a Certificate of Analysis.
+          This lot needs a Finished Product examination, or a Dry examination for a purchased lot, before a Certificate of Analysis can be generated.
+        </Alert.Content>
+      </Alert.Root>
+
+      <Alert.Root identifier="coaNoResultsDialog">
+        <Alert.Content
+          title="No Confirmed Results"
+          action={() => {}}
+          actionLabel="OK"
+          actionColor="neutral"
+        >
+          This examination has no confirmed results to put on a certificate. Confirm the supplier-certificate results, then generate it again.
         </Alert.Content>
       </Alert.Root>
 

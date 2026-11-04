@@ -37,8 +37,8 @@ const Lots = () => {
           always resolve to the exact record.
         </GuideTypo.Item>
         <GuideTypo.Item term="Generate COA">
-          a certificate of analysis, available only once a QC examination exists
-          for the lot.
+          a certificate of analysis from this lot&apos;s Finished Product
+          examination, or from its Dry examination when the lot is purchased.
         </GuideTypo.Item>
         <GuideTypo.Item term="Create Transaction">
           deplete, add/subtract, or set the lot&apos;s available quantity.

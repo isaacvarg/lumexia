@@ -56,17 +56,19 @@ the lot automatically. This is useful for importing historical or batch results.
 
 ## Certificate of analysis
 
-A **Certificate of Analysis (COA)** is a document summarizing a finished lot's
-results against its specifications. It is generated from the lot itself, on the
+A **Certificate of Analysis (COA)** is a document summarizing a lot's results
+against its specifications. It is generated from the lot itself, on the
 [lot details](/docs/inventory/item-details#lots) page with **Generate COA**, not
 from the quality module.
 
-Generating a COA requires the lot to have a **Finished Product** examination; if
-none exists, Lumexia asks you to conduct one first. The document includes each
-specification and result marked with
-[Display on Certificate of Analysis](/docs/quality/specifications#certificate-of-analysis),
-along with your company details, and is saved to the item's files as a regulatory
-document.
+A produced lot uses its **Finished Product** examination. A purchased lot uses
+its **Dry** examination — the record the supplier-certificate workflow fills in.
+If the lot has neither, Lumexia asks you to conduct one first. The document
+includes each specification and result marked with
+[Display on Certificate of Analysis](/docs/quality/specifications#certificate-of-analysis).
+A purchased lot's Dry specifications are included even when that flag was left
+off. Results still waiting for review are left off. The certificate also carries
+your company details, and is saved to the item's files as a regulatory document.
 
 ## How examinations connect to production
 

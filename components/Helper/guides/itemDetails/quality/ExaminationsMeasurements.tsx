@@ -32,9 +32,10 @@ const ExaminationsMeasurements = () => {
       </GuideTypo.List>
 
       <GuideTypo.Note>
-        A certificate of analysis is generated from the lot (not here), requires a
-        Finished Product examination, and includes only the specs flagged Display
-        on COA.
+        A certificate of analysis is generated from the lot (not here). Produced
+        lots use the Finished Product examination; purchased lots use the Dry
+        examination. It includes specs flagged Display on COA, and every Dry
+        specification on a purchased lot.
       </GuideTypo.Note>
     </GuideTypo.Wrapper>
   );

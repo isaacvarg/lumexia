@@ -33,9 +33,11 @@ const VerdictsAndRuns = () => {
       <GuideTypo.Note>
         A <span className="font-semibold">Certificate of Analysis</span> is generated
         from the lot (lot details → <span className="font-semibold">Generate COA</span>),
-        not here. It requires a <span className="font-semibold">Finished Product</span>{" "}
-        examination to exist first, and includes only specs flagged{" "}
-        <span className="font-semibold">Display on COA</span>.
+        not here. Produced lots use the{" "}
+        <span className="font-semibold">Finished Product</span> examination; purchased
+        lots use the <span className="font-semibold">Dry</span> examination. It
+        includes specs flagged <span className="font-semibold">Display on COA</span>,
+        and every Dry specification on a purchased lot.
       </GuideTypo.Note>
     </GuideTypo.Wrapper>
   );

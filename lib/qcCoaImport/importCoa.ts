@@ -237,7 +237,7 @@ export const importLotCoaResults = async (db: Db, actor: CoaImportActor, input: 
             valueA: parsed.valueA,
             valueB: parsed.valueB,
             specificationType: parsed.type,
-            displayOnCoa: false,
+            displayOnCoa: true,
             createdById: actor.userId,
             sourceItemFileId: document.id,
           },

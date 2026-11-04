@@ -7,6 +7,7 @@ import { DateTime } from "luxon";
 import { FileResponseData } from "@/app/api/upload/route";
 import { QcRecordExpanded } from "@/actions/quality/qc/records/getAllByItem";
 import { SingleItem } from "@/actions/inventory/getOneItem";
+import { CoaHasNoResults } from "@/lib/coa/examination";
 
 export const generateCoa = async (
   item: SingleItem,
@@ -14,6 +15,10 @@ export const generateCoa = async (
   qcRecord: QcRecordExpanded
 ) => {
   const { parameters, companyData } = await getCoaData(item.id, qcRecord.id);
+
+  if (parameters.length === 0) {
+    throw new CoaHasNoResults();
+  }
 
   const pdf = await createCertificateOfAnalysis(
     item.name,
@@ -24,6 +29,7 @@ export const generateCoa = async (
     qcRecord.status.name,
     companyData,
     qcRecord.examinationTypeId,
+    qcRecord.examinationType.name,
   );
 
   const dateStr = DateTime.now().toFormat("yyyy-MM-dd");

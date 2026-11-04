@@ -14,6 +14,7 @@ import { QcItemParameter } from "@/actions/quality/qc/parameters/getAllByItemAnd
 import { formatSpecification } from "@/utils/qc/formatSpecification";
 import { formatParameterValue, isBooleanDataType } from "@/utils/qc/formatParameterValue";
 import { findMatchingSpec } from "@/utils/qc/evaluateSpecification";
+import { specsForCoa } from "@/lib/coa/examination";
 
 const formatSpecConditions = (
   spec: QcItemParameter["specifications"][number],
@@ -39,6 +40,7 @@ export const createCertificateOfAnalysis = async (
   statusName: string,
   companyData: Config[],
   examinationTypeId: string,
+  examinationTypeName?: string,
 ): Promise<jsPDF> => {
   const { logo } = await getCompanyPdfImages();
   const logoDimensions = logo ? await getImageDimensions(logo) : null;
@@ -136,9 +138,7 @@ export const createCertificateOfAnalysis = async (
       : param.parameter.uom && param.parameter.uom !== ""
         ? param.parameter.uom
         : "Not Applicable";
-    const visibleSpecs = param.specifications.filter(
-      (s) => s.displayOnCoa && s.examinationTypeId === examinationTypeId,
-    );
+    const visibleSpecs = specsForCoa(param.specifications, examinationTypeId, examinationTypeName);
 
     if (visibleSpecs.length === 0) {
       const fallbackResult = param.results[0];
