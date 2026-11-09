@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # handle env variables
 set -a
 source .env

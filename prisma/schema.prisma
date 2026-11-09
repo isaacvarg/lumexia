@@ -1530,6 +1530,7 @@ model Lot {
   receiptLine       ReceiptLine?       @relation(fields: [receiptLineId], references: [id])
 
   @@index([receiptLineId])
+  @@index([itemId])
   @@map("lots")
 }
 

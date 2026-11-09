@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Legacy image build for instances seeded BEFORE the switch to deterministic
 # static-record IDs (see scripts/generate/staticRecordId.ts).
 #

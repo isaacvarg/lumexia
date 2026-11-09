@@ -1,0 +1,71 @@
+---
+title: REST API (v1)
+description: A small, stable, read-only JSON API for items, lots and item properties, authenticated with the same per-user API keys as the MCP endpoint.
+---
+
+Systems that need a fixed schema (a warehouse app linking its products to Lumexia
+items, for example) use the REST API at `/api/v1` instead of [MCP](/docs/mcp). It is
+read-only and its fields don't change without a new version.
+
+## Authentication
+
+Send an [API key](/docs/mcp#create-an-api-key) as `Authorization: Bearer lmx_...`. A
+read-only key is enough for every route.
+
+| Status | Meaning |
+| --- | --- |
+| `401` | Missing, unknown, revoked or expired key. |
+| `403` | The key is valid but has no read access. |
+
+## Conventions
+
+- JSON only, camelCase fields, ids are the UUIDs stored in Lumexia. Timestamps are ISO 8601 UTC. Absent values are `null`, never omitted.
+- Errors: `{ "error": { "code": "invalid_request", "message": "..." } }` with `invalid_request` (400), `unauthorized` (401), `forbidden` (403), `not_found` (404) or `internal` (500).
+- Lists are paged: `?limit=1..200` (default 50) and `?cursor=` taken from the previous `nextCursor` (`null` on the last page). Order is stable.
+- Inactive and archived records are included with `"archived": true`. Items and lists that support it take `?include_archived=false` to hide them.
+
+## Routes
+
+| Route | Returns |
+| --- | --- |
+| `GET /api/v1/health` | `{ "ok": true, "apiVersion": "1", "key": { "userId", "scopes" } }` |
+| `GET /api/v1/item-types` | `{ "itemTypes": [{ "id", "name", "archived" }], "nextCursor" }` |
+| `GET /api/v1/procurement-types` | Same shape, under `procurementTypes`. |
+| `GET /api/v1/inventory-types` | Same shape, under `inventoryTypes`, plus `isTracked` on each. |
+| `GET /api/v1/items` | Paged items (below). |
+| `GET /api/v1/items/{id}` | One item, or 404. |
+| `GET /api/v1/lots` | Paged lots (below). |
+| `GET /api/v1/lots/{id}` | One lot by id (what a label's QR code holds), or 404. |
+
+Item types, procurement types and inventory types have no archived state in Lumexia,
+so their `archived` is always `false`.
+
+### Items
+
+```json
+{
+  "id": "…", "referenceCode": "BASE1234", "name": "Lavender base, 1 gal",
+  "aliases": ["LAV-BASE-1G"], "itemTypeId": "…", "procurementTypeId": "…",
+  "inventoryTypeId": "…", "archived": false, "updatedAt": "2026-11-09T14:03:00.000Z"
+}
+```
+
+`GET /api/v1/items` filters, all optional and combined with AND:
+
+- `q`: case-insensitive contains on name, reference code or alias.
+- `reference_code`: exact, case-insensitive, repeatable up to 200. Also matches aliases.
+- `id`: repeatable up to 200.
+- `updated_since`: items changed after this timestamp. Editing or adding an alias counts as a change, and `updatedAt` reflects it. Removing an alias does not.
+
+An item is `archived: true` when its status is anything but active.
+
+### Lots
+
+```json
+{ "id": "…", "itemId": "…", "lotNumber": "BASE1234.A12A0124", "archived": false, "createdAt": "2024-01-01T09:00:00.000Z" }
+```
+
+`GET /api/v1/lots?lot_number=<n>` matches our [lot number](/docs/inventory/lot-numbers)
+exactly and case-insensitively (never the supplier's). It returns a list because a lot
+number can exist on more than one item; an unmatched number returns an empty list. Add
+`item_id=<uuid>` to narrow it. Lots have no status of their own, so `archived` is always `false`.
