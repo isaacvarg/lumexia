@@ -16,15 +16,17 @@ type SelectFieldProps = {
   fieldName: string;
   options: SelectOption[];
   placeholder?: string;
+  required?: boolean;
 };
 
-const SelectField = ({ form, label, fieldName, options, placeholder }: SelectFieldProps) => {
+const SelectField = ({ form, label, fieldName, options, placeholder, required }: SelectFieldProps) => {
   return (
     <div className='flex flex-col gap-y-1'>
       <label className="font-poppins text-base-content text-xl">{label}</label>
       <Controller
         control={form.control}
         name={fieldName}
+        rules={{ required }}
         render={({ field }) => (
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <SelectTrigger className="w-full">
@@ -40,6 +42,7 @@ const SelectField = ({ form, label, fieldName, options, placeholder }: SelectFie
           </Select>
         )}
       />
+      {form.formState.errors[fieldName] && <span className="text-error">This field is required</span>}
     </div>
   );
 };
