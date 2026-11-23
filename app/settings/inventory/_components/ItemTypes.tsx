@@ -16,6 +16,7 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
   const router = useRouter();
   const [isAdd, setIsAdd] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     const result = await deleteItemType(id);
@@ -28,11 +29,15 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
 
   const form = useAppForm({
     defaultValues: {
-      itemTypes,
+      itemTypes: itemTypes.map((it) => ({ ...it, skuPrefix: it.skuPrefix ?? "" })),
     },
     onSubmit: async ({ value }) => {
-      console.log('make sure not running')
-      await updateItemTypes(value.itemTypes);
+      const result = await updateItemTypes(value.itemTypes);
+      if (!result.success) {
+        setSaveError(result.error);
+        return;
+      }
+      setSaveError(null);
       location.reload()
       form.reset()
 
@@ -48,7 +53,7 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
       </div>
 
       <Card.Root>
-        <p className="font-poppins text-xl text-base-content">Collections that allow for items to be grouped and managed.</p>
+        <p className="font-poppins text-xl text-base-content">Collections that allow for items to be grouped and managed. The SKU prefix is used to generate reference codes when creating an item (e.g. RAW becomes RAW0001).</p>
 
         {isAdd && <ItemTypesForm setIsAdd={setIsAdd} />}
 
@@ -76,6 +81,14 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
                                 name={`itemTypes[${i}].name`} >
                                 {(subField) => (
                                   <subField.TextField label={'Name'} labelClass="soft" />
+                                )}
+                              </form.AppField>
+                            </div>
+                            <div className="w-40">
+                              <form.AppField
+                                name={`itemTypes[${i}].skuPrefix`} >
+                                {(subField) => (
+                                  <subField.TextField label={'SKU Prefix'} labelClass="soft" />
                                 )}
                               </form.AppField>
                             </div>
@@ -107,6 +120,12 @@ const ItemTypes = ({ itemTypes }: { itemTypes: ItemType[] }) => {
 
             </form.AppField>
 
+
+            {saveError && (
+              <div role="alert" className="alert alert-error alert-soft">
+                <span>{saveError}</span>
+              </div>
+            )}
 
             <div>
               <form.AppForm>

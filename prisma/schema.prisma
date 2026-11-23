@@ -1872,6 +1872,8 @@ model ItemTypeConfig {
 model ItemType {
   id                      String                    @id @default(uuid())
   name                    String
+  // prefix for generated reference codes (SKUs), e.g. RAW -> RAW0001
+  skuPrefix               String? @map("sku_prefix")
   createdAt               DateTime                  @default(now()) @map("created_at")
   updatedAt               DateTime                  @updatedAt @map("updated_at")
   items                   Item[]
